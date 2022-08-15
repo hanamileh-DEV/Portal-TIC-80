@@ -52,8 +52,8 @@ local unitic = {
 	--system tables (dont touch)
 	poly = {}
 }
-local model={--models
-	{ -- Blender v3.2.1 UNI file | Cube
+local model={
+	{ --cube ejector (idk what its called)
 		v={
 			{24,24,24},
 			{24,-24,24},
@@ -582,20 +582,25 @@ function unitic.render()
   	end
 
 	if st.r_p and draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
-		if dist then
-			cam.x = 96*x2 + relx1
-			cam.y = 128*y2 + rely1
-			cam.z = 96*z2 + relz1
-			cam.ty = plr.ty + math.pi * rotd1 / 2
-			cam.tx = plr.tx
-			unitic.update(true,1) unitic.draw() --blue portal
+		if t%2==0 then
+			if dist then
+				cam.x = 96*x2 + relx1
+				cam.y = 128*y2 + rely1
+				cam.z = 96*z2 + relz1
+				cam.ty = plr.ty + math.pi * rotd1 / 2
+				cam.tx = plr.tx
+				unitic.update(true,1) unitic.draw() --blue portal
+			else
+				cam.x = 96*x1 + relx2
+				cam.y = 128*y1 + rely2
+				cam.z = 96*z1 + relz2
+				cam.ty = plr.ty + math.pi * rotd2 / 2
+				cam.tx = plr.tx
+				unitic.update(true,2) unitic.draw() --orange portal
+			end
+			memcpy(0x8000,0x0,240*136/2)
 		else
-			cam.x = 96*x1 + relx2
-			cam.y = 128*y1 + rely2
-			cam.z = 96*z1 + relz2
-			cam.ty = plr.ty + math.pi * rotd2 / 2
-			cam.tx = plr.tx
-			unitic.update(true,2) unitic.draw() --orange portal
+			memcpy(0x0,0x8000,240*136/2)
 		end
 	end
 end
