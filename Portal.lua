@@ -724,7 +724,9 @@ local function portal_gun()
 		portal model in the right place, then update the world
 		]]
 		if clp1 and draw.map[m[portal_id][4]][m[portal_id][1]][m[portal_id][2]][m[portal_id][3]][2]==2 then
-			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
+			if draw.p[1][5]~=-1 then
+				addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
+			end
 
 			draw.p[1][1]=m[portal_id][1]
 			draw.p[1][2]=m[portal_id][2]
@@ -737,7 +739,9 @@ local function portal_gun()
 		end
 		--the same, but for the orange portal (disabled)
 		if clp2 and draw.map[m[portal_id][4]][m[portal_id][1]][m[portal_id][2]][m[portal_id][3]][2]==2 then
-			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
+			if draw.p[2][5]~=-1 then
+				addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
+			end
 
 			draw.p[2][1]=m[portal_id][1]
 			draw.p[2][2]=m[portal_id][2]
