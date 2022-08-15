@@ -3,7 +3,7 @@
 -- desc:   version 1.0 (powered by UniTIC v 1.3)
 -- script: lua
 
--- version: DEV 0.1.3
+-- version: DEV 0.1.4
 
 --[[
 license:
@@ -36,6 +36,7 @@ potato_pc=false, --dont
 css_content=true, --dont
 m_s=80, --mouse sensitivity
 r_p=true, --rendering portals
+h_q_p=false, --high quality portals
 }
 local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.abs
 local pi2 = math.pi / 2
@@ -103,6 +104,14 @@ local model={
 			{1,3,4,uv={{120,232},{96, 232},{96 ,256},-1},f=3},
 			{5,1,2,uv={{120,232},{96, 232},{96 ,256},-1},f=3}}
 	},
+	{--light bridge (-X +X)
+		v={{-48,4,-48},{48,4,-48},{-48,4,48},{48,4,48}},
+		f={{1,2,3,uv={{0,232},{16,232},{0,248}},f=3},{2,3,4,uv={{16,232},{0,248},{16,248}},f=3}}
+	},
+	{--light bridge (-Z +Z)
+		v={{-48,4,-48},{-48,4,48},{48,4,-48},{48,4,48}},
+		f={{1,2,3,uv={{0,232},{16,232},{0,248}},f=3},{2,3,4,uv={{16,232},{0,248},{16,248}},f=3}}
+	},
 }
 
 local s = { --sounds
@@ -122,6 +131,10 @@ local draw={
 		1,--angle of rortation of the portal (1 - parallel to the YZ plane; 3 - parallel to the XY plane)
 		1 }, --portal normality (1 - standart normal; 2 - reverse normal)
 		{2,0,11, 3, 2 } --the same thing but for the orange portal
+	},
+	lg={--light bridge generators
+		{2,0,0,3,1},
+		{3,0,11,3,2}
 	}
 } --portal models are installed automatically
 
@@ -353,7 +366,7 @@ function unitic.draw()
 	end
 end
 
-local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true}
+local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true}
 function unitic.collision()
 	local colx = false
 	local coly = false
@@ -440,11 +453,15 @@ function unitic.collision()
 		local x0=draw.objects[i].x
 		local y0=draw.objects[i].y
 		local z0=draw.objects[i].z
-		if (draw.objects[i].type==1 or draw.objects[i].type==2 or draw.objects[i].type==3) and 
+		if (draw.objects[i].type==1 or draw.objects[i].type==2 or draw.objects[i].type==3) and
 		coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)==false then --protection so that the player cannot get stuck in the cube
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
 			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true plr.xy=true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
+		elseif draw.objects[i].type==4 or draw.objects[i].type==5 then
+			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colx = true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then coly = true plr.xy=true end
+			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colz = true end
 		end
 	end
 
@@ -626,7 +643,7 @@ function unitic.render()
   	end
 
 	if st.r_p and draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
-		if min(dist1,dist2)<128^2 or (t%2==0 and min(dist1,dist2)<512^2) or (t%3==0 and min(dist1,dist2)>=512^2) then
+		if st.h_q_p or min(dist1,dist2)<128^2 or (t%2==0 and min(dist1,dist2)<512^2) or (t%3==0 and min(dist1,dist2)>=512^2) then
 			if dist then
 				cam.x = 96*x2 + relx1
 				cam.y = 128*y2 + rely1
@@ -784,6 +801,65 @@ function update_world()
 		end
 		------
 	end end end end
+	--light bridge generator
+	if draw.lg~=0 then
+		for i=1,#draw.lg do
+			local lx,ly,lz=draw.lg[i][1],draw.lg[i][2],draw.lg[i][3]
+			local vx,vz=0,0
+			if     draw.lg[i][4]==1 and draw.lg[i][5]==1 then vx=1
+			elseif draw.lg[i][4]==1 and draw.lg[i][5]==2 then vx=-1 lx=lx-1
+			elseif draw.lg[i][4]==3 and draw.lg[i][5]==1 then vz=1
+			elseif draw.lg[i][4]==3 and draw.lg[i][5]==2 then vz=-1 lz=lz-1 else error(draw.lg[i][4].." | "..draw.lg[i][5])
+			end
+			for _=1,100 do --bridge lenght limiter
+				if vx==-1 or vx==1 then addobj(96/2+lx*96,ly*128,96/2+lz*96,4) else addobj(96/2+lx*96,ly*128,96/2+lz*96,5) end
+				lx=lx+vx
+				lz=lz+vz
+				--going through portals
+				if draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
+					local bp=false
+					local op=false
+					--blue portal
+				   if     vx==1  and draw.p[1][4]==1 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+					elseif vx==-1 and draw.p[1][4]==1 and draw.p[1][5]==2 and lx+1==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+					elseif vz==1  and draw.p[1][4]==3 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+					elseif vz==-1 and draw.p[1][4]==3 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz+1==draw.p[1][3] then bp=true
+					--orange portal
+					elseif vx==1  and draw.p[2][4]==1 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vx==-1 and draw.p[2][4]==1 and draw.p[2][5]==2 and lx+1==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vz==1  and draw.p[2][4]==3 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz+1==draw.p[2][3] then op=true
+					end
+					trace("------------- ".._,15)
+					trace(bp,6)
+					trace(op,7)
+					--teleporting
+					if bp then
+						lx,ly,lz=draw.p[1][1],draw.p[1][2],draw.p[1][3]
+						if     draw.p[1][4]==1 and draw.p[1][5]==1 then vx=1
+						elseif draw.p[1][4]==1 and draw.p[1][5]==2 then vx=-1 lx=lx-1
+						elseif draw.p[1][4]==3 and draw.p[1][5]==1 then vz=1
+						elseif draw.p[1][4]==3 and draw.p[1][5]==2 then vz=-1 lz=lz-1
+						end
+					elseif op then
+						lx,ly,lz=draw.p[2][1],draw.p[2][2],draw.p[2][3]
+						if     draw.p[2][4]==1 and draw.p[2][5]==1 then vx=1
+						elseif draw.p[2][4]==1 and draw.p[2][5]==2 then vx=-1 lx=lx-1
+						elseif draw.p[2][4]==3 and draw.p[2][5]==1 then vz=1
+						elseif draw.p[2][4]==3 and draw.p[2][5]==2 then vz=-1 lz=lz-1
+						end
+					end
+				end
+				--if the bridge collides with a wall, we stop the loop
+				if lx<0 or lx>world_size[1]-2 or lz<0 or lz>world_size[3]-2 then break end
+				if     vx==1  and draw.map[1][lx  ][ly][lz  ][2]~=0 and draw.map[1][lx  ][ly][lz  ][2]~=3 and draw.map[1][lx  ][ly][lz  ][2]~=15 then break
+				elseif vx==-1 and draw.map[1][lx+1][ly][lz  ][2]~=0 and draw.map[1][lx+1][ly][lz  ][2]~=3 and draw.map[1][lx+1][ly][lz  ][2]~=15 then break
+				elseif vz==1  and draw.map[3][lx  ][ly][lz  ][2]~=0 and draw.map[3][lx  ][ly][lz  ][2]~=3 and draw.map[1][lx  ][ly][lz  ][2]~=15 then break
+				elseif vz==-1 and draw.map[3][lx  ][ly][lz+1][2]~=0 and draw.map[3][lx  ][ly][lz+1][2]~=3 and draw.map[1][lx  ][ly][lz+1][2]~=15 then break
+				end
+			end
+		end
+	end
 end
 --palette
 local pal="0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6fad67918ffbe3cff00ff"
@@ -872,6 +948,9 @@ for x=0,10 do
 end
 
 addwall(1,0,0,3,1,10)
+addwall(2,0,0,3,1,8)
+addwall(3,0,11,3,2,9)
+
 addwall(0,1,2,1,2,17)
 addwall(0,1,3,1,2,16)
 addwall(0,0,2,1,2,18)
@@ -879,7 +958,13 @@ addwall(0,0,3,1,2,19)
 
 addwall(0,0,6,3,3,12)
 addwall(1,0,6,3,3,11)
-addwall(2,0,6,3,3,1)
+
+addwall(2,0,5,1,1,2)
+addwall(3,0,5,1,2,2)
+addwall(2,0,6,3,1,2)
+addwall(2,0,5,3,2,2)
+addwall(2,1,5,2,2,2)
+
 addwall(3,0,6,3,3,14)
 addwall(4,0,6,3,3,13)
 addwall(5,0,6,3,3,1)
@@ -890,6 +975,9 @@ addwall(9,0,6,3,3,4)
 addwall(10,0,6,3,3,7)
 
 addwall(6,0,5,2,3,8)
+addwall(6,0,6,2,3,8)
+addwall(3,0,5,2,3,8)
+
 addobj(80,24,80,1)
 addobj(95,72,95,2)
 
@@ -1186,12 +1274,12 @@ end
 -- 067:ffffffffffaaaffffffffffffffffffffffffffffffffffaffffffffffffffff
 -- 068:fffffffffffffffffffffffbffffffffffffffffaafffffffffffffffffffffa
 -- 069:ffffffffffffffffbbffffffffffffffffffffffffffffffffffffffaaffffff
--- 070:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 071:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 072:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 073:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 074:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 075:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
+-- 070:6666666665555555656555556555555565555655655555556565556565555555
+-- 071:6666666655555555655565555555555556555556555555555555555555555555
+-- 072:6666666555555554655565545555555455565454555555545555555455555554
+-- 073:4444444443333333434333334333333343333433433333334343334343333333
+-- 074:4444444433333333433343333333333334333334333333333333333333333333
+-- 075:4444444333333332433343323333333233343232333333323333333233333332
 -- 076:6666666665671111656777776567711165671111656711776567117765671177
 -- 077:6666666611111111777777771177771111177111711771177117711771177117
 -- 078:6666666511117654777776541117765411117654771176547711765477117654
@@ -1201,12 +1289,12 @@ end
 -- 083:ffffbbbfffffffffffffffffffffffffffffffffffffffffffffffffffaaafff
 -- 084:fffffffffffffffffbbbfffffffffffffffffffffffffffabbbfffffffffffff
 -- 085:ffffffffffffffffffbbbfffffffffffffffffffaaffffffffffffffffffffff
--- 086:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 087:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 088:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 089:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 090:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 091:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
+-- 086:6555555565555555656555556555555565555555655555556565556565555555
+-- 087:5655565555555555555555555555555555565555555555555555555555555555
+-- 088:5554545455555554555555545555555454555554555545545555555455555554
+-- 089:4333333343333333434333334333333343333333433333334343334343333333
+-- 090:3433343333333333333333333333333333343333333333333333333333333333
+-- 091:3332323233333332333333323333333232333332333323323333333233333332
 -- 092:6567117765671177656711776567117765671111656771116567777765671111
 -- 093:7117711171177711711777777117711711177111117777117777777711111111
 -- 094:1111765411117654771176547711765411117654111776547777765411117654
@@ -1216,12 +1304,12 @@ end
 -- 099:fffffffffffffffffffffffffffbbbffffffffffffffffffffffffffffffffaa
 -- 100:fffffffffffffffffffaaafffffffffffffffffbffffffffffffffffafffffff
 -- 101:ffffffffffffffffffffffffffffffffbbffffffffffffffffffffffffffffff
--- 102:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 103:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 104:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 105:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 106:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 107:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
+-- 102:6555555565555555656555556555555565555555655555556555655565555555
+-- 103:5655555555555455655555555555555555555455555555555545555555555555
+-- 104:5554555455555554555555545555555454555454555555545555555455555554
+-- 105:4333333343333333434333334333333343333333433333334333433343333333
+-- 106:3433333333333233433333333333333333333233333333333323333333333333
+-- 107:3332333233333332333333323333333232333232333333323333333233333332
 -- 108:6567777765671717656717176567777765677117656771176567777765677117
 -- 109:7777777717177777171777777777777711733711117337117777777733733733
 -- 110:7777765477777654777776547777765473377654733776547777765471177654
@@ -1232,16 +1320,16 @@ end
 -- 115:fffffffffffffffffffffffffffffffffffffffffffaaaffffffffffffffffff
 -- 116:ffffffffffffffffffffffaafffffffffbbbffffffffffffffffffffffffffff
 -- 117:ffffffffffffffffaffffffffffffffffffffffffbbbffffffffffffffffffff
--- 118:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 119:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 120:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 121:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 122:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 123:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
+-- 118:6555555565555555655555556555555565565555622222222311111152322222
+-- 119:5555555555555554455545555555555555555554222ed2221111111122222222
+-- 120:5554555455555554555555545555555455455454222222241111112322222234
+-- 121:4333333343333333433333334333333343343333422222222311111132322222
+-- 122:3333333333333332233323333333333333333332222ed2221111111122222222
+-- 123:3332333233333332333333323333333233233232222222221111111322222232
 -- 124:6567711765677777656666666555555565565555655556556555555554444444
 -- 125:3373373377777777666666665555555555555554555545556555555544444444
 -- 126:7117765477777654666666545555555455455454455555545555555444444444
--- 127:7777777777177111711771717717717177177171711171117777777777777777
+-- 127:0000000000056000005006000050050000055000005005000050050000056000
 -- 128:6666666665555555656555556555555565555655655555556565556565555555
 -- 129:666666665555555565556555555555555655555655555552555555225555522f
 -- 130:666666655555555465552222552222222222ffff22ffffffffffffffffffffff
@@ -1257,7 +1345,7 @@ end
 -- 140:ffffffffff888ffffffffffffffffffffffffffffffffff8ffffffffffffffff
 -- 141:fffffffffffffffffffffff9ffffffffffffffff88fffffffffffffffffffff8
 -- 142:ffffffffffffffff99ffffffffffffffffffffffffffffffffffffff88ffffff
--- 143:aaaaaaa0afff000dafff000dafff000da000fffda000fffda000fffda000fffd
+-- 143:0000000000043000004003000030040000034300000004000030030000043000
 -- 144:6555555565555555656555556555555565555555655555556565556565555555
 -- 145:565522ff55522fff55222fff5522ffff522fffff522fffff22ffffff22ffffff
 -- 146:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -1273,7 +1361,7 @@ end
 -- 156:ffff999fffffffffffffffffffffffffffffffffffffffffffffffffff888fff
 -- 157:fffffffffffffffff999fffffffffffffffffffffffffff8999fffffffffffff
 -- 158:ffffffffffffffffff999fffffffffffffffffff88ffffffffffffffffffffff
--- 159:afff000dafff000dafff000dafff000da000fffda000fffda000fffda000fffd
+-- 159:7777777777177111711771717717717177177171711171117777777777777777
 -- 160:6555555565555555656555556555555265555552655555526555655265555552
 -- 161:22ffffff22ffffff22ffffff2fffffff2fffffff2fffffff2fffffff2fffffff
 -- 162:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -1561,8 +1649,8 @@ end
 -- 205:1111111111111111111111111111111122222222333333333333333322222222
 -- 206:1111233211112332111123321111233222222332333333323333333222222222
 -- 207:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 208:aaaaaaaa00000000000000000000000000000000000000000000000000000000
--- 209:aaaaaaaa00000000000000000000000000000000000000000000000000000000
+-- 208:ffffffffffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfc
+-- 209:ffffffffffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfc
 -- 210:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 211:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 212:aaaaaaaa00000000000000000000000000000000000000000000000000000000
@@ -1577,8 +1665,8 @@ end
 -- 221:2222222233333333434343433333333334343434333333334343434322222222
 -- 222:2222222233333332434343423333333234343432333333324343434222222222
 -- 223:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 224:000000000000000000000000000000000000000000000000dddddddd00000000
--- 225:000000000000000000000000000000000000000000000000dddddddd00000000
+-- 224:bfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffffffffffff
+-- 225:bfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffffffffffff
 -- 226:000000000000000000000000000000000000000000000000dddddddd00000000
 -- 227:00000000000000000000000000000000000000000000000000000000a0000000
 -- 233:44444444555544445666544a5666544a5666544a5666544a5555444444444444
@@ -1591,7 +1679,7 @@ end
 -- 240:bb1b1111b11b111111111111bb11111111111111111111111111111111111111
 -- 241:11111111111111111111111111111dd111111111111d11d1111d1dd111111111
 -- 242:1113111111131111111111113311133111111111111311111113111111111111
--- 243:a0000000a0000000a0000000a0000000a0000000a00000000ddddddd00000000
+-- 243:001122330011223344556677445566778899aabb8899aabbccddeeffccddeeff
 -- 244:000000000000000000000000000000000000000000000000dddddddd00000000
 -- 245:000000000000000000000000000000000000000000000000dddddddd00000000
 -- 246:000000000000000000000000000000000000000000000000dddddddd00000000
