@@ -9,25 +9,25 @@
 license:
 
 Copyright 2022 HanamileH
-Permission is hereby granted, free of charge, to any person 
-obtaining a copy of this software and associated 
-documentation files (the "Software"), to deal in the 
-Software without restriction, including without limitation 
-the rights to use, copy, modify, merge, publish, distribute, 
-sublicense, and/or sell copies of the Software, and to 
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to
 permit persons to whom the Software is furnished to do so,
 subject to the following conditions:
 
-The above copyright notice and this permission notice shall 
+The above copyright notice and this permission notice shall
 be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY 
-KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
-PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS 
-OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT 
-OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
 THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
@@ -283,7 +283,7 @@ function unitic.update(draw_portal,p_id)
 		local c3 = b1 * txsin + c2 * txcos
 		local c4 = c3
 		if c4>-0.001 then c4=-0.001 end
-		
+
 		local x0 = unitic.fov * a3 / c4 + 120
 		local y0 = unitic.fov * b3 / c4 + 68
 
@@ -516,19 +516,19 @@ function unitic.portal_collision()
 	local relx2 = plr.x - 96 * x2
 	local rely2 = plr.y - 128 * y2
 	local relz2 = plr.z - 96 * z2
-	
+
 	-- calculate portal rotation
 	local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
 	local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
 	local rotd1 = (2 + rot2 - rot1) % 4
 	local rotd2 = (2 + rot1 - rot2) % 4
-	
+
 	if     rotd1 == 0 then
 	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
 	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
 	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
   	end
-	
+
 	if     rotd2 == 0 then
 	elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
 	elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
@@ -553,7 +553,7 @@ end
 
 function unitic.render()
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
-	
+
 	local x1, y1, z1, x2, y2, z2 = portalcenters()
 	local dist1=((x1*96-plr.x)^2+(y1*128-plr.y)^2+(z1*96-plr.z)^2)
 	local dist2=((x2*96-plr.x)^2+(y2*128-plr.y)^2+(z2*96-plr.z)^2)
@@ -623,7 +623,7 @@ function unitic.render()
 	local relx2 = plr.x - 96 * x2
 	local rely2 = plr.y - 128 * y2
 	local relz2 = plr.z - 96 * z2
-	
+
 	-- calculate portal rotation
 	local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
 	local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
@@ -684,7 +684,7 @@ local function portal_gun()
 				local x0, z0, col = coll_l(rx, rz, rx1, rz1, x*96, z*96, x*96, z*96+96)--check the collision of the ray with the current wall
 				--wall dimensions: 96 (width) x 128 (height)
 				--floor dimensions: 96 x 96
-				
+
 				--x0 z0 are the intersection points, col is boolean meaning does a collision occur
 				if col then --if there is a collision, then we save this wall
 					table.insert(m,{
@@ -698,7 +698,7 @@ local function portal_gun()
 				local x0, z0, col = coll_l(rx, rz, rx1, rz1, x*96, z*96, x*96+96, z*96)--check the collision of the ray with the current wall
 				--wall dimensions: 96 (width) x 128 (height)
 				--floor dimensions: 96 x 96
-				
+
 				--x0 z0 are the intersection points, col is boolean meaning does a collision occur
 				if col then --if there is a collision, then we save this wall
 					table.insert(m,{
@@ -719,7 +719,7 @@ local function portal_gun()
 		end
 		--[[
 		if the left mous button is pressed, we put a wall
-		in the place of the last portal, update the 
+		in the place of the last portal, update the
 		coordinates of the current portal and put the
 		portal model in the right place, then update the world
 		]]
