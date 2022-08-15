@@ -496,7 +496,9 @@ function unitic.render()
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 	
 	local x1, y1, z1, x2, y2, z2 = portalcenters()
-	local dist=((x1*96-plr.x)^2+(y1*128-plr.y)^2+(z1*96-plr.z)^2) < ((x2*96-plr.x)^2+(y2*128-plr.y)^2+(z2*96-plr.z)^2)
+	local dist1=((x1*96-plr.x)^2+(y1*128-plr.y)^2+(z1*96-plr.z)^2)
+	local dist2=((x2*96-plr.x)^2+(y2*128-plr.y)^2+(z2*96-plr.z)^2)
+	local dist=dist1 < dist2
 
 	vbank(1)
 		if not st.potato_pc or R()<0.05 then cls(1) end
@@ -582,7 +584,7 @@ function unitic.render()
   	end
 
 	if st.r_p and draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
-		if t%2==0 then
+		if min(dist1,dist2)<128^2 or (t%2==0 and min(dist1,dist2)<512^2) or (t%3==0 and min(dist1,dist2)>=512^2) then
 			if dist then
 				cam.x = 96*x2 + relx1
 				cam.y = 128*y2 + rely1
