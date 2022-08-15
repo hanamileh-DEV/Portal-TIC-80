@@ -3,7 +3,7 @@
 -- desc:   version 1.0 (powered by UniTIC v 1.3)
 -- script: lua
 
--- version: DEV 0.1.2
+-- version: DEV 0.1.3
 
 --[[
 license:
@@ -53,17 +53,42 @@ local unitic = {
 	poly = {}
 }
 local model={
+	{--cube
+	v={{ 24, 24, 24},{ 24,-24, 24},{ 24, 24,-24},{ 24,-24,-24},{-24, 24, 24},{-24,-24, 24},{-24, 24,-24},{-24,-24,-24},},
+	f={
+		 {5,3,1,uv={{96,256},{72,232},{72,256},-1},f=2},
+		 {3,8,4,uv={{96,232},{72,256},{96,256},-1},f=2},
+		 {7,6,8,uv={{96,232},{72,256},{96,256},-1},f=2},
+		 {2,8,6,uv={{96,256},{72,232},{72,256},-1},f=2},
+		 {1,4,2,uv={{96,232},{72,256},{96,256},-1},f=2},
+		 {5,2,6,uv={{96,232},{72,256},{96,256},-1},f=2},
+		 {5,7,3,uv={{96,256},{96,232},{72,232},-1},f=2},
+		 {3,7,8,uv={{96,232},{72,232},{72,256},-1},f=2},
+		 {7,5,6,uv={{96,232},{72,232},{72,256},-1},f=2},
+		 {2,4,8,uv={{96,256},{96,232},{72,232},-1},f=2},
+		 {1,3,4,uv={{96,232},{72,232},{72,256},-1},f=2},
+		 {5,1,2,uv={{96,232},{72,232},{72,256},-1},f=2},
+	}
+	},
+	{--cube companion
+	v={{ 24, 24, 24},{ 24,-24, 24},{ 24, 24,-24},{ 24,-24,-24},{-24, 24, 24},{-24,-24, 24},{-24, 24,-24},{-24,-24,-24},},
+	f={
+		 {5,3,1,uv={{96,256-24},{72,232-24},{72,256-24},-1},f=2},
+		 {3,8,4,uv={{96,232-24},{72,256-24},{96,256-24},-1},f=2},
+		 {7,6,8,uv={{96,232-24},{72,256-24},{96,256-24},-1},f=2},
+		 {2,8,6,uv={{96,256-24},{72,232-24},{72,256-24},-1},f=2},
+		 {1,4,2,uv={{96,232-24},{72,256-24},{96,256-24},-1},f=2},
+		 {5,2,6,uv={{96,232-24},{72,256-24},{96,256-24},-1},f=2},
+		 {5,7,3,uv={{96,256-24},{96,232-24},{72,232-24},-1},f=2},
+		 {3,7,8,uv={{96,232-24},{72,232-24},{72,256-24},-1},f=2},
+		 {7,5,6,uv={{96,232-24},{72,232-24},{72,256-24},-1},f=2},
+		 {2,4,8,uv={{96,256-24},{96,232-24},{72,232-24},-1},f=2},
+		 {1,3,4,uv={{96,232-24},{72,232-24},{72,256-24},-1},f=2},
+		 {5,1,2,uv={{96,232-24},{72,232-24},{72,256-24},-1},f=2},
+	}
+	},
 	{ --cube ejector (idk what its called)
-		v={
-			{24,24,24},
-			{24,-24,24},
-			{24,24,-24},
-			{24,-24,-24},
-			{-24,24,24},
-			{-24,-24,24},
-			{-24,24,-24},
-			{-24,-24,-24},
-		},
+		v={{24,24,24},{24,-24,24},{24,24,-24},{24,-24,-24},{-24,24,24},{-24,-24,24},{-24,24,-24},{-24,-24,-24},},
 		f={
 			{5,3,1,uv={{120,232},{96, 208},{96 ,232},-1},f=3},
 			{3,8,4,uv={{120,232},{96, 256},{120,256},-1},f=3},
@@ -317,8 +342,13 @@ function unitic.draw()
 		p2d.y = unitic.fov * y0 / z0 + 68
 
 		if z0 < -1 then
-			pix(p2d.x, p2d.y, 0)
-			print(i, p2d.x, p2d.y, 7)
+			if st.css_content then
+				pix(p2d.x, p2d.y, 0)
+				print(i, p2d.x, p2d.y, 7)
+			else
+				print("ERROR", p2d.x, p2d.y+1, 1)
+				print("ERROR", p2d.x, p2d.y, 9)
+			end
 		end
 	end
 end
@@ -405,6 +435,18 @@ function unitic.collision()
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=1 sfx(2,"C-3",-1,1) end
 		end
 	end end end
+	--collision with objects
+	for i=1,#draw.objects do
+		local x0=draw.objects[i].x
+		local y0=draw.objects[i].y
+		local z0=draw.objects[i].z
+		if (draw.objects[i].type==1 or draw.objects[i].type==2 or draw.objects[i].type==3) and 
+		coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)==false then --protection so that the player cannot get stuck in the cube
+			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true plr.xy=true end
+			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
+		end
+	end
 
 	if not plr.noclip then
 		if colx then plr.x = lx end
@@ -607,6 +649,10 @@ function unitic.render()
 	end
 end
 --
+local function raytracing(x1,y1,z1, x2,y2,z2) --tracing the ray, checking whether it collides with the walls
+--todo
+end
+--
 local function portal_gun()
 	local rx,rz=plr.x,plr.z --player coordinates
 
@@ -686,7 +732,7 @@ local function portal_gun()
 			update_world()
 		end
 	end
-	if keyp(6) or plr.cd2>1 then
+	if (keyp(6) or plr.cd2>1) and draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
 		addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
 		addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
 		update_world()
@@ -762,12 +808,15 @@ function darkpal(c)
 end
 --css content
 if not st.css_content then
-	pal="0000000000003838385d5d5d7d7d7dbababad6d6d6ffffffff00ffea44483499ba65eef6b2f6fad67918ffbe3cff00ff"
+	pal="0000000000003838385d5d5d7d7d7dbababad6d6d6ffffffff00ffff00003499ba65eef6b2f6fad67918ffbe3cff00ff"
 	for i=0,511 do
 		for i2=0,63 do
 			if peek4(0x8000+i*64+i2)~=0 and peek4(0x8000+i*64+i2)~=15 then
 			poke4(0x8000+i*64+i2,peek4(0x8000+512*64*0+64*511+i2)) end
 		end
+	end
+	for i=1,20 do
+	draw.world.sp[i]={R(0,world_size[1]*96),R(0,world_size[2]*128),R(0,world_size[3]*96)}
 	end
 end
 
@@ -841,7 +890,8 @@ addwall(9,0,6,3,3,4)
 addwall(10,0,6,3,3,7)
 
 addwall(6,0,5,2,3,8)
-addobj(64+16,32+1,64+16,1)
+addobj(80,24,80,1)
+addobj(95,72,95,2)
 
 --portals
 
