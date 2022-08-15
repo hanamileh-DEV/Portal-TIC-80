@@ -830,9 +830,9 @@ function update_world()
 					elseif vz==1  and draw.p[2][4]==3 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
 					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz+1==draw.p[2][3] then op=true
 					end
-					trace("------------- ".._,15)
-					trace(bp,6)
-					trace(op,7)
+					-- trace("------------- ".._,15)
+					-- trace(bp,6)
+					-- trace(op,7)
 					--teleporting
 					if bp then
 						lx,ly,lz=draw.p[1][1],draw.p[1][2],draw.p[1][3]
