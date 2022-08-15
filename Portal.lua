@@ -3,7 +3,7 @@
 -- desc:   version 1.0 (powered by UniTIC v 1.3)
 -- script: lua
 
--- version: DEV 0.1.1
+-- version: DEV 0.1.2
 
 --[[
 license:
@@ -55,22 +55,14 @@ local unitic = {
 local model={--models
 	{ -- Blender v3.2.1 UNI file | Cube
 		v={
-			-- {0.5*32 ,0.5*32 ,0.5*32 },
-			-- {0.5*32 ,0.5*-32,0.5*32 },
-			-- {0.5*32 ,0.5*32 ,0.5*-32},
-			-- {0.5*32 ,0.5*-32,0.5*-32},
-			-- {0.5*-32,0.5*32 ,0.5*32 },
-			-- {0.5*-32,0.5*-32,0.5*32 },
-			-- {0.5*-32,0.5*32 ,0.5*-32},
-			-- {0.5*-32,0.5*-32,0.5*-32},
-			{32 ,32 ,32 },
-			{32 ,-32,32 },
-			{32 ,32 ,-32},
-			{32 ,-32,-32},
-			{-32,32 ,32 },
-			{-32,-32,32 },
-			{-32,32 ,-32},
-			{-32,-32,-32},
+			{24,24,24},
+			{24,-24,24},
+			{24,24,-24},
+			{24,-24,-24},
+			{-24,24,24},
+			{-24,-24,24},
+			{-24,24,-24},
+			{-24,-24,-24},
 		},
 		f={
 			{5,3,1,uv={{120,232},{96, 208},{96 ,232},-1},f=3},
@@ -149,14 +141,14 @@ function unitic.update(draw_portal,p_id)
 
 	--quick clipping for portals
 	if draw_portal==nil then
-		for ind=1,#draw.world.f do table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+		for ind=1,#draw.world.f do unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 	elseif draw_portal==true and p_id==1 then
 		if draw.p[2][4]==1 and draw.p[2][5]==1 then
 
 			for ind=1,#draw.world.f do
 				if (draw.world.f[ind][1]%world_size[4]%world_size[1]>(draw.p[2][1]+1) or draw.world.f[ind][2]%world_size[4]%world_size[1]>(draw.p[2][1]+1) or draw.world.f[ind][3]%world_size[4]%world_size[1]>(draw.p[2][1]+1))==false and
 					(draw.world.f[ind][1]%world_size[4]%world_size[1]~=0 or draw.world.f[ind][2]%world_size[4]%world_size[1]~=0 or draw.world.f[ind][3]%world_size[4]%world_size[1]~=0)
-				then table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 			end
 
 		elseif draw.p[2][4]==1 and draw.p[2][5]==2 then
@@ -164,21 +156,21 @@ function unitic.update(draw_portal,p_id)
 			for ind=1,#draw.world.f do
 				if (draw.world.f[ind][1]%world_size[4]%world_size[1]<(draw.p[2][1]+1) or draw.world.f[ind][2]%world_size[4]%world_size[1]<(draw.p[2][1]+1) or draw.world.f[ind][3]%world_size[4]%world_size[1]<(draw.p[2][1]+1))==false or
 				(draw.world.f[ind][1]%world_size[4]%world_size[1]==0 or draw.world.f[ind][2]%world_size[4]%world_size[1]==0 or draw.world.f[ind][3]%world_size[4]%world_size[1]==0)
-				then table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 			end
 
 		elseif draw.p[2][4]==3 and draw.p[2][5]==1 then
 
 			for ind=1,#draw.world.f do
 				if (draw.world.f[ind][1]//world_size[4]%world_size[1]<(draw.p[2][3]) or draw.world.f[ind][2]//world_size[4]%world_size[1]<(draw.p[2][3]) or draw.world.f[ind][3]//world_size[4]%world_size[1]<(draw.p[2][3]))==false
-				then table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 			end
 
 		elseif draw.p[2][4]==3 and draw.p[2][5]==2 then
 
 			for ind=1,#draw.world.f do
 				if (draw.world.f[ind][1]//world_size[4]%world_size[1]>(draw.p[2][3]) or draw.world.f[ind][2]//world_size[4]%world_size[1]>(draw.p[2][3]) or draw.world.f[ind][3]//world_size[4]%world_size[1]>(draw.p[2][3]))==false
-				then table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 			end
 		else error()
 		end
@@ -189,7 +181,7 @@ function unitic.update(draw_portal,p_id)
 			for ind=1,#draw.world.f do
 				if (draw.world.f[ind][1]%world_size[4]%world_size[1]>(draw.p[1][1]+1) or draw.world.f[ind][2]%world_size[4]%world_size[1]>(draw.p[1][1]+1) or draw.world.f[ind][3]%world_size[4]%world_size[1]>(draw.p[1][1]+1))==false and
 					(draw.world.f[ind][1]%world_size[4]%world_size[1]~=0 or draw.world.f[ind][2]%world_size[4]%world_size[1]~=0 or draw.world.f[ind][3]%world_size[4]%world_size[1]~=0)
-				then table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 			end
 
 		elseif draw.p[1][4]==1 and draw.p[1][5]==2 then
@@ -197,21 +189,21 @@ function unitic.update(draw_portal,p_id)
 			for ind=1,#draw.world.f do
 				if (draw.world.f[ind][1]%world_size[4]%world_size[1]<(draw.p[1][1]+1) or draw.world.f[ind][2]%world_size[4]%world_size[1]<(draw.p[1][1]+1) or draw.world.f[ind][3]%world_size[4]%world_size[1]<(draw.p[1][1]+1))==false or
 				(draw.world.f[ind][1]%world_size[4]%world_size[1]==0 or draw.world.f[ind][2]%world_size[4]%world_size[1]==0 or draw.world.f[ind][3]%world_size[4]%world_size[1]==0)
-				then table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 			end
 
 		elseif draw.p[1][4]==3 and draw.p[1][5]==1 then
 
 			for ind=1,#draw.world.f do
 				if (draw.world.f[ind][1]//world_size[4]%world_size[1]<(draw.p[1][3]) or draw.world.f[ind][2]//world_size[4]%world_size[1]<(draw.p[1][3]) or draw.world.f[ind][3]//world_size[4]%world_size[1]<(draw.p[1][3]))==false
-				then table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 			end
 
 		elseif draw.p[1][4]==3 and draw.p[1][5]==2 then
 
 			for ind=1,#draw.world.f do
 				if (draw.world.f[ind][1]//world_size[4]%world_size[1]>(draw.p[1][3]) or draw.world.f[ind][2]//world_size[4]%world_size[1]>(draw.p[1][3]) or draw.world.f[ind][3]//world_size[4]%world_size[1]>(draw.p[1][3]))==false
-				then table.insert(unitic.poly.f,{draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv}) end
+				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
 			end
 		else error("unknown data about 1 portal | rotation: "..draw.p[1][4].." normal:"..draw.p[1][5])
 		end
@@ -227,10 +219,10 @@ function unitic.update(draw_portal,p_id)
 					local px=draw.objects[ind1].model.v[ind2][1]+draw.objects[ind1].x
 					local py=draw.objects[ind1].model.v[ind2][2]+draw.objects[ind1].y
 					local pz=draw.objects[ind1].model.v[ind2][3]+draw.objects[ind1].z
-					table.insert(unitic.poly.v,{px,py,pz})
+					unitic.poly.v[#unitic.poly.v+1]={px,py,pz}
 				end
 				for ind2=1,#draw.objects[ind1].model.f do
-					table.insert(unitic.poly.f, {draw.objects[ind1].model.f[ind2][1]+vt, draw.objects[ind1].model.f[ind2][2]+vt, draw.objects[ind1].model.f[ind2][3]+vt, f=draw.objects[ind1].model.f[ind2].f,uv={x={draw.objects[ind1].model.f[ind2].uv[1][1],draw.objects[ind1].model.f[ind2].uv[2][1],draw.objects[ind1].model.f[ind2].uv[3][1]},y={draw.objects[ind1].model.f[ind2].uv[1][2],draw.objects[ind1].model.f[ind2].uv[2][2],draw.objects[ind1].model.f[ind2].uv[3][2]}}}) --draw.objects[ind1].model.f[ind2].uv
+					unitic.poly.f[#unitic.poly.f+1]={draw.objects[ind1].model.f[ind2][1]+vt, draw.objects[ind1].model.f[ind2][2]+vt, draw.objects[ind1].model.f[ind2][3]+vt, f=draw.objects[ind1].model.f[ind2].f,uv={x={draw.objects[ind1].model.f[ind2].uv[1][1],draw.objects[ind1].model.f[ind2].uv[2][1],draw.objects[ind1].model.f[ind2].uv[3][1]},y={draw.objects[ind1].model.f[ind2].uv[1][2],draw.objects[ind1].model.f[ind2].uv[2][2],draw.objects[ind1].model.f[ind2].uv[3][2]}}}
 				end
 			end
 		end
@@ -251,10 +243,11 @@ function unitic.update(draw_portal,p_id)
 		local a3 = c1 * tysin + a1 * tycos
 		local b3 = b1 * txcos - c2 * txsin
 		local c3 = b1 * txsin + c2 * txcos
-		local c4 = min(c3,-0.001)
+		local c4 = c3
+		if c4>-0.001 then c4=-0.001 end
 		
-		local x0 = F(unitic.fov * a3 / c4 + 120)
-		local y0 = F(unitic.fov * b3 / c4 + 68)
+		local x0 = unitic.fov * a3 / c4 + 120
+		local y0 = unitic.fov * b3 / c4 + 68
 
 		unitic.poly.v[ind][1]=x0
 		unitic.poly.v[ind][2]=y0
@@ -271,7 +264,8 @@ function unitic.update(draw_portal,p_id)
 
 		local a3 = c1 * tysin + a1 * tycos
 		local b3 = b1 * txcos - c2 * txsin
-		local c3 = min(b1 * txsin + c2 * txcos,-0.001)
+		local c3 = b1 * txsin + c2 * txcos
+		if c3>-0.001 then c3=-0.001 end
 
 		unitic.poly.sp[ind]={a3,b3,c3}
 	end
@@ -295,10 +289,10 @@ function unitic.draw()
 		if (tri_face and unitic.poly.f[i].f==1)==false
 		and (not tri_face and unitic.poly.f[i].f==2)==false
 		and (unitic.poly.v[v_ind[1]][4] > 0 and unitic.poly.v[v_ind[2]][4] > 0 and unitic.poly.v[v_ind[3]][4] > 0)==false
-		-- and (p2d.x[1]<0 and p2d.x[2]<0 and p2d.x[3]<0)==false
-		-- and (p2d.y[1]<0 and p2d.y[2]<0 and p2d.y[3]<0)==false
-		-- and (p2d.x[1]>239 and p2d.x[2]>239 and p2d.x[3]>239)==false
-		-- and (p2d.y[1]>135 and p2d.y[2]>135 and p2d.y[3]>135)==false
+		and (p2d.x[1]<0 and p2d.x[2]<0 and p2d.x[3]<0)==false
+		and (p2d.y[1]<0 and p2d.y[2]<0 and p2d.y[3]<0)==false
+		and (p2d.x[1]>239 and p2d.x[2]>239 and p2d.x[3]>239)==false
+		and (p2d.y[1]>135 and p2d.y[2]>135 and p2d.y[3]>135)==false
 		then
 			ttri(
 				p2d.x[1], p2d.y[1],
@@ -319,8 +313,8 @@ function unitic.draw()
 		local y0 = unitic.poly.sp[i][2]
 		local z0 = unitic.poly.sp[i][3]
 
-		p2d.x = F(unitic.fov * x0 / z0 + 120)
-		p2d.y = F(unitic.fov * y0 / z0 + 68)
+		p2d.x = unitic.fov * x0 / z0 + 120
+		p2d.y = unitic.fov * y0 / z0 + 68
 
 		if z0 < -1 then
 			pix(p2d.x, p2d.y, 0)
@@ -587,7 +581,7 @@ function unitic.render()
 	elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
   	end
 
-	if st.r_p then
+	if st.r_p and draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
 		if dist then
 			cam.x = 96*x2 + relx1
 			cam.y = 128*y2 + rely1
@@ -706,7 +700,7 @@ function addobj(x, y, z, type) --objects
 	draw=true, --whether to display the model
 	model={}})
 
-	if type>#model then error("unknown model ID") end
+	if type>#model or type<1 then error("unknown model ID") end
 	draw.objects[#draw.objects].model=model[type]
 end
 
@@ -770,7 +764,6 @@ if not st.css_content then
 	end
 end
 
-local fps=60
 local fps_={t1=0,t2=0,t3=0,t4=0}
 local avf={} --average frame
 local fr={0,0,0} --framerate
@@ -1022,22 +1015,16 @@ function TIC()
 	--cursor id
 	vbank(0)
 	poke4(0x07FF6,cid)
-	--potato pc
-	if st.potato_pc then repeat until time()-t1>=40 end
 	--fps (2)
-		avf[t%60]=t2
-		t2 = time() - t1
-		fr={0,math.huge,0}
-		for i=1,#avf do
-			fr[1]=fr[1]+avf[i]
-			if avf[i]<fr[2] then fr[2]=avf[i] end
-			if avf[i]>fr[3] then fr[3]=avf[i] end
-		end
-		fr[1]=fr[1]/#avf
-
-	if t % 20 == 0 then
-		fps = F(1000 / fr[1])
+	avf[t%60]=t2
+	t2 = time() - t1
+	fr={0,math.huge,0}
+	for i=1,#avf do
+		fr[1]=fr[1]+avf[i]
+		if avf[i]<fr[2] then fr[2]=avf[i] end
+		if avf[i]>fr[3] then fr[3]=avf[i] end
 	end
+	fr[1]=fr[1]/#avf
 end
 
 function BDR(scn_y) scn_y=scn_y-4
