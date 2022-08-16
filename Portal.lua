@@ -699,7 +699,7 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 		sz, oz = -1, 1
 	else
 		sz, oz = 1, 0
-		ty = ly - ty
+		tz = lz - tz
 	end
 	while true do
 		if tx < ty and tx < tz then
