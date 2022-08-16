@@ -682,27 +682,24 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 	-- current tile (offset if facing positive)
 	local x, y, z = F(x1), F(y1), F(z1)
 	-- distance to next tile in each axis
-	local tx, ty, tz
+	local tx, ty, tz = (x1 - x) * lx, (y1 - y) * ly, (z1 - z) * lz
 	if dirx < 0 then
 		sx, ox = -1, 1
-		tx = (x1 - x) * lx
 	else
 		sx, ox = 1, 0
-		tx = (x + 1 - x1) * lx
+		tx = lx - tx
 	end
 	if diry < 0 then
 		sy, oy = -1, 1
-		ty = (y1 - y) * ly
 	else
 		sy, oy = 1, 0
-		ty = (y + 1 - y1) * ly
+		ty = ly - ty
 	end
 	if dirz < 0 then
 		sz, oz = -1, 1
-		tz = (z1 - z) * lz
 	else
 		sz, oz = 1, 0
-		tz = (z + 1 - z1) * lz
+		ty = ly - ty
 	end
 	while true do
 		if tx < ty and tx < tz then
