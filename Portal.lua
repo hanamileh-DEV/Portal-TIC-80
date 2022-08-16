@@ -305,7 +305,7 @@ function unitic.update(draw_portal,p_id)
 		local c3 = b1 * txsin + c2 * txcos
 		if c3>-0.001 then c3=-0.001 end
 
-		unitic.poly.sp[ind]={a3,b3,c3}
+		unitic.poly.sp[ind]={a3,b3,c3,draw.world.sp[ind][4]}
 	end
 end
 
@@ -357,7 +357,7 @@ function unitic.draw()
 		if z0 < -1 then
 			if st.css_content then
 				pix(p2d.x, p2d.y, 0)
-				print(i, p2d.x, p2d.y, 7)
+				print(unitic.poly.sp[i][4], p2d.x, p2d.y, 7)
 			else
 				print("ERROR", p2d.x, p2d.y+1, 1)
 				print("ERROR", p2d.x, p2d.y, 9)
@@ -665,9 +665,94 @@ function unitic.render()
 		end
 	end
 end
---
-local function raytracing(x1,y1,z1, x2,y2,z2) --tracing the ray, checking whether it collides with the walls
---todo
+
+local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whether it collides with the walls
+	draw.world.sp={}
+	-- convert to tile space
+	x1, y1, z1, x2, y2, z2 = x1 / 96, y1 / 128, z1 / 96, x2 / 96, y2 / 128, z2 / 96
+	-- DDA, loosely based on https://lodev.org/cgtutor/raycasting.html
+	-- segment direction
+	local dirx, diry, dirz = x2-x1, y2-y1, z2-z1
+	-- length of one step along axes (only relative)
+	-- n/0 = inf, which is fine for this algorithm
+	local lx, ly, lz = abs(1 / dirx), abs(1 / diry), abs(1 / dirz)
+	-- full tile step, matching direction with the segment
+	local sx, sy, sz
+	-- offset, for handling negative facing
+	local ox, oy, oz
+	-- current tile (offset if facing positive)
+	local x, y, z = F(x1), F(y1), F(z1)
+	-- distance to next tile in each axis
+	local tx, ty, tz
+	if dirx < 0 then
+		sx, ox = -1, 1
+		tx = (x1 - x) * lx
+	else
+		sx, ox = 1, 0
+		tx = (x + 1 - x1) * lx
+	end
+	if diry < 0 then
+		sy, oy = -1, 1
+		ty = (y1 - y) * ly
+	else
+		sy, oy = 1, 0
+		ty = (y + 1 - y1) * ly
+	end
+	if dirz < 0 then
+		sz, oz = -1, 1
+		tz = (z1 - z) * lz
+	else
+		sz, oz = 1, 0
+		tz = (z + 1 - z1) * lz
+	end
+	local i = 0
+	while true do
+		i=i+1
+		if i>10000 then return end
+		if tx < ty and tx < tz then
+			x, tx = x + sx, tx + lx
+			table.insert(draw.world.sp,{(x+ox)*96,y*128+64,z*96+48, 1})
+			if x * sx > x2 * sx or (x + ox) < 0 or (x + ox) > world_size[1] - 1 then
+				return
+			end
+			if draw.map[1][x + ox][y][z][2] ~= 0 then
+				return x + ox, y, z, 1
+			end
+		elseif ty < tz then
+			y, ty = y + sy, ty + ly
+			table.insert(draw.world.sp,{x*96+48,(y+oy)*128,z*96+48, 2})
+			if y * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
+				return
+			end
+			if draw.map[2][x][y + oy][z][2] ~= 0 then
+				return x, y + oy, z, 2
+			end
+		else
+			z, tz = z + sz, tz + lz
+			table.insert(draw.world.sp,{x*96+48,y*128+64,(z+oz)*96, 3})
+			if z * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
+				return
+			end
+			if draw.map[3][x][y][z + oz][2] ~= 0 then
+				return x, y, z + oz, 3
+			end
+		end
+	end
+end
+
+local function raytest()
+	local x1,y1,z1=plr.x,plr.y,plr.z --player coordinates
+
+	local x2=x1-math.sin(plr.ty)*10000*math.cos(plr.tx)
+	local y2=y1-math.sin(plr.tx)*10000
+	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
+
+	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2)
+	if x then
+		return draw.map[f][x][y][z][2]
+	else
+		return "no hit"
+	end
 end
 --
 local function portal_gun()
@@ -1002,7 +1087,7 @@ local ls={t=0,pr=0} --loading screen
 update_world()
 poke(0x7FC3F,1,1)
 
-music(0)
+-- music(0)
 local open="game"
 --poke(0x7FC3F,0,1)
 function TIC()
@@ -1141,7 +1226,8 @@ function TIC()
 			"Av: "..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).." ms. min: "..F(fr[2]+0.5).." ms. max: "..F(fr[3]+0.5).." ms.",
 			"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. ",
 			"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .. " p:" .. #unitic.poly.sp,
-			"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z)
+			"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
+			"raytest: "..raytest()
 		}
 		vbank(1)
 			for i=1,#debug_text do
@@ -1510,9 +1596,9 @@ end
 -- 045:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff0000000000
 -- 046:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff0000000000
 -- 047:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 048:4444444343333332433433324333323243433332433323324333333232222222
--- 049:4444444343333332433433324333323243433332433323324333333232222222
--- 050:4444444343333332433433324333323243433332433323324333333232222222
+-- 048:8888888883333332833433328333323283433332833323328333333282222222
+-- 049:8888888843333332433433324333323243433332433323324333333232222222
+-- 050:8888888843333338433433384333323843433338433323384333333832222228
 -- 051:7777777676666665766766657666656576766665766656657666666565555555
 -- 052:7777777676666665766766657666656576766665766656657666666565555555
 -- 053:7777777676666665766766657666656576766665766656657666666565555555
@@ -1526,9 +1612,9 @@ end
 -- 061:ffffffffff888fffffffffffffffffffffffffff8ffffffffffffff8ff999fff
 -- 062:fffffffffffffffffffffffff9999fffffffffffffffffff88ffffffffffffff
 -- 063:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 064:4444444343333332433433324333323243433332433323324333333232222222
+-- 064:8444444383333332833433328333323283433332833323328333333282222222
 -- 065:4444444343333332433433324333323243433332433323324333333232222222
--- 066:4444444343333332433433324333323243433332433323324333333232222222
+-- 066:4444444843333338433433384333323843433338433323384333333832222228
 -- 067:7777777676666665766766657666656576766665766656657666666565555555
 -- 068:7777777676666665766766657666656576766665766656657666666565555555
 -- 069:7777777676666665766766657666656576766665766656657666666565555555
@@ -1542,9 +1628,9 @@ end
 -- 077:ffffffffffffffffffffffffffffffffffffffffffff888fffffffffffffffff
 -- 078:fffffffffffffffffff999ffffffffffffffffffffffffffffffffffffffffff
 -- 079:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 080:4444444343333332433433324333323243433332433323324333333232222222
--- 081:4444444343333332433433324333323243433332433323324333333232222222
--- 082:4444444343333332433433324333323243433332433323324333333232222222
+-- 080:8444444383333332833433328333323283433332833323328333333288888888
+-- 081:4444444343333332433433324333323243433332433323324333333288888888
+-- 082:4444444843333338433433384333323843433338433323384333333888888888
 -- 083:7777777676666665766766657666656576766665766656657666666565555555
 -- 084:7777777676666665766766657666656576766665766656657666666565555555
 -- 085:7777777676666665766766657666656576766665766656657666666565555555
