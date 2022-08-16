@@ -713,6 +713,9 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 			if draw.map[1][x + ox][y][z][2] ~= 0 then
 				return x + ox, y, z, 1
 			end
+			if x < 0 then
+				return
+			end
 		elseif ty < tz then
 			y, ty = y + sy, ty + ly
 			if y * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
@@ -721,6 +724,9 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 			if draw.map[2][x][y + oy][z][2] ~= 0 then
 				return x, y + oy, z, 2
 			end
+			if y < 0 then
+				return
+			end
 		else
 			z, tz = z + sz, tz + lz
 			if z * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
@@ -728,6 +734,9 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 			end
 			if draw.map[3][x][y][z + oz][2] ~= 0 then
 				return x, y, z + oz, 3
+			end
+			if z < 0 then
+				return
 			end
 		end
 	end
