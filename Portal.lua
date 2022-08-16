@@ -872,18 +872,19 @@ function update_world()
 					local op=false
 					--blue portal
 				   if     vx==1  and draw.p[1][4]==1 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
-					elseif vx==-1 and draw.p[1][4]==1 and draw.p[1][5]==2 and lx+1==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+					elseif vx==-1 and draw.p[1][4]==1 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz-1==draw.p[1][3] then bp=true
 					elseif vz==1  and draw.p[1][4]==3 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
-					elseif vz==-1 and draw.p[1][4]==3 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz+1==draw.p[1][3] then bp=true
+					elseif vz==-1 and draw.p[1][4]==3 and draw.p[1][5]==2 and lx-1==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
 					--orange portal
 					elseif vx==1  and draw.p[2][4]==1 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
-					elseif vx==-1 and draw.p[2][4]==1 and draw.p[2][5]==2 and lx+1==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vx==-1 and draw.p[2][4]==1 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz-1==draw.p[2][3] then op=true
 					elseif vz==1  and draw.p[2][4]==3 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
-					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz+1==draw.p[2][3] then op=true
+					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==2 and lx-1==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
 					end
-					-- trace("------------- ".._,15)
-					-- trace(bp,6)
-					-- trace(op,7)
+					-- trace("------------------------------",7)
+					-- trace(vx.." "..vz.." | "..draw.p[1][4].." "..draw.p[1][5],6)
+					-- trace(lx.." "..ly.." "..lz.." | "..draw.p[1][1].." "..draw.p[1][2].." "..draw.p[1][3],6)
+					-- trace(bp,5)
 					--teleporting
 					if bp then
 						lx,ly,lz=draw.p[1][1],draw.p[1][2],draw.p[1][3]
@@ -903,11 +904,12 @@ function update_world()
 				end
 				--if the bridge collides with a wall, we stop the loop
 				if lx<0 or lx>world_size[1]-2 or lz<0 or lz>world_size[3]-2 then break end
+				if not (bp or op) then
 				if     vx==1  and draw.map[1][lx  ][ly][lz  ][2]~=0 and draw.map[1][lx  ][ly][lz  ][2]~=3 and draw.map[1][lx  ][ly][lz  ][2]~=15 then break
 				elseif vx==-1 and draw.map[1][lx+1][ly][lz  ][2]~=0 and draw.map[1][lx+1][ly][lz  ][2]~=3 and draw.map[1][lx+1][ly][lz  ][2]~=15 then break
 				elseif vz==1  and draw.map[3][lx  ][ly][lz  ][2]~=0 and draw.map[3][lx  ][ly][lz  ][2]~=3 and draw.map[1][lx  ][ly][lz  ][2]~=15 then break
 				elseif vz==-1 and draw.map[3][lx  ][ly][lz+1][2]~=0 and draw.map[3][lx  ][ly][lz+1][2]~=3 and draw.map[1][lx  ][ly][lz+1][2]~=15 then break
-				end
+				end end
 			end
 		end
 	end
