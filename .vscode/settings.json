@@ -46,5 +46,8 @@
         "tstamp",
         "ttri",
         "vbank",
+    ],
+    "Lua.diagnostics.disable": [
+        "lowercase-global"
     ]
 }
