@@ -666,7 +666,7 @@ function unitic.render()
 	end
 end
 
-local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whether it collides with the walls
+local function raycast(x1,y1,z1, x2,y2,z2, hits) -- walk along a segment, checking whether it collides with the walls
 	-- convert to tile space
 	x1, y1, z1, x2, y2, z2 = x1 / 96, y1 / 128, z1 / 96, x2 / 96, y2 / 128, z2 / 96
 	-- DDA, loosely based on https://lodev.org/cgtutor/raycasting.html
@@ -707,7 +707,7 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 			if x * sx > x2 * sx or (x + ox) < 0 or (x + ox) > world_size[1] - 1 then
 				return
 			end
-			if draw.map[1][x + ox][y][z][2] ~= 0 then
+			if hits[draw.map[1][x + ox][y][z][2]] then
 				return x + ox, y, z, 1
 			end
 			if x < 0 then
@@ -718,7 +718,7 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 			if y * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
 				return
 			end
-			if draw.map[2][x][y + oy][z][2] ~= 0 then
+			if hits[draw.map[2][x][y + oy][z][2]] then
 				return x, y + oy, z, 2
 			end
 			if y < 0 then
@@ -729,7 +729,7 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 			if z * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
 				return
 			end
-			if draw.map[3][x][y][z + oz][2] ~= 0 then
+			if hits[draw.map[3][x][y][z + oz][2]] then
 				return x, y, z + oz, 3
 			end
 			if z < 0 then
@@ -746,7 +746,7 @@ local function raytest()
 	local y2=y1-math.sin(plr.tx)*10000
 	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
-	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2)
+	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,wall_coll)
 	if x then
 		return draw.map[f][x][y][z][2]
 	else
