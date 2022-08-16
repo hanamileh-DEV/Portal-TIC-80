@@ -1,5 +1,5 @@
 -- title:  Portal 3D
--- author: HanamileH
+-- author: HanamileH, soxfox42
 -- desc:   version 1.0 (powered by UniTIC v 1.3)
 -- script: lua
 
