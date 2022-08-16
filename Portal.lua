@@ -667,7 +667,6 @@ function unitic.render()
 end
 
 local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whether it collides with the walls
-	draw.world.sp={}
 	-- convert to tile space
 	x1, y1, z1, x2, y2, z2 = x1 / 96, y1 / 128, z1 / 96, x2 / 96, y2 / 128, z2 / 96
 	-- DDA, loosely based on https://lodev.org/cgtutor/raycasting.html
@@ -705,13 +704,9 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 		sz, oz = 1, 0
 		tz = (z + 1 - z1) * lz
 	end
-	local i = 0
 	while true do
-		i=i+1
-		if i>10000 then return end
 		if tx < ty and tx < tz then
 			x, tx = x + sx, tx + lx
-			table.insert(draw.world.sp,{(x+ox)*96,y*128+64,z*96+48, 1})
 			if x * sx > x2 * sx or x < 0 or (x + ox) > world_size[1] - 1 then
 				return
 			end
@@ -720,7 +715,6 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 			end
 		elseif ty < tz then
 			y, ty = y + sy, ty + ly
-			table.insert(draw.world.sp,{x*96+48,(y+oy)*128,z*96+48, 2})
 			if y * sy > y2 * sy or y < 0 or (y + oy) > world_size[2] - 1 then
 				return
 			end
@@ -729,7 +723,6 @@ local function raycast(x1,y1,z1, x2,y2,z2) -- walk along a segment, checking whe
 			end
 		else
 			z, tz = z + sz, tz + lz
-			table.insert(draw.world.sp,{x*96+48,y*128+64,(z+oz)*96, 3})
 			if z * sz > z2 * sz or z < 0 or (z + oz) > world_size[3] - 1 then
 				return
 			end
