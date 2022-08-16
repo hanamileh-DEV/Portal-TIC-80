@@ -126,11 +126,11 @@ local draw={
 	objects={},
 	world={v={},f={},sp={}},
 	map={},
-	p={--portals
-		{11,0,9, --coordinates of the blue portal
-		1,--angle of rortation of the portal (1 - parallel to the YZ plane; 3 - parallel to the XY plane)
-		1 }, --portal normality (1 - standart normal; 2 - reverse normal)
-		{2,0,11, 3, 2 } --the same thing but for the orange portal
+	p={ --portals
+		-- list table with following fields:
+		-- {x, y, z, plane, normal}
+		nil,
+		nil,
 	},
 	lg={--light bridge generators
 		{2,0,0,3,1},
@@ -387,7 +387,7 @@ function unitic.collision()
 			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true plr.xy=true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
 		elseif draw.map[1][x0][y0][z0][2]==5 or draw.map[1][x0][y0][z0][2]==6 then
-			if draw.p[1][5]==-1 or draw.p[2][5]==-1 then
+			if not draw.p[1] or not draw.p[2] then
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
 				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true plr.xy=true end
 				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
@@ -425,7 +425,7 @@ function unitic.collision()
 			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true plr.xy=true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
 		elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
-			if draw.p[1][5]==-1 or draw.p[2][5]==-1 then
+			if not draw.p[1] or not draw.p[2] then
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
 				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true plr.xy=true end
 				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
@@ -472,42 +472,34 @@ function unitic.collision()
 	end
 end
 
-local function portalcenters()
-	local x1, y1, z1 = table.unpack(draw.p[1])
-	local x2, y2, z2 = table.unpack(draw.p[2])
-	if draw.p[1][4] == 3 then
-		x1 = x1 + 0.5
+local function portalcenter(i)
+	local x, y, z = table.unpack(draw.p[i])
+	if draw.p[i][4] == 3 then
+		x = x + 0.5
 	else
-		z1 = z1 + 0.5
+		z = z + 0.5
 	end
-	if draw.p[2][4] == 3 then
-		x2 = x2 + 0.5
-	else
-		z2 = z2 + 0.5
-	end
-	return x1, y1, z1, x2, y2, z2
+	return x, y, z
 end
 
 function unitic.portal_collision()
+	if not draw.p[1] or not draw.p[2] then return end
 	local bp=false --does the code need to teleport the player out of the blue portal
 	local op=false	--does the code need to teleport the player out of the orange portal
 	--Blue portal
-	if draw.p[1][5]~=0 then
-		if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x, plr.y + 16, plr.z + 16, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
-		if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(plr.x - 16, plr.y - 64, plr.z, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
-		if draw.p[1][4]==1 and draw.p[1][5]==2 and coll(plr.x, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
-		if draw.p[1][4]==3 and draw.p[1][5]==2 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
-	end
+	if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x, plr.y + 16, plr.z + 16, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
+	if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(plr.x - 16, plr.y - 64, plr.z, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
+	if draw.p[1][4]==1 and draw.p[1][5]==2 and coll(plr.x, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
+	if draw.p[1][4]==3 and draw.p[1][5]==2 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
 	--orange portal
-	if draw.p[2][5]~=0 then
-		if draw.p[2][4]==1 and draw.p[2][5]==1 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x, plr.y + 16, plr.z + 16, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
-		if draw.p[2][4]==3 and draw.p[2][5]==1 and coll(plr.x - 16, plr.y - 64, plr.z, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
-		if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(plr.x, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
-		if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
-	end
+	if draw.p[2][4]==1 and draw.p[2][5]==1 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x, plr.y + 16, plr.z + 16, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
+	if draw.p[2][4]==3 and draw.p[2][5]==1 and coll(plr.x - 16, plr.y - 64, plr.z, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
+	if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(plr.x, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
+	if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
 	--teleporting
 
-	local x1, y1, z1, x2, y2, z2 = portalcenters()
+	local x1, y1, z1 = portalcenter(1)
+	local x2, y2, z2 = portalcenter(2)
 
 	-- calculate portal offsets
 	local relx1 = plr.x - 96 * x1
@@ -554,41 +546,51 @@ end
 function unitic.render()
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 
-	local x1, y1, z1, x2, y2, z2 = portalcenters()
-	local dist1=((x1*96-plr.x)^2+(y1*128-plr.y)^2+(z1*96-plr.z)^2)
-	local dist2=((x2*96-plr.x)^2+(y2*128-plr.y)^2+(z2*96-plr.z)^2)
-	local dist=dist1 < dist2
+	local dist1, dist2, dist = math.huge, math.huge, false
+	if draw.p[1] then
+		local x1, y1, z1 = portalcenter(1)
+		dist1=((x1*96-plr.x)^2+(y1*128-plr.y)^2+(z1*96-plr.z)^2)
+	end
+	if draw.p[2] then
+		local x2, y2, z2 = portalcenter(2)
+		dist2=((x2*96-plr.x)^2+(y2*128-plr.y)^2+(z2*96-plr.z)^2)
+		dist = true
+	end
+	if draw.p[1] and draw.p[2] then
+		dist=dist1 < dist2
+	end
 
 	vbank(1)
 		if not st.potato_pc or R()<0.05 then cls(1) end
 
 		unitic.update()
 		unitic.draw()
-		--portal overlays
-		local v_id={}
-		if dist then
-			v_id={
-				draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+1,
-				draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+1}
-			if draw.p[2][4]==1 then
-				v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+1
-				v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+world_size[3]+1
+		if draw.p[1] or draw.p[2] then
+			--portal overlays
+			local v_id={}
+			if dist then
+				v_id={
+					draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+1,
+					draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+1}
+				if draw.p[2][4]==1 then
+					v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+1
+					v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+world_size[3]+1
+				else
+					v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+2
+					v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+2
+				end
 			else
-				v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+2
-				v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+2
+				v_id={
+					draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+1,
+					draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+1}
+				if draw.p[1][4]==1 then
+					v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+1
+					v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+world_size[3]+1
+				else
+					v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+2
+					v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+2
+				end
 			end
-		else
-			v_id={
-				draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+1,
-				draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+1}
-			if draw.p[1][4]==1 then
-				v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+1
-				v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+world_size[3]+1
-			else
-				v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+2
-				v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+2
-			end
-		end
 
 			local p2d={x={},y={},z={},z2={}}
 			for i=1,#v_id do
@@ -598,71 +600,77 @@ function unitic.render()
 				p2d.z2[i]=unitic.poly.v[v_id[i]][4]>0
 			end
 
-		local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
+			local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
 
-		if dist and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
-			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,0,-p2d.z[1]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99) --orange
-			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,0,-p2d.z[4]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
-		elseif dist==false and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
-			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,0,-p2d.z[1]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
-			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0,200,24,200,0,232,0,0,-p2d.z[4]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
+			if dist and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
+				ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,0,-p2d.z[1]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99) --orange
+				ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,0,-p2d.z[4]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
+			elseif dist==false and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
+				ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,0,-p2d.z[1]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
+				ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0,200,24,200,0,232,0,0,-p2d.z[4]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
+			end
+
 		end
 
 		--cross
 		pix(120,68,4)
 		if true then pix(120,68,7) end
-		if draw.p[1][5]~=-1 or draw.p[2][5]~=-1 then spr(498,117,65,1) end
-		if draw.p[1][5]~=-1 then spr(496, 117, 65, 1) end
-		if draw.p[2][5]~=-1 then spr(497, 117, 65, 1) end
+		if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
+		if draw.p[1] then spr(496, 117, 65, 1) end
+		if draw.p[2] then spr(497, 117, 65, 1) end
 	vbank(0)
 	cls(1)
-	-- calculate portal offsets
-	local relx1 = plr.x - 96 * x1
-	local rely1 = plr.y - 128 * y1
-	local relz1 = plr.z - 96 * z1
-	local relx2 = plr.x - 96 * x2
-	local rely2 = plr.y - 128 * y2
-	local relz2 = plr.z - 96 * z2
 
-	-- calculate portal rotation
-	local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-	local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-	local rotd1 = (2 + rot2 - rot1) % 4
-	local rotd2 = (2 + rot1 - rot2) % 4
+	if st.r_p and draw.p[1] and draw.p[2] then 
+		local x1, y1, z1 = portalcenter(1)
+		local x2, y2, z2 = portalcenter(2)
 
-	if     rotd1 == 0 then
-	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
-	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
-	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
-  	end
+		-- calculate portal offsets
+		local relx1 = plr.x - 96 * x1
+		local rely1 = plr.y - 128 * y1
+		local relz1 = plr.z - 96 * z1
+		local relx2 = plr.x - 96 * x2
+		local rely2 = plr.y - 128 * y2
+		local relz2 = plr.z - 96 * z2
 
-	if     rotd2 == 0 then
-	elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
-	elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
-	elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
-  	end
+		-- calculate portal rotation
+		local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+		local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+		local rotd1 = (2 + rot2 - rot1) % 4
+		local rotd2 = (2 + rot1 - rot2) % 4
 
-	if st.r_p and draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
-		if st.h_q_p or min(dist1,dist2)<128^2 or (t%2==0 and min(dist1,dist2)<512^2) or (t%3==0 and min(dist1,dist2)>=512^2) then
-			if dist then
-				cam.x = 96*x2 + relx1
-				cam.y = 128*y2 + rely1
-				cam.z = 96*z2 + relz1
-				cam.ty = plr.ty + math.pi * rotd1 / 2
-				cam.tx = plr.tx
-				unitic.update(true,1) unitic.draw() --blue portal
-			else
-				cam.x = 96*x1 + relx2
-				cam.y = 128*y1 + rely2
-				cam.z = 96*z1 + relz2
-				cam.ty = plr.ty + math.pi * rotd2 / 2
-				cam.tx = plr.tx
-				unitic.update(true,2) unitic.draw() --orange portal
-			end
-			memcpy(0x8000,0x0,240*136/2)
-		else
-			memcpy(0x0,0x8000,240*136/2)
+		if     rotd1 == 0 then
+		elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
+		elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
+		elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
 		end
+
+		if     rotd2 == 0 then
+		elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
+		elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
+		elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
+		end
+
+		if st.h_q_p or min(dist1,dist2)<128^2 or (t%2==0 and min(dist1,dist2)<512^2) or (t%3==0 and min(dist1,dist2)>=512^2) then
+				if dist then
+					cam.x = 96*x2 + relx1
+					cam.y = 128*y2 + rely1
+					cam.z = 96*z2 + relz1
+					cam.ty = plr.ty + math.pi * rotd1 / 2
+					cam.tx = plr.tx
+					unitic.update(true,1) unitic.draw() --blue portal
+				else
+					cam.x = 96*x1 + relx2
+					cam.y = 128*y1 + rely2
+					cam.z = 96*z1 + relz2
+					cam.ty = plr.ty + math.pi * rotd2 / 2
+					cam.tx = plr.tx
+					unitic.update(true,2) unitic.draw() --orange portal
+				end
+				memcpy(0x8000,0x0,240*136/2)
+			else
+				memcpy(0x0,0x8000,240*136/2)
+			end
 	end
 end
 
@@ -808,8 +816,10 @@ local function portal_gun()
 		portal model in the right place, then update the world
 		]]
 		if clp1 and draw.map[m[portal_id][4]][m[portal_id][1]][m[portal_id][2]][m[portal_id][3]][2]==2 then
-			if draw.p[1][5]~=-1 then
+			if draw.p[1] then
 				addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
+			else
+				draw.p[1] = {}
 			end
 
 			draw.p[1][1]=m[portal_id][1]
@@ -823,8 +833,10 @@ local function portal_gun()
 		end
 		--the same, but for the orange portal (disabled)
 		if clp2 and draw.map[m[portal_id][4]][m[portal_id][1]][m[portal_id][2]][m[portal_id][3]][2]==2 then
-			if draw.p[2][5]~=-1 then
+			if draw.p[2] then
 				addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
+			else
+				draw.p[2] = {}
 			end
 
 			draw.p[2][1]=m[portal_id][1]
@@ -837,11 +849,11 @@ local function portal_gun()
 			update_world()
 		end
 	end
-	if (keyp(6) or plr.cd2>1) and draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
+	if (keyp(6) or plr.cd2>1) and draw.p[1] and draw.p[2] then
 		addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
 		addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
 		update_world()
-		draw.p[1][5]=-1 draw.p[2][5]=-1
+		draw.p[1]=nil draw.p[2]=nil
 	end
 end
 
@@ -912,7 +924,7 @@ function update_world()
 				lx=lx+vx
 				lz=lz+vz
 				--going through portals
-				if draw.p[1][5]~=-1 and draw.p[2][5]~=-1 then
+				if draw.p[1] and draw.p[2] then
 					local bp=false
 					local op=false
 					--blue portal
@@ -1079,14 +1091,14 @@ addobj(95,72,95,2)
 
 --portals
 
-if true then --foolproof
-	if draw.p[1][4]==2 or draw.p[2][4]==2 then error("attempt to make a portal parallel to the XZ plane (which is not provided in my code)") end
-	if draw.p[1][4]<1 or draw.p[1][4]>3 or draw.p[2][4]<1 or draw.p[2][4]>3 then error("unknown portal rotation") end
+-- if true then --foolproof
+-- 	if draw.p[1][4]==2 or draw.p[2][4]==2 then error("attempt to make a portal parallel to the XZ plane (which is not provided in my code)") end
+-- 	if draw.p[1][4]<1 or draw.p[1][4]>3 or draw.p[2][4]<1 or draw.p[2][4]>3 then error("unknown portal rotation") end
 
-	if draw.p[1][5]>2 or draw.p[2][5]>2 or draw.p[1][5]<1 or draw.p[2][5]<1 then error("unknown portal normality") end
-end
-addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
-addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
+-- 	if draw.p[1][5]>2 or draw.p[2][5]>2 or draw.p[1][5]<1 or draw.p[2][5]<1 then error("unknown portal normality") end
+-- end
+-- addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
+-- addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
 --init
 local tm1,tm2 = 0,0
 local p={t=0,t1=0,t2=0,t3=0,t4=0} --pause
