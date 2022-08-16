@@ -886,6 +886,14 @@ function update_world()
 				table.insert(draw.world.f,{x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
 				table.insert(draw.world.f,{x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
 			end
+
+			if face == 2 and (angle == 1 or angle == 3) then
+				local idx = #draw.world.f
+				for i = 1, 3 do
+					draw.world.f[idx - 1].uv.x[i] = (2 * type1 + 1) * 24 - draw.world.f[idx - 1].uv.x[i]
+					draw.world.f[idx].uv.x[i] = (2 * type1 + 1) * 24 - draw.world.f[idx].uv.x[i]
+				end
+			end
 		end
 		------
 	end end end end
