@@ -674,7 +674,7 @@ function unitic.render()
 	end
 end
 
-local function raycast(x1,y1,z1, x2,y2,z2, hits) -- walk along a segment, checking whether it collides with the walls
+local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitflats) -- walk along a segment, checking whether it collides with the walls
 	-- convert to tile space
 	x1, y1, z1, x2, y2, z2 = x1 / 96, y1 / 128, z1 / 96, x2 / 96, y2 / 128, z2 / 96
 	-- DDA, loosely based on https://lodev.org/cgtutor/raycasting.html
@@ -715,7 +715,7 @@ local function raycast(x1,y1,z1, x2,y2,z2, hits) -- walk along a segment, checki
 			if x * sx > x2 * sx or (x + ox) < 0 or (x + ox) > world_size[1] - 1 then
 				return
 			end
-			if hits[draw.map[1][x + ox][y][z][2]] then
+			if hitwalls[draw.map[1][x + ox][y][z][2]] then
 				return x + ox, y, z, 1
 			end
 			if x < 0 then
@@ -726,7 +726,7 @@ local function raycast(x1,y1,z1, x2,y2,z2, hits) -- walk along a segment, checki
 			if y * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
 				return
 			end
-			if hits[draw.map[2][x][y + oy][z][2]] then
+			if hitflats[draw.map[2][x][y + oy][z][2]] then
 				return x, y + oy, z, 2
 			end
 			if y < 0 then
@@ -737,7 +737,7 @@ local function raycast(x1,y1,z1, x2,y2,z2, hits) -- walk along a segment, checki
 			if z * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
 				return
 			end
-			if hits[draw.map[3][x][y][z + oz][2]] then
+			if hitwalls[draw.map[3][x][y][z + oz][2]] then
 				return x, y, z + oz, 3
 			end
 			if z < 0 then
@@ -754,7 +754,7 @@ local function raytest()
 	local y2=y1-math.sin(plr.tx)*10000
 	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
-	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,wall_coll)
+	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
 	if x then
 		return draw.map[f][x][y][z][2]
 	else
@@ -763,97 +763,31 @@ local function raytest()
 end
 --
 local function portal_gun()
-	local rx,rz=plr.x,plr.z --player coordinates
+	local x1,y1,z1=plr.x,plr.y,plr.z --player coordinates
 
-	local rx1=rx-math.sin(plr.ty)*10000
-	local rz1=rz-math.cos(plr.ty)*10000
+	local x2=x1-math.sin(plr.ty)*10000*math.cos(plr.tx)
+	local y2=y1-math.sin(plr.tx)*10000
+	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
-	m = {} --all walls, that intersect with the ray
-
-	for x = 0, world_size[1]-1 do
-		for z = 0, world_size[3]-1 do
-			if draw.map[1][x][0][z][2] > 0 and draw.map[1][x][0][z][2]~=3 then --if the selected wall is not air
-				local x0, z0, col = coll_l(rx, rz, rx1, rz1, x*96, z*96, x*96, z*96+96)--check the collision of the ray with the current wall
-				--wall dimensions: 96 (width) x 128 (height)
-				--floor dimensions: 96 x 96
-
-				--x0 z0 are the intersection points, col is boolean meaning does a collision occur
-				if col then --if there is a collision, then we save this wall
-					table.insert(m,{
-						x, 0, z, --wall coordinates
-						1, --wall rotation
-						((x0-rx)^2 + (z0-rz)^2)^0.5}) --distance to the intersection point
-				end
-
-			end
-			if draw.map[3][x][0][z][2] > 0 and draw.map[3][x][0][z][2]~=3 then --if the selected wall is not air
-				local x0, z0, col = coll_l(rx, rz, rx1, rz1, x*96, z*96, x*96+96, z*96)--check the collision of the ray with the current wall
-				--wall dimensions: 96 (width) x 128 (height)
-				--floor dimensions: 96 x 96
-
-				--x0 z0 are the intersection points, col is boolean meaning does a collision occur
-				if col then --if there is a collision, then we save this wall
-					table.insert(m,{
-						x, 0, z, --wall coordinates
-						3, --wall rotation
-						((x0-rx)^2 + (z0-rz)^2)^0.5}) --distance to the intersection point
-				end
-			end
-		end
-	end
-
-	portal_id=0 --index of the wall on which the portal will be located
-	if #m~=0 then
-		--looking for the nearest wall
-		local max_d=math.huge
-		for i=1,#m do
-			if m[i][5]<max_d then max_d=m[i][5] portal_id=i end
-		end
-		--[[
-		if the left mous button is pressed, we put a wall
-		in the place of the last portal, update the
-		coordinates of the current portal and put the
-		portal model in the right place, then update the world
-		]]
-		if clp1 and draw.map[m[portal_id][4]][m[portal_id][1]][m[portal_id][2]][m[portal_id][3]][2]==2 then
-			if draw.p[1] then
-				addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
-			else
-				draw.p[1] = {}
-			end
-
-			draw.p[1][1]=m[portal_id][1]
-			draw.p[1][2]=m[portal_id][2]
-			draw.p[1][3]=m[portal_id][3]
-			draw.p[1][4]=m[portal_id][4]
-			draw.p[1][5]=draw.map[draw.p[1][4]][draw.p[1][1]][draw.p[1][2]][draw.p[1][3]][1]
-
-			addwall(m[portal_id][1],m[portal_id][2],m[portal_id][3],m[portal_id][4],draw.p[1][5],5)
+	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+	
+	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
+		if clp1 then
+			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
+			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1]}
+			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
 			update_world()
-		end
-		--the same, but for the orange portal (disabled)
-		if clp2 and draw.map[m[portal_id][4]][m[portal_id][1]][m[portal_id][2]][m[portal_id][3]][2]==2 then
-			if draw.p[2] then
-				addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
-			else
-				draw.p[2] = {}
-			end
-
-			draw.p[2][1]=m[portal_id][1]
-			draw.p[2][2]=m[portal_id][2]
-			draw.p[2][3]=m[portal_id][3]
-			draw.p[2][4]=m[portal_id][4]
-			draw.p[2][5]=draw.map[draw.p[2][4]][draw.p[2][1]][draw.p[2][2]][draw.p[2][3]][1]
-
-			addwall(m[portal_id][1],m[portal_id][2],m[portal_id][3],m[portal_id][4],draw.p[2][5],6)
+		elseif clp2 then
+			if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) end
+			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1]}
+			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
 			update_world()
 		end
 	end
-	if (keyp(6) or plr.cd2>1) and draw.p[1] and draw.p[2] then
-		addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
-		addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
-		update_world()
-		draw.p[1]=nil draw.p[2]=nil
+
+	if keyp(6) or plr.cd2>1 then
+		if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
+		if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) draw.p[2]=nil update_world() end
 	end
 end
 
