@@ -844,6 +844,15 @@ function update_world()
 		------
 	end end end end
 	--light bridge generator
+	if #draw.objects>0 then
+		i=1
+		while true do
+			if draw.objects[i].type==4 or draw.objects[i].type==5 then table.remove(draw.objects,i) i=i-1 end
+			i=i+1
+			if i>#draw.objects then break end
+		end
+	end
+
 	if draw.lg~=0 then
 		for i=1,#draw.lg do
 			local lx,ly,lz=draw.lg[i][1],draw.lg[i][2],draw.lg[i][3]
