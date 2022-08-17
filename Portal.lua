@@ -44,7 +44,7 @@ local pi2 = math.pi / 2
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 95, y = 65, z = 95, tx = 0, ty = math.pi, vy=0 , xy=false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0}
+local plr = { x = 95, y = 65, z = 95, tx = math.pi, ty = 0, vy=0 , xy=false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0}
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -373,11 +373,11 @@ function unitic.draw()
 end
 
 local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true}
-function unitic.collision()
+function unitic.player_collision()
 	local colx = false
 	local coly = false
 	local colz = false
-	plr.xy=false
+
 	local x1=max((plr.x-17)//96,0)
 	local y1=max((plr.y-65)//128,0)
 	local z1=max((plr.z-17)//96,0)
@@ -386,16 +386,15 @@ function unitic.collision()
 	local y2=min((plr.y+16)//128,world_size[2]-1)
 	local z2=min((plr.z+16)//96,world_size[3]-1)
 
-	--for x0 = 0, world_size[1]-1 do for y0 = 0, world_size[2]-1 do for z0 = 0, world_size[3]-1 do
 	for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
 		if wall_coll[draw.map[1][x0][y0][z0][2]] then
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true plr.xy=true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
 		elseif draw.map[1][x0][y0][z0][2]==5 or draw.map[1][x0][y0][z0][2]==6 then
 			if not draw.p[1] or not draw.p[2] then
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
-				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true plr.xy=true end
+				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
 				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
 			else
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
@@ -404,7 +403,7 @@ function unitic.collision()
 
 				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
 				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true plr.xy=true end
+				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
 
 				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
 				or coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
@@ -418,7 +417,7 @@ function unitic.collision()
 
 		if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then coly = true plr.xy=true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then coly = true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then colz = true end
 		elseif draw.map[2][x0][y0][z0][2]==5 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=1 sfx(2,"C-3",-1,1) end
@@ -428,12 +427,12 @@ function unitic.collision()
 
 		if wall_coll[draw.map[3][x0][y0][z0][2]] then
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true plr.xy=true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
 		elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
 			if not draw.p[1] or not draw.p[2] then
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
-				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true plr.xy=true end
+				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
 				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
 			else
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
@@ -442,7 +441,7 @@ function unitic.collision()
 
 				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
 				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true plr.xy=true end
+				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
 
 				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
 				or coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
@@ -461,7 +460,7 @@ function unitic.collision()
 		local z0=draw.objects.c[i].z
 		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then --protection so that the player cannot get stuck in the cube
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true plr.xy=true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
 		end
 	end
@@ -472,7 +471,7 @@ function unitic.collision()
 		local z0=draw.objects.cd[i].z
 		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true plr.xy=true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
 		end
 	end
@@ -483,7 +482,7 @@ function unitic.collision()
 		local z0=draw.objects.lb[i].z
 		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then coly = true plr.xy=true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then coly = true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colz = true end
 		end
 	end
@@ -492,6 +491,129 @@ function unitic.collision()
 		if colx then plr.x = lx end
 		if coly then plr.y = ly end
 		if colz then plr.z = lz end
+		plr.xy=coly
+	end
+end
+
+function unitic.cube_update() --all physics related to cubes
+	for i=1,#draw.objects.c do
+		local clx=draw.objects.c[i].x
+		local cly=draw.objects.c[i].y
+		local clz=draw.objects.c[i].z
+		--changing the position of the cube here
+		draw.objects.c[i].y=draw.objects.c[i].y+draw.objects.c[i].vy
+		draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
+		--
+		local cx=draw.objects.c[i].x
+		local cy=draw.objects.c[i].y
+		local cz=draw.objects.c[i].z
+
+		local colx = false
+		local coly = false
+		local colz = false
+
+		local inbp = false --is the cube in the blue portal
+		local inop = false --is the cube in the orange portal
+		
+		local x1=max((cx-25)//96,0) -- +-12
+		local y1=max((cy-25)//128,0)
+		local z1=max((cz-25)//96,0)
+	
+		local x2=min((cx+25)//96,world_size[1]-1)
+		local y2=min((cy+25)//128,world_size[2]-1)
+		local z2=min((cz+25)//96,world_size[3]-1)
+		
+		for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
+			if wall_coll[draw.map[1][x0][y0][z0][2]] then
+				if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
+				if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
+				if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
+			elseif draw.map[1][x0][y0][z0][2]==5 or draw.map[1][x0][y0][z0][2]==6 then
+				if not draw.p[1] or not draw.p[2] then
+					if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
+					if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
+					if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
+				else
+					if draw.map[1][x0][y0][z0][2]==5 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then inbp=true end
+					if draw.map[1][x0][y0][z0][2]==6 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then inop=true end
+
+					if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
+					or coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+					or coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
+	
+					if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
+					or coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+					or coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
+	
+					if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
+					or coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+					or coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
+				end
+			end
+	
+			if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
+				if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then colx = true end
+				if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then coly = true end
+				if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then colz = true end
+			elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
+				if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx(0,"C-6",-1,1) end
+			end
+	
+			if wall_coll[draw.map[3][x0][y0][z0][2]] then
+				if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
+				if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
+				if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
+			elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
+				if not draw.p[1] or not draw.p[2] then
+					if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
+					if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
+					if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
+				else
+					if draw.map[3][x0][y0][z0][2]==5 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96) then inbp=true end
+					if draw.map[3][x0][y0][z0][2]==6 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96) then inop=true end
+
+					if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
+					or coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+					or coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
+	
+					if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
+					or coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+					or coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
+	
+					if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
+					or coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+					or coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
+				end
+			end
+
+		end end end
+		--collision with the player
+		local x0=plr.x
+		local y0=plr.y
+		local z0=plr.z
+		if not coll(clx - 24, cly - 24, clz - 24,  clx + 24,cly + 24, clz + 24, x0 - 16, y0 - 64, z0 - 16, x0 + 16, y0 + 16, z0 + 16) then
+			if  coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 - 16, y0 - 64, z0 - 16, x0 + 16, y0 + 16, z0 + 16) then colx = true end
+			if  coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 - 16, y0 - 64, z0 - 16, x0 + 16, y0 + 16, z0 + 16) then coly = true end
+			if  coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 - 16, y0 - 64, z0 - 16, x0 + 16, y0 + 16, z0 + 16) then colz = true end
+		end
+
+		--collision with objects
+		for i2=1,#draw.objects.c do
+			if i2~=i then
+				local x0=draw.objects.c[i2].x
+				local y0=draw.objects.c[i2].y
+				local z0=draw.objects.c[i2].z
+				if not coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then
+					if  coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
+					if  coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true end
+					if  coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
+				end
+			end
+		end
+		--
+		if colx then draw.objects.c[i].x=clx end
+		if coly then draw.objects.c[i].y=cly draw.objects.c[i].vy=0 end
+		if colz then draw.objects.c[i].z=clz end
 	end
 end
 
@@ -826,6 +948,7 @@ function addobj(x, y, z, type) --objects
 		draw.objects.c[#draw.objects.c+1]=
 		{type=type, --type
 		x=x,y=y,z=z, --object coordinates
+		vy=0, --velocity
 		draw=true, --whether to display the model
 		model=model[type]}
 	elseif type==3 then
@@ -1069,7 +1192,8 @@ addwall(6,0,6,2,3,8)
 addwall(3,0,5,2,3,8)
 
 addobj(80,24,80,1)
-addobj(95,72,95,2)
+addobj(95,72,95,1)
+addobj(624,24,528,2)
 
 --portals
 
@@ -1199,8 +1323,9 @@ function TIC()
 		plr.tx = max(min(plr.tx, pi2), -pi2)
 	 --collision
 		fps_.t2=time()
-		unitic.collision()
+		unitic.player_collision()
 		unitic.portal_collision()
+		unitic.cube_update()
 		fps_.t3=time()
 	 --render
 		unitic.render()
@@ -1228,7 +1353,7 @@ function TIC()
 			"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. ",
 			"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .. " p:" .. #unitic.poly.sp,
 			"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			--"raytest: "..raytest()
+			"cube :"..draw.objects.c[1].x.." "..draw.objects.c[1].y.." "..draw.objects.c[1].z
 		}
 		vbank(1)
 			for i=1,#debug_text do
