@@ -134,7 +134,7 @@ local draw={
 	},
 	lg={--light bridge generators
 		{2,0,0,3,1},
-		{3,0,11,3,2}
+		--{3,0,11,3,2}
 	}
 } --portal models are installed automatically
 
@@ -283,14 +283,15 @@ function unitic.update(draw_portal,p_id)
 		local c3 = b1 * txsin + c2 * txcos
 		local c4 = c3
 		if c4>-0.001 then c4=-0.001 end
+		local z0 = unitic.fov / c4 --this saves one division (very important optimization)
 
-		local x0 = unitic.fov * a3 / c4 + 120
-		local y0 = unitic.fov * b3 / c4 + 68
+		local x0 = a3 * z0 + 120
+		local y0 = b3 * z0 + 68
 
 		unitic.poly.v[ind][1]=x0
 		unitic.poly.v[ind][2]=y0
-		unitic.poly.v[ind][3]=c4
-		unitic.poly.v[ind][4]=c3
+		unitic.poly.v[ind][3]=-c4
+		unitic.poly.v[ind][4]=c3>0
 	end
 	--points
 	for ind = 1, #draw.world.sp do
@@ -312,36 +313,33 @@ end
 function unitic.draw()
 	for i = 1, #unitic.poly.f do
 
-		local v_ind = { unitic.poly.f[i][1], unitic.poly.f[i][2], unitic.poly.f[i][3] }
-		local px = { unitic.poly.v[v_ind[1]][1], unitic.poly.v[v_ind[2]][1], unitic.poly.v[v_ind[3]][1] }
-		local py = { unitic.poly.v[v_ind[1]][2], unitic.poly.v[v_ind[2]][2], unitic.poly.v[v_ind[3]][2] }
-		local pz = { unitic.poly.v[v_ind[1]][3], unitic.poly.v[v_ind[2]][3], unitic.poly.v[v_ind[3]][3] }
-
-		local p2d = { x = {px[1],px[2],px[3]}, y = {py[1],py[2],py[3]} }
-
-		local uv = unitic.poly.f[i].uv
+		local p2d = {
+			x = { unitic.poly.v[unitic.poly.f[i][1]][1], unitic.poly.v[unitic.poly.f[i][2]][1], unitic.poly.v[unitic.poly.f[i][3]][1] },
+			y = { unitic.poly.v[unitic.poly.f[i][1]][2], unitic.poly.v[unitic.poly.f[i][2]][2], unitic.poly.v[unitic.poly.f[i][3]][2] }
+		}
 
 		--we discard those polygons that will not be visible
 		local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
 
-		if (tri_face and unitic.poly.f[i].f==1)==false
-		and (not tri_face and unitic.poly.f[i].f==2)==false
-		and (unitic.poly.v[v_ind[1]][4] > 0 and unitic.poly.v[v_ind[2]][4] > 0 and unitic.poly.v[v_ind[3]][4] > 0)==false
-		and (p2d.x[1]<0 and p2d.x[2]<0 and p2d.x[3]<0)==false
-		and (p2d.y[1]<0 and p2d.y[2]<0 and p2d.y[3]<0)==false
-		and (p2d.x[1]>239 and p2d.x[2]>239 and p2d.x[3]>239)==false
-		and (p2d.y[1]>135 and p2d.y[2]>135 and p2d.y[3]>135)==false
+		if unitic.poly.f[i].f~=0
+		and not (tri_face and unitic.poly.f[i].f==1)
+		and not (not tri_face and unitic.poly.f[i].f==2)
+		and not (unitic.poly.v[unitic.poly.f[i][1]][4] and unitic.poly.v[unitic.poly.f[i][2]][4] and unitic.poly.v[unitic.poly.f[i][3]][4])
+		and not (p2d.x[1]<0 and p2d.x[2]<0 and p2d.x[3]<0)
+		and not (p2d.y[1]<0 and p2d.y[2]<0 and p2d.y[3]<0)
+		and not (p2d.x[1]>239 and p2d.x[2]>239 and p2d.x[3]>239)
+		and not (p2d.y[1]>135 and p2d.y[2]>135 and p2d.y[3]>135)
 		then
 			ttri(
 				p2d.x[1], p2d.y[1],
 				p2d.x[2], p2d.y[2],
 				p2d.x[3], p2d.y[3],
-				uv.x[1], uv.y[1],
-				uv.x[2], uv.y[2],
-				uv.x[3], uv.y[3], 0, 15,
-				-pz[1],
-				-pz[2],
-				-pz[3])
+				unitic.poly.f[i].uv.x[1], unitic.poly.f[i].uv.y[1],
+				unitic.poly.f[i].uv.x[2], unitic.poly.f[i].uv.y[2],
+				unitic.poly.f[i].uv.x[3], unitic.poly.f[i].uv.y[3], 0, 15,
+				unitic.poly.v[unitic.poly.f[i][1]][3],
+				unitic.poly.v[unitic.poly.f[i][2]][3],
+				unitic.poly.v[unitic.poly.f[i][3]][3])
 		end
 	end
 	for i = 1, #unitic.poly.sp do
@@ -593,21 +591,23 @@ function unitic.render()
 			end
 
 			local p2d={x={},y={},z={},z2={}}
+			trace("-----------",1)
 			for i=1,#v_id do
 				p2d.x[i]=unitic.poly.v[v_id[i]][1]
 				p2d.y[i]=unitic.poly.v[v_id[i]][2]
 				p2d.z[i]=unitic.poly.v[v_id[i]][3]
-				p2d.z2[i]=unitic.poly.v[v_id[i]][4]>0
+				p2d.z2[i]=unitic.poly.v[v_id[i]][4]
+				trace(p2d.z2[i])
 			end
 
 			local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
 
 			if dist and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
-				ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,0,-p2d.z[1]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99) --orange
-				ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,0,-p2d.z[4]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
+				ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,0,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99) --orange
+				ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,0,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
 			elseif dist==false and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
-				ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,0,-p2d.z[1]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
-				ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0,200,24,200,0,232,0,0,-p2d.z[4]*0.99,-p2d.z[2]*0.99,-p2d.z[3]*0.99)
+				ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,0,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
+				ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0 ,200,24,200,0,232,0,0,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
 			end
 
 		end
@@ -621,7 +621,7 @@ function unitic.render()
 	vbank(0)
 	cls(1)
 
-	if st.r_p and draw.p[1] and draw.p[2] then 
+	if st.r_p and draw.p[1] and draw.p[2] then
 		local x1, y1, z1 = portalcenter(1)
 		local x2, y2, z2 = portalcenter(2)
 
@@ -769,7 +769,7 @@ local function portal_gun()
 	local y2=y1-math.sin(plr.tx)*10000
 	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
-	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
 	
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 then
@@ -862,14 +862,16 @@ function update_world()
 			elseif draw.lg[i][4]==3 and draw.lg[i][5]==1 then vz=1
 			elseif draw.lg[i][4]==3 and draw.lg[i][5]==2 then vz=-1 lz=lz-1 else error(draw.lg[i][4].." | "..draw.lg[i][5])
 			end
+			--trace("----------------------------------",15)
 			for _=1,100 do --bridge lenght limiter
 				if vx==-1 or vx==1 then addobj(96/2+lx*96,ly*128,96/2+lz*96,4) else addobj(96/2+lx*96,ly*128,96/2+lz*96,5) end
 				lx=lx+vx
 				lz=lz+vz
+
+				local bp=false
+				local op=false
 				--going through portals
 				if draw.p[1] and draw.p[2] then
-					local bp=false
-					local op=false
 					--blue portal
 				   if     vx==1  and draw.p[1][4]==1 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
 					elseif vx==-1 and draw.p[1][4]==1 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz-1==draw.p[1][3] then bp=true
@@ -881,10 +883,10 @@ function update_world()
 					elseif vz==1  and draw.p[2][4]==3 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
 					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==2 and lx-1==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
 					end
-					-- trace("------------------------------",7)
-					-- trace(vx.." "..vz.." | "..draw.p[1][4].." "..draw.p[1][5],6)
-					-- trace(lx.." "..ly.." "..lz.." | "..draw.p[1][1].." "..draw.p[1][2].." "..draw.p[1][3],6)
-					-- trace(bp,5)
+					--trace("------------------------------",7)
+					--trace(vx.." "..vz.." | "..draw.p[1][4].." "..draw.p[1][5],6)
+					--trace(lx.." "..ly.." "..lz.." | "..draw.p[1][1].." "..draw.p[1][2].." "..draw.p[1][3],6)
+					--trace(bp,5)
 					--teleporting
 					if bp then
 						lx,ly,lz=draw.p[1][1],draw.p[1][2],draw.p[1][3]
