@@ -113,6 +113,126 @@ local model={
 		v={{-48,4,-48},{-48,4,48},{48,4,-48},{48,4,48}},
 		f={{1,2,3,uv={{0,232},{16,232},{0,248}},f=3},{2,3,4,uv={{16,232},{0,248},{16,248}},f=3}}
 	},
+	{--button -X
+		v={
+			{6   ,46  ,6   },
+			{6   ,0   ,6   },
+			{6   ,46  ,-6  },
+			{6   ,0   ,-6  },
+			{-6  ,51.2,6   },
+			{-6  ,0   ,6   },
+			{-6  ,51.2,-6  },
+			{-6  ,0   ,-6  },
+			{-4.5,51.2,-4.5},
+			{-4.5,51.2,4.5 },
+			{5.5 ,47.2,-4.5},
+			{5.5 ,47.2,4.5 },
+		},
+		f={
+			{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},
+			{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},
+			{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},
+			{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},
+			{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},
+			{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},
+			{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},
+			{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},
+			{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},
+			{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},
+			{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},
+			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
+		}
+	},
+	{--button +X
+		v={
+			{-6   ,46  ,-6  },
+			{-6   ,0   ,-6  },
+			{-6   ,46  ,6   },
+			{-6   ,0   ,6   },
+			{6    ,51.2,-6  },
+			{6    ,0   ,-6  },
+			{6    ,51.2,6   },
+			{6    ,0   ,6   },
+			{4.5  ,51.2,4.5 },
+			{4.5  ,51.2,-4.5},
+			{-5.5 ,47.2,4.5 },
+			{-5.5 ,47.2,-4.5},
+		},
+		f={
+			{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},
+			{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},
+			{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},
+			{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},
+			{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},
+			{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},
+			{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},
+			{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},
+			{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},
+			{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},
+			{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},
+			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
+		}
+	},
+	{--button -Z
+		v={
+			{-6   ,46  ,-6  },
+			{-6   ,0   ,-6  },
+			{-6   ,46  ,6   },
+			{-6   ,0   ,6   },
+			{6    ,51.2,-6  },
+			{6    ,0   ,-6  },
+			{6    ,51.2,6   },
+			{6    ,0   ,6   },
+			{4.5  ,51.2,4.5 },
+			{4.5  ,51.2,-4.5},
+			{-5.5 ,47.2,4.5 },
+			{-5.5 ,47.2,-4.5},
+		},
+		f={
+			{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},
+			{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},
+			{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},
+			{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},
+			{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},
+			{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},
+			{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},
+			{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},
+			{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},
+			{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},
+			{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},
+			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
+		}
+	},
+	{--button +Z
+		v={
+			{-6   ,46  ,-6  },
+			{-6   ,0   ,-6  },
+			{-6   ,46  ,6   },
+			{-6   ,0   ,6   },
+			{6    ,51.2,-6  },
+			{6    ,0   ,-6  },
+			{6    ,51.2,6   },
+			{6    ,0   ,6   },
+			{4.5  ,51.2,4.5 },
+			{4.5  ,51.2,-4.5},
+			{-5.5 ,47.2,4.5 },
+			{-5.5 ,47.2,-4.5},
+		},
+		f={
+			{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},
+			{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},
+			{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},
+			{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},
+			{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},
+			{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},
+			{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},
+			{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},
+			{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},
+			{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},
+			{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},
+			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
+		}
+	},
 }
 
 local s = { --sounds
@@ -127,7 +247,8 @@ local draw={
 	objects={
 		c={}, --cubes
 		cd={}, --cube dispensers
-		lb={} --light bridges
+		lb={}, --light bridges
+		b={} --buttons
 	},
 	world={v={},f={},sp={}},
 	map={},
@@ -154,24 +275,6 @@ local function coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) --collision 
 	-- z3,z4=min(z3,z4),max(z3,z4)
 
 	return (x1 < x4 and x2 > x3 and y1 < y4 and y2 > y3 and z1 < z4 and z2 > z3)
-end
-
-local function coll_l(x1, y1, x2, y2, x3, y3, x4, y4) --collision of two segments
-	local xy1 = (x1 * y2 - y1 * x2)
-	local xy2 = (x3 * y4 - y3 * x4)
-	local xy3 = ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
-
-	local p_x = (xy1 * (x3 - x4) - (x1 - x2) * xy2) / xy3
-	local p_y = (xy1 * (y3 - y4) - (y1 - y2) * xy2) / xy3
-
-	x1, x2 = min(x1, x2), max(x1, x2)
-	y1, y2 = min(y1, y2), max(y1, y2)
-	x3, x4 = min(x3, x4), max(x3, x4)
-	y3, y4 = min(y3, y4), max(y3, y4)
-
-	local c = (p_x >= x1 and p_x <= x2 and p_y >= y1 and p_y <= y2 and p_x >= x3 and p_x <= x4 and p_y >= y3 and p_y <= y4)
-
-	return p_x, p_y, c
 end
 
 function unitic.update(draw_portal,p_id)
@@ -258,6 +361,7 @@ function unitic.update(draw_portal,p_id)
 	for i=1,#draw.objects.c  do unitic.obj[#unitic.obj+1]=draw.objects.c [i] end
 	for i=1,#draw.objects.cd do unitic.obj[#unitic.obj+1]=draw.objects.cd[i] end
 	for i=1,#draw.objects.lb do unitic.obj[#unitic.obj+1]=draw.objects.lb[i] end
+	for i=1,#draw.objects.b  do unitic.obj[#unitic.obj+1]=draw.objects.b [i] end
 	--objects (2)--
 	for ind1 = 1, #unitic.obj do
 		if unitic.obj[ind1].draw then
@@ -487,11 +591,50 @@ function unitic.player_collision()
 		end
 	end
 
+	for i=1,#draw.objects.b do
+		local x0=draw.objects.b[i].x
+		local y0=draw.objects.b[i].y
+		local z0=draw.objects.b[i].z
+		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then
+			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then colx = true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then coly = true end
+			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then colz = true end
+		end
+	end
+
 	if not plr.noclip then
 		if colx then plr.x = lx end
 		if coly then plr.y = ly end
 		if colz then plr.z = lz end
 		plr.xy=coly
+	end
+end
+
+function unitic.button_update()
+	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
+	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
+	for i=1,#draw.objects.b do
+		if draw.objects.b[i].t~=-1 and draw.objects.b[i].s then
+			draw.objects.b[i].t1=draw.objects.b[i].t1+1
+			if draw.objects.b[i].t~=math.huge and draw.objects.b[i].t1>=draw.objects.b[i].t then
+				sfx(17) draw.objects.b[i].s=false draw.objects.b[i].t1=0
+				draw.objects.b[i].model.f=f1
+			end
+		end
+
+		local dist=((draw.objects.b[i].x-plr.x)^2 + (draw.objects.b[i].y-plr.y)^2 + (draw.objects.b[i].z-plr.z)^2) ^ 0.5
+
+		if dist<128 and keyp(5) then
+			sfx(16) 
+			draw.objects.b[i].tick=true
+			if draw.objects.b[i].t==-1 then
+				draw.objects.b[i].s=not draw.objects.b[i].s if draw.objects.b[i].s then draw.objects.b[i].model.f=f2 else draw.objects.b[i].model.f=f1 end
+			else
+				draw.objects.b[i].model.f=f2
+				draw.objects.b[i].s=true draw.objects.b[i].t1=0 end
+		else 
+			draw.objects.b[i].tick=false
+		end
 	end
 end
 
@@ -738,13 +881,11 @@ function unitic.render()
 			end
 
 			local p2d={x={},y={},z={},z2={}}
-			trace("-----------",1)
 			for i=1,#v_id do
 				p2d.x[i]=unitic.poly.v[v_id[i]][1]
 				p2d.y[i]=unitic.poly.v[v_id[i]][2]
 				p2d.z[i]=unitic.poly.v[v_id[i]][3]
 				p2d.z2[i]=unitic.poly.v[v_id[i]][4]
-				trace(p2d.z2[i])
 			end
 
 			local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
@@ -943,7 +1084,7 @@ function addwall(x, y, z, angle, face, type)
 	draw.map[angle][x][y][z]={face,type}
 end
 
-function addobj(x, y, z, type) --objects
+function addobj(x, y, z, type,t1) --objects
 	if type==1 or type==2 then
 		draw.objects.c[#draw.objects.c+1]=
 		{type=type, --type
@@ -953,17 +1094,27 @@ function addobj(x, y, z, type) --objects
 		model=model[type]}
 	elseif type==3 then
 		draw.objects.cd[#draw.objects.cd+1]=
-		{type=type, --type
-		x=x,y=y,z=z, --object coordinates
-		draw=true, --whether to display the model
+		{type=type,
+		x=x,y=y,z=z,
+		draw=true,
 		model=model[type]}
 	elseif type==4 or type==5 then
 		draw.objects.lb[#draw.objects.lb+1]=
-		{type=type, --type
-		x=x,y=y,z=z, --object coordinates
-		draw=true, --whether to display the model
+		{type=type,
+		x=x,y=y,z=z,
+		draw=true,
 		model=model[type]}
-	else error("unknown type | "..type) end
+	elseif type==6 or type==7 or type==8 or type==9 then
+		draw.objects.b[#draw.objects.b+1]=
+		{type=type,
+		x=x,y=y,z=z,
+		t=t1 or (math.huge), --button press time (math.huge for a constant signal, -1 to switch the signal)
+		t1=0,
+		tick=false, --sends a signal 1 tick long while pressing the button
+		s=false, --button signal
+		draw=true,
+		model=model[type]}
+	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
 
 function update_world()
@@ -1191,20 +1342,12 @@ addwall(6,0,5,2,3,8)
 addwall(6,0,6,2,3,8)
 addwall(3,0,5,2,3,8)
 
-addobj(80,24,80,1)
-addobj(95,72,95,1)
+-- addobj(80,24,80,1)
+-- addobj(95,72,95,1)
 addobj(624,24,528,2)
 
---portals
+addobj(16,0,48 ,6,60)
 
--- if true then --foolproof
--- 	if draw.p[1][4]==2 or draw.p[2][4]==2 then error("attempt to make a portal parallel to the XZ plane (which is not provided in my code)") end
--- 	if draw.p[1][4]<1 or draw.p[1][4]>3 or draw.p[2][4]<1 or draw.p[2][4]>3 then error("unknown portal rotation") end
-
--- 	if draw.p[1][5]>2 or draw.p[2][5]>2 or draw.p[1][5]<1 or draw.p[2][5]<1 then error("unknown portal normality") end
--- end
--- addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
--- addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
 --init
 local tm1,tm2 = 0,0
 local p={t=0,t1=0,t2=0,t3=0,t4=0} --pause
@@ -1214,7 +1357,7 @@ poke(0x7FC3F,1,1)
 
 music(0)
 local open="game"
---poke(0x7FC3F,0,1)
+
 function TIC()
 	--fps counter
 	t1 = time()
@@ -1326,6 +1469,7 @@ function TIC()
 		unitic.player_collision()
 		unitic.portal_collision()
 		unitic.cube_update()
+		unitic.button_update()
 		fps_.t3=time()
 	 --render
 		unitic.render()
@@ -1362,7 +1506,8 @@ function TIC()
 			{
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .. " p:" .. #unitic.poly.sp.." | objects:"..#unitic.obj,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			}
+			},
+			{draw.objects.b[1].t1}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
 		
@@ -1702,7 +1847,7 @@ end
 -- 012:00000000bb000000bbb00000bbbb0000bbbb0000bbbb0000bbb00000bb000000
 -- 013:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
 -- 014:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
--- 015:999997b7988897b7988897b7988897b7999997b7111117b7111117b7111117b7
+-- 015:999997b7988897b7988897b7988897b7999997e7222227e7222227e7222227e7
 -- 016:0077700000767000006760000076767600676767006660000066600000666000
 -- 017:0007770000067600006767007676700067670000000000000000000000000000
 -- 018:7770000067600000767000006760000076700000666000006660000066660000
@@ -1934,6 +2079,7 @@ end
 -- 002:000010102020303030404050406050706080609060a070b070c080d080e090f090f0a0f0a0f0b0f0c0f0c0f0d0f0e0f0f0f0f0f0f0f0f0f0f0f0f000280000000000
 -- 003:63b0734083d093b0a350b370c3a0d350e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f30030b000000000
 -- 016:030003000300b300c300d300039003900390b390c390d390f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300305000000000
+-- 017:030003000300b300c300d300039003900390b390c390d390f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300482000000000
 -- 059:020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200300000000000
 -- 060:0100110011002100210031003100410041005100510061006100710071008100810091009100a100a100b100b100c100c100d100d100e100e100f100302000000000
 -- 061:010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100302000000000
