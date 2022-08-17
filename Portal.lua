@@ -35,7 +35,7 @@ local st={ --settings
 potato_pc=false, --dont
 css_content=true, --dont
 m_s=80, --mouse sensitivity
-r_p=true, --rendering portals
+r_p=false, --rendering portals
 h_q_p=false, --high quality portals
 }
 local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.abs
@@ -51,7 +51,8 @@ local unitic = {
 	--drawing
 	fov = 80, --lens distance to camera
 	--system tables (dont touch)
-	poly = {}
+	poly = {},
+	obj  = {} --objects
 }
 local model={
 	{--cube
@@ -123,7 +124,11 @@ world_size[4]=world_size[2]*world_size[3]
 world_size[5]=world_size[1]*world_size[2]*world_size[3]
 --world
 local draw={
-	objects={},
+	objects={
+		c={}, --cubes
+		cd={}, --cube dispensers
+		lb={} --light bridges
+	},
 	world={v={},f={},sp={}},
 	map={},
 	p={ --portals
@@ -172,6 +177,7 @@ end
 function unitic.update(draw_portal,p_id)
 	--writing all polygons in unitic.poly
 	unitic.poly = { v = {}, f = {}, sp = {} }
+	unitic.obj  = {}
 	--world--
 	for ind = 1, #draw.world.v do
 		unitic.poly.v[ind] = { draw.world.v[ind][1], draw.world.v[ind][2], draw.world.v[ind][3] }
@@ -248,20 +254,22 @@ function unitic.update(draw_portal,p_id)
 	else
 		error("unknown function inputs | "..draw_portal.." "..p_id)
 	end
-	--objects--
-	if #draw.objects > 0 then
-		for ind1 = 1, #draw.objects do
-			if draw.objects[ind1].draw then
-				local vt=#unitic.poly.v
-				for ind2=1,#draw.objects[ind1].model.v do
-					local px=draw.objects[ind1].model.v[ind2][1]+draw.objects[ind1].x
-					local py=draw.objects[ind1].model.v[ind2][2]+draw.objects[ind1].y
-					local pz=draw.objects[ind1].model.v[ind2][3]+draw.objects[ind1].z
-					unitic.poly.v[#unitic.poly.v+1]={px,py,pz}
-				end
-				for ind2=1,#draw.objects[ind1].model.f do
-					unitic.poly.f[#unitic.poly.f+1]={draw.objects[ind1].model.f[ind2][1]+vt, draw.objects[ind1].model.f[ind2][2]+vt, draw.objects[ind1].model.f[ind2][3]+vt, f=draw.objects[ind1].model.f[ind2].f,uv={x={draw.objects[ind1].model.f[ind2].uv[1][1],draw.objects[ind1].model.f[ind2].uv[2][1],draw.objects[ind1].model.f[ind2].uv[3][1]},y={draw.objects[ind1].model.f[ind2].uv[1][2],draw.objects[ind1].model.f[ind2].uv[2][2],draw.objects[ind1].model.f[ind2].uv[3][2]}}}
-				end
+	--objects (1)--
+	for i=1,#draw.objects.c  do unitic.obj[#unitic.obj+1]=draw.objects.c [i] end
+	for i=1,#draw.objects.cd do unitic.obj[#unitic.obj+1]=draw.objects.cd[i] end
+	for i=1,#draw.objects.lb do unitic.obj[#unitic.obj+1]=draw.objects.lb[i] end
+	--objects (2)--
+	for ind1 = 1, #unitic.obj do
+		if unitic.obj[ind1].draw then
+			local vt=#unitic.poly.v
+			for ind2=1,#unitic.obj[ind1].model.v do
+				local px=unitic.obj[ind1].model.v[ind2][1]+unitic.obj[ind1].x
+				local py=unitic.obj[ind1].model.v[ind2][2]+unitic.obj[ind1].y
+				local pz=unitic.obj[ind1].model.v[ind2][3]+unitic.obj[ind1].z
+				unitic.poly.v[#unitic.poly.v+1]={px,py,pz}
+			end
+			for ind2=1,#unitic.obj[ind1].model.f do
+				unitic.poly.f[#unitic.poly.f+1]={unitic.obj[ind1].model.f[ind2][1]+vt, unitic.obj[ind1].model.f[ind2][2]+vt, unitic.obj[ind1].model.f[ind2][3]+vt, f=unitic.obj[ind1].model.f[ind2].f,uv={x={unitic.obj[ind1].model.f[ind2].uv[1][1],unitic.obj[ind1].model.f[ind2].uv[2][1],unitic.obj[ind1].model.f[ind2].uv[3][1]},y={unitic.obj[ind1].model.f[ind2].uv[1][2],unitic.obj[ind1].model.f[ind2].uv[2][2],unitic.obj[ind1].model.f[ind2].uv[3][2]}}}
 			end
 		end
 	end
@@ -447,16 +455,33 @@ function unitic.collision()
 		end
 	end end end
 	--collision with objects
-	for i=1,#draw.objects do
-		local x0=draw.objects[i].x
-		local y0=draw.objects[i].y
-		local z0=draw.objects[i].z
-		if (draw.objects[i].type==1 or draw.objects[i].type==2 or draw.objects[i].type==3) and
-		coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)==false then --protection so that the player cannot get stuck in the cube
+	for i=1,#draw.objects.c do
+		local x0=draw.objects.c[i].x
+		local y0=draw.objects.c[i].y
+		local z0=draw.objects.c[i].z
+		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then --protection so that the player cannot get stuck in the cube
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
 			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true plr.xy=true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
-		elseif draw.objects[i].type==4 or draw.objects[i].type==5 then
+		end
+	end
+
+	for i=1,#draw.objects.cd do
+		local x0=draw.objects.cd[i].x
+		local y0=draw.objects.cd[i].y
+		local z0=draw.objects.cd[i].z
+		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then
+			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true plr.xy=true end
+			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
+		end
+	end
+
+	for i=1,#draw.objects.lb do
+		local x0=draw.objects.lb[i].x
+		local y0=draw.objects.lb[i].y
+		local z0=draw.objects.lb[i].z
+		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colx = true end
 			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then coly = true plr.xy=true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colz = true end
@@ -797,15 +822,25 @@ function addwall(x, y, z, angle, face, type)
 end
 
 function addobj(x, y, z, type) --objects
-	table.insert(draw.objects,
-	{
-	type=type, --type
-	x=x,y=y,z=z, --object coordinates
-	draw=true, --whether to display the model
-	model={}})
-
-	if type>#model or type<1 then error("unknown model ID") end
-	draw.objects[#draw.objects].model=model[type]
+	if type==1 or type==2 then
+		draw.objects.c[#draw.objects.c+1]=
+		{type=type, --type
+		x=x,y=y,z=z, --object coordinates
+		draw=true, --whether to display the model
+		model=model[type]}
+	elseif type==3 then
+		draw.objects.cd[#draw.objects.cd+1]=
+		{type=type, --type
+		x=x,y=y,z=z, --object coordinates
+		draw=true, --whether to display the model
+		model=model[type]}
+	elseif type==4 or type==5 then
+		draw.objects.lb[#draw.objects.lb+1]=
+		{type=type, --type
+		x=x,y=y,z=z, --object coordinates
+		draw=true, --whether to display the model
+		model=model[type]}
+	else error("unknown type | "..type) end
 end
 
 function update_world()
@@ -1193,7 +1228,7 @@ function TIC()
 			"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. ",
 			"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .. " p:" .. #unitic.poly.sp,
 			"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			"raytest: "..raytest()
+			--"raytest: "..raytest()
 		}
 		vbank(1)
 			for i=1,#debug_text do
