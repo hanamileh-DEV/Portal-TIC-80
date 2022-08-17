@@ -35,7 +35,7 @@ local st={ --settings
 potato_pc=false, --dont
 css_content=true, --dont
 m_s=80, --mouse sensitivity
-r_p=false, --rendering portals
+r_p=true, --rendering portals
 h_q_p=false, --high quality portals
 }
 local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.abs
@@ -44,7 +44,7 @@ local pi2 = math.pi / 2
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 95, y = 65, z = 95, tx = math.pi, ty = 0, vy=0 , xy=false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0}
+local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1}
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -1348,19 +1348,30 @@ function TIC()
 		p.t=0
 	 --debug
 	 	local debug_text={
-			"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(t2).." ms.",
-			"Av: "..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).." ms. min: "..F(fr[2]+0.5).." ms. max: "..F(fr[3]+0.5).." ms.",
-			"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. ",
-			"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .. " p:" .. #unitic.poly.sp,
-			"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			"cube :"..draw.objects.c[1].x.." "..draw.objects.c[1].y.." "..draw.objects.c[1].z
+			{
+				"FPS:  " .. F(1000 / (fr[3]+fr[2])*2),
+			},
+			{
+				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5),
+			},
+			{
+				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(t2).." ms.",
+				"Av: "..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).." ms. min: "..F(fr[2]+0.5).." ms. max: "..F(fr[3]+0.5).." ms.",
+				"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. "
+			},
+			{
+				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .. " p:" .. #unitic.poly.sp.." | objects:"..#unitic.obj,
+				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
+			}
 		}
-		vbank(1)
-			for i=1,#debug_text do
-				local text_size=print(debug_text[i], 240,0)
+		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
+		
+		vbank(1) do
+			for i=1,#debug_text[plr.dt] do
+				local text_size=print(debug_text[plr.dt][i], 240,0)
 				rect(0,7*(i-1),text_size+2,8,2)
-				print(debug_text[i], 1, 2+7*(i-1), 1)
-				print(debug_text[i], 1, 1+7*(i-1), 7)
+				print(debug_text[plr.dt][i], 1, 2+7*(i-1), 1)
+				print(debug_text[plr.dt][i], 1, 1+7*(i-1), 7)
 			end
 
 			print("HP: "..plr.hp,1,130,7)
@@ -1371,7 +1382,7 @@ function TIC()
 				print("!",117,1,7*((time()/500)//1%2),false,1,true)
 				print("Something is creating script errors",120,1,7,false,1,true)
 			end
-		vbank(0)
+		vbank(0) end
 	end
 	--cursor id
 	vbank(0)
@@ -1691,7 +1702,7 @@ end
 -- 012:00000000bb000000bbb00000bbbb0000bbbb0000bbbb0000bbb00000bb000000
 -- 013:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
 -- 014:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
--- 015:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
+-- 015:999997b7988897b7988897b7988897b7999997b7111117b7111117b7111117b7
 -- 016:0077700000767000006760000076767600676767006660000066600000666000
 -- 017:0007770000067600006767007676700067670000000000000000000000000000
 -- 018:7770000067600000767000006760000076700000666000006660000066660000
