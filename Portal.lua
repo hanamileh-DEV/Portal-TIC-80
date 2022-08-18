@@ -1024,7 +1024,7 @@ function unitic.button_update()
 				if draw.objects.b[i].t~=0 then sfx(17) end draw.objects.b[i].s=false draw.objects.b[i].t1=0 draw.objects.b[i].tick=true
 			end
 		end
-		draw.world.sp[i]={draw.objects.b[i].x,draw.objects.b[i].y,draw.objects.b[i].z}
+		
 		local dist=((draw.objects.b[i].x-plr.x)^2 + (draw.objects.b[i].y-plr.y)^2 + (draw.objects.b[i].z-plr.z)^2) ^ 0.5
 		local rc=raycast(
 			draw.objects.b[i].x,draw.objects.b[i].y+26,draw.objects.b[i].z,
@@ -1149,7 +1149,7 @@ function update_world()
 	end end end end
 	--light bridge generator
 	draw.objects.lb={}
-
+	draw.world.sp={}
 	if draw.lg~=0 then
 		for i=1,#draw.lg do
 			local lx,ly,lz=draw.lg[i][1],draw.lg[i][2],draw.lg[i][3]
@@ -1161,7 +1161,7 @@ function update_world()
 			end
 			--trace("----------------------------------",15)
 			for _=1,100 do --bridge lenght limiter
-				if vx==-1 or vx==1 then addobj(96/2+lx*96,ly*128,96/2+lz*96,4) else addobj(96/2+lx*96,ly*128,96/2+lz*96,5) end
+				if vx==-1 or vx==1 then addobj(48+lx*96,ly*128,48+lz*96,4) else addobj(48+lx*96,ly*128,48+lz*96,5) end
 				lx=lx+vx
 				lz=lz+vz
 
@@ -1170,44 +1170,40 @@ function update_world()
 				--going through portals
 				if draw.p[1] and draw.p[2] then
 					--blue portal
-				   if     vx==1  and draw.p[1][4]==1 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
-					elseif vx==-1 and draw.p[1][4]==1 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz-1==draw.p[1][3] then bp=true
-					elseif vz==1  and draw.p[1][4]==3 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
-					elseif vz==-1 and draw.p[1][4]==3 and draw.p[1][5]==2 and lx-1==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+				   if     vx==1  and draw.p[1][4]==1 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+					elseif vx==-1 and draw.p[1][4]==1 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz-1==draw.p[1][3] then bp=true
+					elseif vz==1  and draw.p[1][4]==3 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+					elseif vz==-1 and draw.p[1][4]==3 and draw.p[1][5]==1 and lx-1==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
 					--orange portal
-					elseif vx==1  and draw.p[2][4]==1 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
-					elseif vx==-1 and draw.p[2][4]==1 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz-1==draw.p[2][3] then op=true
-					elseif vz==1  and draw.p[2][4]==3 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
-					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==2 and lx-1==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vx==1  and draw.p[2][4]==1 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vx==-1 and draw.p[2][4]==1 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz-1==draw.p[2][3] then op=true
+					elseif vz==1  and draw.p[2][4]==3 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==1 and lx-1==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
 					end
-					--trace("------------------------------",7)
-					--trace(vx.." "..vz.." | "..draw.p[1][4].." "..draw.p[1][5],6)
-					--trace(lx.." "..ly.." "..lz.." | "..draw.p[1][1].." "..draw.p[1][2].." "..draw.p[1][3],6)
-					--trace(bp,5)
 					--teleporting
-					if bp then
+					if op then
 						lx,ly,lz=draw.p[1][1],draw.p[1][2],draw.p[1][3]
-						if     draw.p[1][4]==1 and draw.p[1][5]==1 then vx=1
-						elseif draw.p[1][4]==1 and draw.p[1][5]==2 then vx=-1 lx=lx-1
-						elseif draw.p[1][4]==3 and draw.p[1][5]==1 then vz=1
-						elseif draw.p[1][4]==3 and draw.p[1][5]==2 then vz=-1 lz=lz-1
+						if     draw.p[1][4]==1 and draw.p[1][5]==2 then vz=0 vx=1 
+						elseif draw.p[1][4]==1 and draw.p[1][5]==1 then vz=0 vx=-1 lx=lx-1
+						elseif draw.p[1][4]==3 and draw.p[1][5]==2 then vx=0 vz=-1 lz=lz-1
+						elseif draw.p[1][4]==3 and draw.p[1][5]==1 then vx=0 vz=1
 						end
-					elseif op then
+					elseif bp then
 						lx,ly,lz=draw.p[2][1],draw.p[2][2],draw.p[2][3]
-						if     draw.p[2][4]==1 and draw.p[2][5]==1 then vx=1
-						elseif draw.p[2][4]==1 and draw.p[2][5]==2 then vx=-1 lx=lx-1
-						elseif draw.p[2][4]==3 and draw.p[2][5]==1 then vz=1
-						elseif draw.p[2][4]==3 and draw.p[2][5]==2 then vz=-1 lz=lz-1
+						if     draw.p[2][4]==1 and draw.p[2][5]==2 then vz=0 vx=1 
+						elseif draw.p[2][4]==1 and draw.p[2][5]==1 then vz=0 vx=-1 lx=lx-1
+						elseif draw.p[2][4]==3 and draw.p[2][5]==2 then vx=0 vz=-1 lz=lz-1
+						elseif draw.p[2][4]==3 and draw.p[2][5]==1 then vx=0 vz=1
 						end
 					end
 				end
 				--if the bridge collides with a wall, we stop the loop
-				if lx<0 or lx>world_size[1]-2 or lz<0 or lz>world_size[3]-2 then break end
+				if lx<0 or lx>world_size[1]-1 or lz<0 or lz>world_size[3]-1 then break end
 				if not (bp or op) then
 				if     vx==1  and draw.map[1][lx  ][ly][lz  ][2]~=0 and draw.map[1][lx  ][ly][lz  ][2]~=3 and draw.map[1][lx  ][ly][lz  ][2]~=15 then break
 				elseif vx==-1 and draw.map[1][lx+1][ly][lz  ][2]~=0 and draw.map[1][lx+1][ly][lz  ][2]~=3 and draw.map[1][lx+1][ly][lz  ][2]~=15 then break
-				elseif vz==1  and draw.map[3][lx  ][ly][lz  ][2]~=0 and draw.map[3][lx  ][ly][lz  ][2]~=3 and draw.map[1][lx  ][ly][lz  ][2]~=15 then break
-				elseif vz==-1 and draw.map[3][lx  ][ly][lz+1][2]~=0 and draw.map[3][lx  ][ly][lz+1][2]~=3 and draw.map[1][lx  ][ly][lz+1][2]~=15 then break
+				elseif vz==1  and draw.map[3][lx  ][ly][lz  ][2]~=0 and draw.map[3][lx  ][ly][lz  ][2]~=3 and draw.map[3][lx  ][ly][lz  ][2]~=15 then break
+				elseif vz==-1 and draw.map[3][lx  ][ly][lz+1][2]~=0 and draw.map[3][lx  ][ly][lz+1][2]~=3 and draw.map[3][lx  ][ly][lz+1][2]~=15 then break
 				end end
 			end
 		end
