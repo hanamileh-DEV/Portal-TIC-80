@@ -259,10 +259,12 @@ local draw={
 		nil,
 	},
 	lg={--light bridge generators
-		{2,0,0,3,1},
-		--{3,0,11,3,2}
+		--{2,0,0,3,1},
+		--{2,0,11,3,2},
+		--{0,0,5,1,2},
+		{11,0,5,1,1}
 	}
-} --portal models are installed automatically
+} 
 
 
 local function coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) --collision of two cubes
@@ -1154,14 +1156,15 @@ function update_world()
 		for i=1,#draw.lg do
 			local lx,ly,lz=draw.lg[i][1],draw.lg[i][2],draw.lg[i][3]
 			local vx,vz=0,0
-			if     draw.lg[i][4]==1 and draw.lg[i][5]==1 then vx=1
-			elseif draw.lg[i][4]==1 and draw.lg[i][5]==2 then vx=-1 lx=lx-1
+			if     draw.lg[i][4]==1 and draw.lg[i][5]==1 then vx=-1 lx=lx-1
+			elseif draw.lg[i][4]==1 and draw.lg[i][5]==2 then vx=1 
 			elseif draw.lg[i][4]==3 and draw.lg[i][5]==1 then vz=1
 			elseif draw.lg[i][4]==3 and draw.lg[i][5]==2 then vz=-1 lz=lz-1 else error(draw.lg[i][4].." | "..draw.lg[i][5])
 			end
 			--trace("----------------------------------",15)
 			for _=1,100 do --bridge lenght limiter
 				if vx==-1 or vx==1 then addobj(48+lx*96,ly*128,48+lz*96,4) else addobj(48+lx*96,ly*128,48+lz*96,5) end
+				draw.world.sp[_]={48+lx*96,ly*128,48+lz*96}
 				lx=lx+vx
 				lz=lz+vz
 
@@ -1170,27 +1173,27 @@ function update_world()
 				--going through portals
 				if draw.p[1] and draw.p[2] then
 					--blue portal
-				   if     vx==1  and draw.p[1][4]==1 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
-					elseif vx==-1 and draw.p[1][4]==1 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz-1==draw.p[1][3] then bp=true
+				   if     vx==1  and draw.p[1][4]==1 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+					elseif vx==-1 and draw.p[1][4]==1 and draw.p[1][5]==2 and lx+1==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
 					elseif vz==1  and draw.p[1][4]==3 and draw.p[1][5]==2 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
-					elseif vz==-1 and draw.p[1][4]==3 and draw.p[1][5]==1 and lx-1==draw.p[1][1] and ly==draw.p[1][2] and lz  ==draw.p[1][3] then bp=true
+					elseif vz==-1 and draw.p[1][4]==3 and draw.p[1][5]==1 and lx  ==draw.p[1][1] and ly==draw.p[1][2] and lz+1==draw.p[1][3] then bp=true
 					--orange portal
-					elseif vx==1  and draw.p[2][4]==1 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
-					elseif vx==-1 and draw.p[2][4]==1 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz-1==draw.p[2][3] then op=true
+					elseif vx==1  and draw.p[2][4]==1 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vx==-1 and draw.p[2][4]==1 and draw.p[2][5]==2 and lx+1==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
 					elseif vz==1  and draw.p[2][4]==3 and draw.p[2][5]==2 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
-					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==1 and lx-1==draw.p[2][1] and ly==draw.p[2][2] and lz  ==draw.p[2][3] then op=true
+					elseif vz==-1 and draw.p[2][4]==3 and draw.p[2][5]==1 and lx  ==draw.p[2][1] and ly==draw.p[2][2] and lz+1==draw.p[2][3] then op=true
 					end
 					--teleporting
 					if op then
 						lx,ly,lz=draw.p[1][1],draw.p[1][2],draw.p[1][3]
-						if     draw.p[1][4]==1 and draw.p[1][5]==2 then vz=0 vx=1 
+						if     draw.p[1][4]==1 and draw.p[1][5]==2 then vz=0 vx=1
 						elseif draw.p[1][4]==1 and draw.p[1][5]==1 then vz=0 vx=-1 lx=lx-1
 						elseif draw.p[1][4]==3 and draw.p[1][5]==2 then vx=0 vz=-1 lz=lz-1
 						elseif draw.p[1][4]==3 and draw.p[1][5]==1 then vx=0 vz=1
 						end
 					elseif bp then
 						lx,ly,lz=draw.p[2][1],draw.p[2][2],draw.p[2][3]
-						if     draw.p[2][4]==1 and draw.p[2][5]==2 then vz=0 vx=1 
+						if     draw.p[2][4]==1 and draw.p[2][5]==2 then vz=0 vx=1
 						elseif draw.p[2][4]==1 and draw.p[2][5]==1 then vz=0 vx=-1 lx=lx-1
 						elseif draw.p[2][4]==3 and draw.p[2][5]==2 then vx=0 vz=-1 lz=lz-1
 						elseif draw.p[2][4]==3 and draw.p[2][5]==1 then vx=0 vz=1
@@ -1276,37 +1279,40 @@ end
 for x=0,10 do for z=0,10 do
 	addwall(x,0,z,2,2,1)
 	if R()>0.5 then addwall(x,2,z,2,3,R(1,5)) end
+	addwall(x,3,z,2,1,1)
 end end
 
 for x=0,10 do
-	addwall(x ,0,0 ,3,1,R(1,2))
-	addwall(x ,0,11,3,2,R(1,2))
-	addwall(0 ,0,x ,1,2,R(1,2))
-	addwall(11,0,x ,1,1,R(1,2))
+	addwall(x ,0,0 ,3,1,2)
+	addwall(x ,0,11,3,2,2)
+	addwall(0 ,0,x ,1,2,2)
+	addwall(11,0,x ,1,1,2)
 
-	if R()>0.5 then addwall(x ,1,0 ,3,1,R(1,2)) end
-	if R()>0.5 then addwall(x ,1,11,3,2,R(1,2)) end
-	if R()>0.5 then addwall(0 ,1,x ,1,2,R(1,2)) end
-	if R()>0.5 then addwall(11,1,x ,1,1,R(1,2)) end
+	addwall(x ,1,0 ,3,1,2)
+	addwall(x ,1,11,3,2,2)
+	addwall(0 ,1,x ,1,2,2)
+	addwall(11,1,x ,1,1,2)
 
-	if R()>0.5 then addwall(x ,2,0 ,3,1,R(1,2)) end
-	if R()>0.5 then addwall(x ,2,11,3,2,R(1,2)) end
-	if R()>0.5 then addwall(0 ,2,x ,1,2,R(1,2)) end
-	if R()>0.5 then addwall(11,2,x ,1,1,R(1,2)) end
+	addwall(x ,2,0 ,3,1,2)
+	addwall(x ,2,11,3,2,2)
+	addwall(0 ,2,x ,1,2,2)
+	addwall(11,2,x ,1,1,2)
 end
 
 addwall(1,0,0,3,1,10)
 addwall(2,0,0,3,1,8)
-addwall(3,0,11,3,2,9)
+addwall(2,0,11,3,2,9)
 
-addwall(0,1,2,1,2,17)
-addwall(0,1,3,1,2,16)
+addwall(0,1,2,1,2,16)
+addwall(0,1,3,1,2,17)
 
 addwall(0,0,0,1,2,18)
 addwall(0,0,1,1,2,18)
 addwall(0,0,2,1,2,18)
 addwall(0,0,3,1,2,18)
 addwall(0,0,4,1,2,18)
+addwall(0,0,5,1,2,9)
+addwall(11,0,5,1,1,8)
 
 addwall(0,0,6,3,3,12)
 addwall(1,0,6,3,3,11)
