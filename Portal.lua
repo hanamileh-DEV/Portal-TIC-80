@@ -358,10 +358,16 @@ function unitic.update(draw_portal,p_id)
 		error("unknown function inputs | "..draw_portal.." "..p_id)
 	end
 	--objects (1)--
+	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
+	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
+	
 	for i=1,#draw.objects.c  do unitic.obj[#unitic.obj+1]=draw.objects.c [i] end
 	for i=1,#draw.objects.cd do unitic.obj[#unitic.obj+1]=draw.objects.cd[i] end
 	for i=1,#draw.objects.lb do unitic.obj[#unitic.obj+1]=draw.objects.lb[i] end
-	for i=1,#draw.objects.b  do unitic.obj[#unitic.obj+1]=draw.objects.b [i] end
+	for i=1,#draw.objects.b  do
+		if draw.objects.b[i].s and draw.objects.b[i].tick then draw.objects.b[i].model.f=f2 elseif draw.objects.b[i].tick then draw.objects.b[i].model.f=f1 end
+		unitic.obj[#unitic.obj+1]=draw.objects.b[i]
+	end
 	--objects (2)--
 	for ind1 = 1, #unitic.obj do
 		if unitic.obj[ind1].draw then
@@ -1011,21 +1017,24 @@ function unitic.button_update()
 	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	for i=1,#draw.objects.b do
+		draw.objects.b[i].tick=false
 		if draw.objects.b[i].t~=-1 and draw.objects.b[i].s then
 			draw.objects.b[i].t1=draw.objects.b[i].t1+1
 			if draw.objects.b[i].t~=math.huge and draw.objects.b[i].t1>=draw.objects.b[i].t then
-				sfx(17) draw.objects.b[i].s=false draw.objects.b[i].t1=0
+				if draw.objects.b[i].t~=0 then sfx(17) end draw.objects.b[i].s=false draw.objects.b[i].t1=0 draw.objects.b[i].tick=true
 			end
 		end
 		draw.world.sp[i]={draw.objects.b[i].x,draw.objects.b[i].y,draw.objects.b[i].z}
 		local dist=((draw.objects.b[i].x-plr.x)^2 + (draw.objects.b[i].y-plr.y)^2 + (draw.objects.b[i].z-plr.z)^2) ^ 0.5
-		rc=raycast(
+		local rc=raycast(
 			draw.objects.b[i].x,draw.objects.b[i].y+26,draw.objects.b[i].z,
 			plr.x,plr.y,plr.z,
 			{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
 			{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
 
-		if keyp(5) and dist<128 and not rc then
+		local ang=math.atan(draw.objects.b[i].x-plr.x,draw.objects.b[i].z-plr.z)-plr.ty
+
+		if keyp(5) and dist<128 and not rc and ang<-2.5 and ang>-3.8 then
 			sfx(16)
 			draw.objects.b[i].tick=true
 			if draw.objects.b[i].t==-1 then
@@ -1033,28 +1042,10 @@ function unitic.button_update()
 			else
 				draw.objects.b[i].s=true draw.objects.b[i].t1=0
 			end
-		else
-			draw.objects.b[i].tick=false
 		end
-		if rc==nil then rc="nil" end
 	end
 end
 
-local function raytest()
-	local x1,y1,z1=plr.x,plr.y,plr.z --player coordinates
-
-	local x2=x1-math.sin(plr.ty)*10000*math.cos(plr.tx)
-	local y2=y1-math.sin(plr.tx)*10000
-	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
-
-	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
-	if x then
-		return draw.map[f][x][y][z][2]
-	else
-		return "no hit"
-	end
-end
---
 local function portal_gun()
 	local x1,y1,z1=plr.x,plr.y,plr.z --player coordinates
 
@@ -1117,8 +1108,7 @@ function addobj(x, y, z, type,t1) --objects
 		t1=0,
 		tick=false, --sends a signal 1 tick long while pressing the button
 		s=false, --button signal
-		draw=true,
-		model=model[type]}
+		draw=true,model={v=model[type].v,f=model[type].f}}
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
 
@@ -1158,14 +1148,7 @@ function update_world()
 		------
 	end end end end
 	--light bridge generator
-	if #draw.objects>0 then
-		i=1
-		while true do
-			if draw.objects[i].type==4 or draw.objects[i].type==5 then table.remove(draw.objects,i) i=i-1 end
-			i=i+1
-			if i>#draw.objects then break end
-		end
-	end
+	draw.objects.lb={}
 
 	if draw.lg~=0 then
 		for i=1,#draw.lg do
@@ -1322,8 +1305,12 @@ addwall(3,0,11,3,2,9)
 
 addwall(0,1,2,1,2,17)
 addwall(0,1,3,1,2,16)
+
+addwall(0,0,0,1,2,18)
+addwall(0,0,1,1,2,18)
 addwall(0,0,2,1,2,18)
-addwall(0,0,3,1,2,19)
+addwall(0,0,3,1,2,18)
+addwall(0,0,4,1,2,18)
 
 addwall(0,0,6,3,3,12)
 addwall(1,0,6,3,3,11)
@@ -1356,8 +1343,9 @@ addwall(3,0,5,2,3,8)
 
 addobj(16,0,48 ,6,60)
 addobj(16,0,144,6,10)
-addobj(16,0,240,6,-1)
-addobj(16,0,336,6,math.huge)
+addobj(16,0,240,6,0)
+addobj(16,0,336,6,-1)
+addobj(16,0,432,6,math.huge)
 
 --init
 local tm1,tm2 = 0,0
@@ -1482,6 +1470,13 @@ function TIC()
 		unitic.cube_update()
 		unitic.button_update()
 		fps_.t3=time()
+	 --scripts
+		for i=1,5 do
+			if draw.objects.b[i].tick then
+				if draw.objects.b[i].s then addwall(0,0,i-1,1,2,19) else addwall(0,0,i-1,1,2,18) end
+				update_world()
+			end
+		end
 	 --render
 		unitic.render()
 		fps_.t4=time()
@@ -1516,11 +1511,15 @@ function TIC()
 			},
 			{
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .. " p:" .. #unitic.poly.sp.." | objects:"..#unitic.obj,
+				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 			},
 			{
-				rc,
-				draw.objects.b[1].s
+				draw.objects.b[1].tick,
+				draw.objects.b[2].tick,
+				draw.objects.b[3].tick,
+				draw.objects.b[4].tick,
+				draw.objects.b[5].tick,
 			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
