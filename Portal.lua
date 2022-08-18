@@ -972,7 +972,7 @@ local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitflats) -- walk along a se
 	while true do
 		if tx < ty and tx < tz then
 			x, tx = x + sx, tx + lx
-			if x * sx > x2 * sx or (x + ox) < 0 or (x + ox) > world_size[1] - 1 then
+			if (x + ox) * sx > x2 * sx or (x + ox) < 0 or (x + ox) > world_size[1] - 1 then
 				return
 			end
 			if hitwalls[draw.map[1][x + ox][y][z][2]] then
@@ -983,7 +983,7 @@ local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitflats) -- walk along a se
 			end
 		elseif ty < tz then
 			y, ty = y + sy, ty + ly
-			if y * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
+			if (y + oy) * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
 				return
 			end
 			if hitflats[draw.map[2][x][y + oy][z][2]] then
@@ -994,7 +994,7 @@ local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitflats) -- walk along a se
 			end
 		else
 			z, tz = z + sz, tz + lz
-			if z * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
+			if (z + oz) * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
 				return
 			end
 			if hitwalls[draw.map[3][x][y][z + oz][2]] then
