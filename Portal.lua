@@ -35,7 +35,7 @@ local st={ --settings
 potato_pc=false, --dont
 css_content=true, --dont
 m_s=80, --mouse sensitivity
-r_p=true, --rendering portals
+r_p=false, --rendering portals
 h_q_p=false, --high quality portals
 }
 local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.abs
@@ -52,7 +52,8 @@ local unitic = {
 	fov = 80, --lens distance to camera
 	--system tables (dont touch)
 	poly = {},
-	obj  = {} --objects
+	obj  = {}, --objects
+	p    = {} --particles
 }
 local model={
 	{--cube
@@ -252,6 +253,7 @@ local draw={
 	},
 	world={v={},f={},sp={}},
 	map={},
+	pr={}, --particles
 	p={ --portals
 		-- list table with following fields:
 		-- {x, y, z, plane, normal}
@@ -262,10 +264,13 @@ local draw={
 		--{2,0,0,3,1},
 		--{2,0,11,3,2},
 		--{0,0,5,1,2},
-		{11,0,5,1,1}
+		--{11,0,5,1,1}
 	}
-} 
+}
 
+local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
+	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
+end
 
 local function coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) --collision of two cubes
 	-- x1,x2=min(x1,x2),max(x1,x2)
@@ -413,7 +418,7 @@ function unitic.update(draw_portal,p_id)
 		unitic.poly.v[ind][3]=-c4
 		unitic.poly.v[ind][4]=c3>0
 	end
-	--points
+	--points for debug
 	for ind = 1, #draw.world.sp do
 		local a1 = draw.world.sp[ind][1] - cam.x
 		local b1 = draw.world.sp[ind][2] - cam.y
@@ -428,6 +433,45 @@ function unitic.update(draw_portal,p_id)
 
 		unitic.poly.sp[ind]={a3,b3,c3}
 	end
+	--particles
+	for ind = 1, #draw.pr do
+		local a1 = draw.pr[ind].x - cam.x
+		local b1 = draw.pr[ind].y - cam.y
+		local c1 = draw.pr[ind].z - cam.z
+
+		local c2 = c1 * tycos - a1 * tysin
+
+		local x0 = c1 * tysin + a1 * tycos
+		local y0 = b1 * txcos - c2 * txsin
+		local z0 = b1 * txsin + c2 * txcos
+
+		local draw_p=false
+		if z0<0 then draw_p=true end
+
+		if z0>-0.001 then z0=-0.001 end
+
+		local z1 = unitic.fov / z0 --this saves one division (very important optimization)
+
+		local x1 = x0 * z1 + 120
+		local y1 = y0 * z1 + 68
+
+		unitic.p[ind]={x1, y1, -z0, draw_p, draw.pr[ind].c}
+	end
+end
+
+function unitic.update_pr() --update particles
+	local i=0
+	repeat
+		i=i+1
+
+		draw.pr[i].x = draw.pr[i].x+draw.pr[i].vx
+		draw.pr[i].y = draw.pr[i].y+draw.pr[i].vy
+		draw.pr[i].z = draw.pr[i].z+draw.pr[i].vz
+		
+		draw.pr[i].t = draw.pr[i].t+1
+
+		if draw.pr[i].t==draw.pr[i].lt then table.remove(draw.pr,i) i=i-1 end
+	until i>=#draw.pr
 end
 
 function unitic.draw()
@@ -480,6 +524,30 @@ function unitic.draw()
 				print("ERROR", p2d.x, p2d.y+1, 1)
 				print("ERROR", p2d.x, p2d.y, 9)
 			end
+		end
+	end
+	for i = 1, #unitic.p do
+		if unitic.p[i][4] then
+			local p2d = {x=unitic.p[i][1],y=unitic.p[i][2]}
+
+			local color = unitic.p[i][5]
+			local color1= color % 4
+			local color2= color //4
+
+			local z0 = unitic.p[i][3]
+
+			ttri(
+				p2d.x  ,p2d.y,
+				p2d.x  ,p2d.y+1,
+				p2d.x+1,p2d.y,
+				--uv
+				24 + color1*2 ,248 + color2*2 ,
+				24 + color1*2 ,249 + color2*2 ,
+				25 + color1*2 ,248 + color2*2 ,
+
+				0,-1,
+				z0,z0,z0)
+
 		end
 	end
 end
@@ -733,6 +801,29 @@ function unitic.cube_update() --all physics related to cubes
 				end
 			end
 		end
+
+		for i2=1,#draw.objects.lb do
+			local x0=draw.objects.lb[i2].x
+			local y0=draw.objects.lb[i2].y
+			local z0=draw.objects.lb[i2].z
+			if not coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then
+				if  coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colx = true end
+				if  coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then coly = true end
+				if  coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colz = true end
+			end
+		end
+
+		for i2=1,#draw.objects.b do
+			local x0=draw.objects.b[i2].x
+			local y0=draw.objects.b[i2].y
+			local z0=draw.objects.b[i2].z
+			if not coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then
+				if  coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then colx = true end
+				if  coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then coly = true end
+				if  coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24,  cz + 24, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then colz = true end
+			end
+		end
+
 		--
 		if colx then draw.objects.c[i].x=clx end
 		if coly then draw.objects.c[i].y=cly draw.objects.c[i].vy=0 end
@@ -830,7 +921,7 @@ function unitic.render()
 
 	vbank(1)
 		if not st.potato_pc or R()<0.05 then cls(1) end
-
+		unitic.update_pr()
 		unitic.update()
 		unitic.draw()
 		if draw.p[1] or draw.p[2] then
@@ -1164,7 +1255,6 @@ function update_world()
 			--trace("----------------------------------",15)
 			for _=1,100 do --bridge lenght limiter
 				if vx==-1 or vx==1 then addobj(48+lx*96,ly*128,48+lz*96,4) else addobj(48+lx*96,ly*128,48+lz*96,5) end
-				draw.world.sp[_]={48+lx*96,ly*128,48+lz*96}
 				lx=lx+vx
 				lz=lz+vz
 
@@ -1336,12 +1426,7 @@ addwall(6,0,5,2,3,8)
 addwall(6,0,6,2,3,8)
 addwall(3,0,5,2,3,8)
 
--- addwall(1,0,0,1,3,4)
--- addwall(0,0,1,3,3,2)
--- addwall(0,0,2,3,3,2)
--- addobj(80,24,80,1)
--- addobj(95,72,95,1)
---addobj(624,24,528,2)
+addobj(624,24,528,2)
 
 addobj(16,0,48 ,6,60)
 addobj(16,0,144,6,10)
@@ -1479,6 +1564,7 @@ function TIC()
 				update_world()
 			end
 		end
+		addp(128,128,128,R()*2-1,R()*2-1,R()*2-1,60,9)
 	 --render
 		unitic.render()
 		fps_.t4=time()
@@ -1512,16 +1598,12 @@ function TIC()
 				"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. "
 			},
 			{
-				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .. " p:" .. #unitic.poly.sp.." | objects:"..#unitic.obj,
+				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
 				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 			},
 			{
-				draw.objects.b[1].tick,
-				draw.objects.b[2].tick,
-				draw.objects.b[3].tick,
-				draw.objects.b[4].tick,
-				draw.objects.b[5].tick,
+				F(unitic.p[1][1]).." "..F(unitic.p[1][2])
 			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
@@ -1877,7 +1959,7 @@ end
 -- 028:0000000000000000000000000000000000000000b0000000bb000000bbbbb000
 -- 029:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
 -- 030:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
--- 031:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
+-- 031:8811777788117777ffff7777f722711772ff77772fff77772fff77772fffffff
 -- 032:0066600000666000000000000000000000000000000000000000000000000000
 -- 034:0666666600666666000000000000000000000000000000000000000000000000
 -- 035:6660006666000066000000000000000000000000000000000000000000000000
@@ -1980,22 +2062,22 @@ end
 -- 138:1222222212223222123222321222222212211222712112217611111565555555
 -- 139:1777777616666665166766651666656516766665766656657666666565555555
 -- 143:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 144:666666666555555a656555aa65555aac6555aacc655aaccc65aacccc65aacccc
--- 145:6aaaaaa6aaaaaaaaaccccccacccccccccccccccccccccccccccccccccccccccc
--- 146:66666665a5555554aa556554caa55554ccaa5454cccaa554ccccaa54ccccaa54
--- 147:666666666555555d656555dd65555dde6555ddee655ddeee65ddeeee65ddeeee
--- 148:6dddddd6dddddddddeeeeeedeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 149:66666665d5555554dd556554edd55554eedd5454eeedd554eeeedd54eeeedd54
+-- 144:fffffffffffffffaffffffaafffffaacffffaaccfffaacccffaaccccffaacccc
+-- 145:faaaaaafaaaaaaaaaccccccacccccccccccccccccccccccccccccccccccccccc
+-- 146:ffffffffafffffffaaffffffcaafffffccaaffffcccaafffccccaaffccccaaff
+-- 147:fffffffffffffffdffffffddfffffddeffffddeefffddeeeffddeeeeffddeeee
+-- 148:fddddddfdddddddddeeeeeedeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+-- 149:ffffffffdfffffffddffffffeddfffffeeddffffeeeddfffeeeeddffeeeeddff
 -- 150:aaaaaaaaa0000000a0000000a0000000a0000000a0000000a0000000a0000000
 -- 151:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 152:aaaaaa00000000d0000000d0000000d0000000d0000000d0000000d0000000d0
 -- 159:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 160:65aacccc6aaccccc6aaccccc6aacccccaaccccccaaccccccaaccccccaacccccc
+-- 160:ffaaccccfaacccccfaacccccfaacccccaaccccccaaccccccaaccccccaacccccc
 -- 161:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
--- 162:ccccaa54cccccaa4cccccaa4cccccaa4ccccccaaccccccaaccccccaaccccccaa
--- 163:65ddeeee6ddeeeee6ddeeeee6ddeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeee
+-- 162:ccccaaffcccccaafcccccaafcccccaafccccccaaccccccaaccccccaaccccccaa
+-- 163:ffddeeeefddeeeeefddeeeeefddeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeee
 -- 164:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 165:eeeedd54eeeeedd4eeeeedd4eeeeedd4eeeeeeddeeeeeeddeeeeeeddeeeeeedd
+-- 165:eeeeddffeeeeeddfeeeeeddfeeeeeddfeeeeeeddeeeeeeddeeeeeeddeeeeeedd
 -- 166:a0000000a0000000a0000000a0000000a0000000a0000000a0000000a0000000
 -- 168:000000d0000000d0000000d0000000d0000000d0000000d0000000d0000000d0
 -- 169:5555555556666665566666655666666556666665566666545666654455555444
@@ -2005,12 +2087,12 @@ end
 -- 173:2222222233333333333333332222222211111111111111111111111111111111
 -- 174:2222222233333332333333322222233211112332111123321111233211112332
 -- 175:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 176:aaccccccaaccccccaaccccccaacccccc6aaccccc6aaccccc6aaccccc65aacccc
+-- 176:aaccccccaaccccccaaccccccaaccccccfaacccccfaacccccfaacccccffaacccc
 -- 177:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
--- 178:ccccccaaccccccaaccccccaaccccccaacccccaa4cccccaa4cccccaa4ccccaa54
--- 179:ddeeeeeeddeeeeeeddeeeeeeddeeeeee6ddeeeee6ddeeeee6ddeeeee65ddeeee
+-- 178:ccccccaaccccccaaccccccaaccccccaacccccaafcccccaafcccccaafccccaaff
+-- 179:ddeeeeeeddeeeeeeddeeeeeeddeeeeeefddeeeeefddeeeeefddeeeeeffddeeee
 -- 180:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 181:eeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeedd4eeeeedd4eeeeedd4eeeedd54
+-- 181:eeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeeddfeeeeeddfeeeeeddfeeeeddff
 -- 182:a0000000a0000000a0000000a0000000a0000000a0000000a0000000a0000000
 -- 184:000000d0000000d0000000d0000000d0000000d0000000d0000000d0000000d0
 -- 185:4444444455554444566654495666544956665449566654445555444444444444
@@ -2020,12 +2102,12 @@ end
 -- 189:1111111111111111111111111111111111111111111111111111111111111111
 -- 190:1111233211112332111123321111233211112332111123321111233211112332
 -- 191:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 192:65aacccc65aacccc655aaccc6555aacc65565aac655555aa6555555a54444444
--- 193:ccccccccccccccccccccccccccccccccccccccccaccccccaaaaaaaaa4aaaaaa4
--- 194:ccccaa54ccccaa54cccaa554ccaa5554caa55454aa555554a555555444444444
--- 195:65ddeeee65ddeeee655ddeee6555ddee65565dde655555dd6555555d54444444
--- 196:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedeeeeeeddddddddd4dddddd4
--- 197:eeeedd54eeeedd54eeedd554eedd5554edd55454dd555554d555555444444444
+-- 192:ffaaccccffaaccccfffaacccffffaaccfffffaacffffffaafffffffaffffffff
+-- 193:ccccccccccccccccccccccccccccccccccccccccaccccccaaaaaaaaafaaaaaaf
+-- 194:ccccaaffccccaaffcccaafffccaaffffcaafffffaaffffffafffffffffffffff
+-- 195:ffddeeeeffddeeeefffddeeeffffddeefffffddeffffffddfffffffdffffffff
+-- 196:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedeeeeeedddddddddfddddddf
+-- 197:eeeeddffeeeeddffeeeddfffeeddffffeddfffffddffffffdfffffffffffffff
 -- 198:a0000000a0000000a0000000a0000000a0000000a00000000ddddddd00000000
 -- 199:000000000000000000000000000000000000000000000000dddddddd00000000
 -- 200:000000d0000000d0000000d0000000d0000000d0000000d0ddddddd000000000
