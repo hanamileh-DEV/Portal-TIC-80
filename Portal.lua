@@ -747,6 +747,7 @@ local function portalcenter(i)
 	else
 		z = z + 0.5
 	end
+	y = y + 0.5
 	return x, y, z
 end
 
