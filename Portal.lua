@@ -44,7 +44,7 @@ local pi2 = math.pi / 2
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1}
+local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0}
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -1536,6 +1536,7 @@ function unitic.turret_update()
 			if not x then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
 				if draw.objects.t[i].cd>40 then
 					plr.hp=plr.hp-R(1,2)
+					if plr.cd3<2 then plr.cd3=5 end
 					if draw.objects.t[i].type==12 or draw.objects.t[i].type==13 then
 						for _=1,2 do
 							addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
@@ -1973,14 +1974,17 @@ function TIC()
 	if open=="game" then
 		fps_.t1=time()
 		plr.cd2=max(plr.cd2-1,0)
+		plr.cd3=max(plr.cd3-1,0)
 	 --W A S D
 		lx, ly, lz = plr.x, plr.y, plr.z
+		if plr.cd3==0 or R()>0.05 then
+			if key(23) then plr.z = plr.z - math.cos(plr.ty) * speed plr.x = plr.x - math.sin(plr.ty) * speed end
+			if key(19) then plr.z = plr.z + math.cos(plr.ty) * speed plr.x = plr.x + math.sin(plr.ty) * speed end
+			if key(1) then plr.z = plr.z - math.cos(plr.ty - pi2) * speed plr.x = plr.x - math.sin(plr.ty - pi2) * speed end
+			if key(4) then plr.z = plr.z + math.cos(plr.ty - pi2) * speed plr.x = plr.x + math.sin(plr.ty - pi2) * speed end
+		end
 
-		if key(23) then plr.z = plr.z - math.cos(plr.ty) * speed plr.x = plr.x - math.sin(plr.ty) * speed end
-		if key(19) then plr.z = plr.z + math.cos(plr.ty) * speed plr.x = plr.x + math.sin(plr.ty) * speed end
-		if key(1) then plr.z = plr.z - math.cos(plr.ty - pi2) * speed plr.x = plr.x - math.sin(plr.ty - pi2) * speed end
-		if key(4) then plr.z = plr.z + math.cos(plr.ty - pi2) * speed plr.x = plr.x + math.sin(plr.ty - pi2) * speed end
-		if key(64) then speed = 8 else speed = 4 end
+		if plr.cd3==0 and key(64) then speed = 8 else speed = 4 end
 		if plr.noclip then speed=12 end
 		if keyp(57) or keyp(22) then plr.noclip = not plr.noclip end
 	 --jump
@@ -2004,6 +2008,9 @@ function TIC()
 			end
 			if plr.cd2>0 then
 				updpal((10-plr.cd2)/10*0.7+0.3,1,1)
+			end
+			if plr.cd3>0 then
+				updpal(1,0.2*(3-plr.cd3*0.2),0.2*(3-plr.cd3*0.2))
 			end
 		end
 	 --camera rotation
