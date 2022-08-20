@@ -1055,6 +1055,17 @@ function unitic.player_collision()
 		end
 	end
 
+	for i=1,#draw.objects.t do
+		local x0=draw.objects.t[i].x
+		local y0=draw.objects.t[i].y
+		local z0=draw.objects.t[i].z
+		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16,       x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12) then
+			if  coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12) then colx = true end
+			if  coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12) then coly = true end
+			if  coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12) then colz = true end
+		end
+	end
+
 	if not plr.noclip then
 		if colx then plr.x = lx end
 		if coly then plr.y = ly end
@@ -1507,6 +1518,49 @@ local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitflats) -- walk along a se
 	end
 end
 
+function unitic.turret_update()
+	for i=1,#draw.objects.t do
+		local t_ang=0
+		if     draw.objects.t[i].type==10 then t_ang=pi2
+		elseif draw.objects.t[i].type==11 then t_ang=-pi2
+		elseif draw.objects.t[i].type==12 then t_ang=0
+		elseif draw.objects.t[i].type==13 then t_ang=-math.pi end
+
+		local x0=draw.objects.t[i].x
+		local y0=draw.objects.t[i].y
+		local z0=draw.objects.t[i].z
+		local ang=math.atan(x0-plr.x,z0-plr.z)-t_ang
+
+		if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
+			local x=raycast(x0,y0+35,z0,plr.x,plr.y,plr.z,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true}) 
+			if not x then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
+				if draw.objects.t[i].cd>40 then
+					plr.hp=plr.hp-R(1,2)
+					if draw.objects.t[i].type==12 or draw.objects.t[i].type==13 then
+						for _=1,2 do
+							addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+							addp(x0+16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+							addp(x0-16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+							addp(x0-16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						end
+					else
+						for _=1,2 do
+							addp(x0,y0+32,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+							addp(x0,y0+48,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+							addp(x0,y0+32,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+							addp(x0,y0+48,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						end
+					end
+				end
+			else
+				draw.objects.t[i].cd=max(draw.objects.t[i].cd-1,0)
+			end
+		else
+			draw.objects.t[i].cd=max(draw.objects.t[i].cd-1,0)
+		end
+	end
+end
+
 function unitic.button_update()
 	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
@@ -1607,6 +1661,7 @@ function addobj(x, y, z, type,t1) --objects
 		draw.objects.t[#draw.objects.t+1]=
 		{type=type,
 		x=x,y=y,z=z,
+		cd=0,
 		draw=true,model=model[type]}
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
@@ -1840,7 +1895,7 @@ addobj(16,0,240,6,0)
 addobj(16,0,336,6,-1)
 addobj(16,0,432,6,math.huge)
 
-addobj(300,0,300,12)
+addobj(300,0,300,13)
 
 --init
 local tm1,tm2 = 0,0
@@ -1958,12 +2013,13 @@ function TIC()
 	 	end
 		plr.ty = plr.ty%(math.pi*2)
 		plr.tx = max(min(plr.tx, pi2), -pi2)
-	 --collision
+	 --update + collision
 		fps_.t2=time()
 		unitic.player_collision()
 		unitic.portal_collision()
 		unitic.cube_update()
 		unitic.button_update()
+		unitic.turret_update()
 		fps_.t3=time()
 	 --scripts
 		for i=1,5 do
@@ -1972,7 +2028,7 @@ function TIC()
 				update_world()
 			end
 		end
-		if t%30==0 then addobj(1010,180,560,2) end
+		--if t%30==0 then addobj(1010,180,560,2) end
 	 --render
 		unitic.render()
 		fps_.t4=time()
@@ -2010,6 +2066,9 @@ function TIC()
 				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 			},
+			{
+				draw.objects.t[1].cd
+			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
 		
