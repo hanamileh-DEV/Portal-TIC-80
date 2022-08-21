@@ -1393,8 +1393,10 @@ function unitic.render()
 							unitic.poly.v[portal[1][3]][3],
 							unitic.poly.v[portal[2][2]][3]
 						local minz = min(mz1, mz2, mz3, mz4)
-						local div = minz/0.1
-						mz1,mz2,mz3,mz4=mz1/div,mz2/div,mz3/div,mz4/div
+						if minz > 0.1 then
+							local div = minz/0.1
+							mz1,mz2,mz3,mz4=mz1/div,mz2/div,mz3/div,mz4/div
+						end
 						ttri(
 							unitic.poly.v[portal[1][1]][1],unitic.poly.v[portal[1][1]][2],
 							unitic.poly.v[portal[1][2]][1],unitic.poly.v[portal[1][2]][2],
