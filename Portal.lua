@@ -1536,7 +1536,7 @@ function unitic.turret_update()
 			if not x then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
 				if draw.objects.t[i].cd>40 then
 					plr.hp=plr.hp-R(1,2)
-					if plr.cd3<2 then plr.cd3=5 end
+					if plr.cd3<2 then plr.cd3=5 sfx(4,"C-3",-1,1) end
 					if draw.objects.t[i].type==12 or draw.objects.t[i].type==13 then
 						for _=1,2 do
 							addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
@@ -1830,25 +1830,25 @@ end
 
 for x=0,10 do for z=0,10 do
 	addwall(x,0,z,2,2,1)
-	if R()>0.5 then addwall(x,2,z,2,3,R(1,5)) end
-	addwall(x,3,z,2,1,1)
+	--if R()>0.5 then addwall(x,2,z,2,3,R(1,5)) end
+	--addwall(x,3,z,2,1,1)
 end end
 
 for x=0,10 do
-	addwall(x ,0,0 ,3,1,2)
-	addwall(x ,0,11,3,2,2)
-	addwall(0 ,0,x ,1,2,2)
-	addwall(11,0,x ,1,1,2)
+	-- addwall(x ,0,0 ,3,1,2)
+	-- addwall(x ,0,11,3,2,2)
+	-- addwall(0 ,0,x ,1,2,2)
+	-- addwall(11,0,x ,1,1,2)
 
-	addwall(x ,1,0 ,3,1,2)
-	addwall(x ,1,11,3,2,2)
-	addwall(0 ,1,x ,1,2,2)
-	addwall(11,1,x ,1,1,2)
+	-- addwall(x ,1,0 ,3,1,2)
+	-- addwall(x ,1,11,3,2,2)
+	-- addwall(0 ,1,x ,1,2,2)
+	-- addwall(11,1,x ,1,1,2)
 
-	addwall(x ,2,0 ,3,1,2)
-	addwall(x ,2,11,3,2,2)
-	addwall(0 ,2,x ,1,2,2)
-	addwall(11,2,x ,1,1,2)
+	-- addwall(x ,2,0 ,3,1,2)
+	-- addwall(x ,2,11,3,2,2)
+	-- addwall(0 ,2,x ,1,2,2)
+	-- addwall(11,2,x ,1,1,2)
 end
 
 addwall(1,0,0,3,1,10)
@@ -1888,7 +1888,7 @@ addwall(6,0,5,2,3,8)
 addwall(6,0,6,2,3,8)
 addwall(3,0,5,2,3,8)
 
-addobj(624,24,528,2)
+-- addobj(624,24,528,2)
 
 addobj(16,0,48 ,6,60)
 addobj(16,0,144,6,10)
@@ -1945,6 +1945,33 @@ function TIC()
 	-- pause -----------------
 	--------------------------
 	if open=="pause" then
+		p.t=p.t+1
+		--GUI
+		vbank(0)
+		memcpy(0x0,0x8000,240*136/2)
+		vbank(1)
+		cls(0)
+		--logo
+		spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3)
+		--text
+		print("Pause",min(p.t*2,37),30,7)
+
+		print("Resume"       ,1+p.t1/2,50,7)
+		print("Restart level",1+p.t2/2,59,7)
+		print("Settings"     ,1+p.t3/2,79,7)
+		print("Exit"         ,1+p.t4/2,119,7)
+		--buttons
+		if my>46 and my<57 then p.t1=min(p.t1+2,20) cid=1 if clp1 then open="game" poke(0x7FC3F,1,1) music(0) end else p.t1=max(p.t1-1,0) end
+		if my>56 and my<67 then p.t2=min(p.t2+2,20) cid=1 else p.t2=max(p.t2-1,0) end
+		if my>76 and my<87 then p.t3=min(p.t3+2,20) cid=1 if clp1 then open="pause|settings"                  end else p.t3=max(p.t3-1,0) end
+		if my>116 and my<127 then p.t4=min(p.t4+2,20) cid=1 if clp1 then exit() end else p.t4=max(p.t4-1,0) end
+		--Resume button
+		if keyp(44) and p.t>1 then open="game" poke(0x7FC3F,1,1) music(0) end
+	end
+	--------------------------
+	-- pause|settings --------
+	--------------------------
+	if open=="pause|settings" then
 		p.t=p.t+1
 		--GUI
 		vbank(0)
@@ -2646,6 +2673,7 @@ end
 -- 001:af00bff0cf00df00ef00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00100000000000
 -- 002:000010102020303030404050406050706080609060a070b070c080d080e090f090f0a0f0a0f0b0f0c0f0c0f0d0f0e0f0f0f0f0f0f0f0f0f0f0f0f000280000000000
 -- 003:63b0734083d093b0a350b370c3a0d350e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f30030b000000000
+-- 004:048024e044f054d0649074809450a430b430c410c400c400c400c400d400e400e400f400f400f400f400f400f400f400f400f400f400f400f400f400200000000000
 -- 016:030003000300b300c300d300039003900390b390c390d390f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300305000000000
 -- 017:030003000300b300c300d300039003900390b390c390d39003e003e003e0b3e0c3e0d3e0f3e0f300f300f300f300f300f300f300f300f300f300f300482000000000
 -- 059:020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200300000000000
@@ -2710,7 +2738,7 @@ end
 -- </PATTERNS>
 
 -- <TRACKS>
--- 000:c301800001c0000101000000000000000000000000000000000000000000000000000000000000000000000000000000000010
+-- 000:0001800001c0000101000000000000000000000000000000000000000000000000000000000000000000000000000000000010
 -- 001:6d58566d5856ad5856ad5856000000000000000000000000000000000000000000000000000000000000000000000000460050
 -- 002:b10c57b97c57b97c57f18000120c571a8c57320c57329c57b596e986aaea000000000000000000000000000000000000000070
 -- 003:c20000c6b000cab000c6bf20c2c000c2c1300000002fc0000000000000000000000000000000000000000000000000000000f0
