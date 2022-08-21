@@ -1761,9 +1761,9 @@ function update_world()
 		end
 
 		local last = #draw.world.f
-		if type == 4 then
+		if type == 4 and angle ~= 2 then
 			draw.p_verts[1] = {draw.world.f[last - 1], draw.world.f[last]}
-		elseif type == 5 then
+		elseif type == 5 and angle ~= 2 then
 			draw.p_verts[2] = {draw.world.f[last - 1], draw.world.f[last]}
 		end
 		------
