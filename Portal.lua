@@ -1381,7 +1381,7 @@ function unitic.render()
 					cam.tx = plr.tx
 					unitic.update(true,2) unitic.draw() --orange portal
 				end
-				if st.r_both then
+				if st.r_both and draw.p[1] and draw.p[2] then
 					vbank(1) do
 						cls(0)
 						cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
@@ -1450,7 +1450,7 @@ function unitic.render()
 	unitic.update_pr()
 	unitic.update()
 	unitic.draw()
-	if not st.r_both and (draw.p[1] or draw.p[2]) then
+	if (draw.p[1] or draw.p[2]) and not (st.r_both and draw.p[1] and draw.p[2]) then
 		--portal overlays
 		local v_id={}
 		if dist then
