@@ -1269,15 +1269,13 @@ function unitic.render()
 	end
 	if draw.p[1] and draw.p[2] then
 		dist=dist1 < dist2
-
-		dist=false
 	end
 
 	vbank(1)
-		if not st.potato_pc or R()<0.05 then cls(0) end
+		if not st.potato_pc or R()<0.05 then cls(1) end
 		unitic.update_pr()
 		unitic.update()
-		if plr.dt~=2 then unitic.draw() end
+		unitic.draw()
 		if draw.p[1] or draw.p[2] then
 			--portal overlays
 			local v_id={}
@@ -2120,32 +2118,20 @@ function TIC()
 	 	local debug_text={
 			{
 				"FPS:  " .. F(1000 / (fr[3]+fr[2])*2),
-				"Main world",
-				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			},
-			-- {
-			-- 	"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5),
-			-- },
-			-- {
-			-- 	"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(t2).." ms.",
-			-- 	"Av: "..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).." ms. min: "..F(fr[2]+0.5).." ms. max: "..F(fr[3]+0.5).." ms.",
-			-- 	"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. "
-			-- },
-			-- {
-			-- 	"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
-			-- 	#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
-			-- 	"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			-- },
-			{
-				"FPS:  " .. F(1000 / (fr[3]+fr[2])*2),
-				"the world for the blue portal",
-				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 			},
 			{
-				"FPS:  " .. F(1000 / (fr[3]+fr[2])*2),
-				#draw.world_bp.f,
+				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5),
+			},
+			{
+				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(t2).." ms.",
+				"Av: "..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).." ms. min: "..F(fr[2]+0.5).." ms. max: "..F(fr[3]+0.5).." ms.",
+				"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. "
+			},
+			{
+				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
+				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			}
+			},
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
 		
