@@ -35,8 +35,8 @@ local st={ --settings
 potato_pc=false, --dont
 css_content=true, --dont
 m_s=80, --mouse sensitivity
-r_p=false, --rendering portals
-r_both=false, -- render both portals
+r_p=true, --rendering portals
+r_both=true, -- render both portals
 h_q_p=true, --high quality portals
 }
 local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.abs
@@ -643,6 +643,8 @@ local draw={
 	}
 }
 
+local fps_={t1=0,t2=0,t3=0,t4=0,t5=0,t6=0,t7=0,t8=0,t9=0}
+
 local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
 end
@@ -661,7 +663,7 @@ end
 
 function unitic.update(draw_portal,p_id)
 	--writing all polygons in unitic.poly
-	unitic.poly = { v = {}, f = {}, sp = {} }
+	unitic.poly = { v = {}, f = {}, sp = {} } draw_portal=nil
 	unitic.obj  = {}
 	unitic.p    = {}
 	--world--
@@ -1338,6 +1340,9 @@ function unitic.render()
 
 	vbank(0)
 	cls()
+	fps_.t4=time()
+	fps_.t5=fps_.t4
+	fps_.t6=fps_.t4
 
 	if st.r_p and draw.p[1] and draw.p[2] then
 		local x1, y1, z1 = portalcenter(1)
@@ -1368,7 +1373,7 @@ function unitic.render()
 		elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
 		elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
 		end
-
+		fps_.t4=time()
 		if st.h_q_p or min(dist1,dist2)<128^2 or (t%2==0 and min(dist1,dist2)<512^2) or (t%3==0 and min(dist1,dist2)>=512^2) then
 				if dist then
 					cam.x = 96*x2 + relx1
@@ -1385,6 +1390,8 @@ function unitic.render()
 					cam.tx = plr.tx
 					unitic.update(true,2) unitic.draw() --orange portal
 				end
+				fps_.t5=time()
+
 				if st.r_both and draw.p[1] and draw.p[2] then
 					vbank(1) do
 						cls(0)
@@ -1443,6 +1450,8 @@ function unitic.render()
 					end
 				end
 				memcpy(0x8000,0x0,240*136/2)
+				fps_.t6=time()
+				
 			else
 				memcpy(0x0,0x8000,240*136/2)
 			end
@@ -1453,7 +1462,9 @@ function unitic.render()
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 	unitic.update_pr()
 	unitic.update()
+	fps_.t7=time()
 	unitic.draw()
+	fps_.t8=time()
 	if (draw.p[1] or draw.p[2]) and not (st.r_both and draw.p[1] and draw.p[2]) then
 		--portal overlays
 		local v_id={}
@@ -1506,6 +1517,7 @@ function unitic.render()
 	if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
 	if draw.p[1] then spr(496, 117, 65, 1) end
 	if draw.p[2] then spr(497, 117, 65, 1) end
+	fps_.t9=time()
 end
 
 local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitflats) -- walk along a segment, checking whether it collides with the walls
@@ -1869,9 +1881,8 @@ if not st.css_content then
 	end
 end
 
-local fps_={t1=0,t2=0,t3=0,t4=0}
 local avf={} --average frame
-local fr={0,0,0} --framerate
+local fr={0,0,0} --frametime
 t1=0
 t2=0
 t=0
@@ -2108,7 +2119,7 @@ function TIC()
 		-- if t%30==0 then addobj(1010,180,560,2) end
 	 --render
 		unitic.render()
-		fps_.t4=time()
+		--fps_.t4=time()
 	 --portal gun
 		portal_gun()
 	 --sounds
@@ -2136,7 +2147,8 @@ function TIC()
 			{
 				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(t2).." ms.",
 				"Av: "..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).." ms. min: "..F(fr[2]+0.5).." ms. max: "..F(fr[3]+0.5).." ms.",
-				"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. "
+				"Other:"..max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0).." ms. portals:"..F(fps_.t5-fps_.t4).."|"..F(fps_.t6-fps_.t5).." ms.",
+				"Update:"..F(fps_.t7-fps_.t6).." ms. draw:"..F(fps_.t8-fps_.t7).." ms."
 			},
 			{
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
