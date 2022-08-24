@@ -1934,11 +1934,12 @@ addwall(3,0,5,2,2,8)
 local tm1,tm2 = 0,0
 local p={t=0,t1=0,t2=0,t3=0,t4=0} --pause
 local ls={t=0,pr=0} --loading screen
+local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 update_world()
-poke(0x7FC3F,1,1)
+--poke(0x7FC3F,1,1)
 
 --music(0)
-local open="game"
+local open="start"
 
 function TIC()
 	--fps counter
@@ -1953,6 +1954,139 @@ function TIC()
 
 	clp1 = tm1 == 1
 	clp2 = tm2 == 1
+	--------------------------
+	-- start -----------------
+	--------------------------
+	if open=="start" then
+		if sts.t2>0 then sts.t2=sts.t2-1 end
+
+		cls(1)
+
+		if sts.t==1 then
+			print("Enter the current time.",51,3,7)
+			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],80,50,6,true,2)
+			if sts.i<2 then
+			line(79+sts.i*12,61,91+sts.i*12,61,7)
+			else
+			line(79+sts.i*12+12,61,91+sts.i*12+12,61,7)
+			end
+
+			if keyp(1) or btnp(2) then sts.i=sts.i-1 end
+			if keyp(4) or btnp(3) then sts.i=sts.i+1 end
+			sts.i=sts.i%4
+			
+			if keyp(23) or btnp(0) then sts.time[sts.i+1]=sts.time[sts.i+1]+1 end
+			if keyp(19) or btnp(1) then sts.time[sts.i+1]=sts.time[sts.i+1]-1 end
+
+			sts.time[1]=sts.time[1]%3 sts.time[1]=sts.time[1]*10+sts.time[2]
+			sts.time[1]=sts.time[1]%24 sts.time[2]=sts.time[1]%10 sts.time[1]=sts.time[1]//10
+			sts.time[3]=sts.time[3]%6 sts.time[4]=sts.time[4]%10
+		end
+		--confirm button
+		if sts.t2==0 and sts.t~=2 and (sts.t<8  or sts.t==16) then
+			rect(94,122,40,8,2)
+			print("Confirm",95,123,7)
+			if mx>93 and my>121 and mx<134 and my<131 then cid=1 if clp1 then sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
+		end
+		--Yes/no button
+		if sts.t2==0 and (sts.t==2 or sts.t>7) and sts.t~=16 and sts.t~=32 then
+			rect(67,122,18,8,2)
+			rect(143,122,13,8,2)
+			print("Yes",68,123,7)
+			print("No",144,123,7)
+			if mx>66  and my>121 and mx<85  and my<131 then cid=1 if clp1 then sts.y=sts.y+1 sts.q=1 sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
+			if mx>143 and my>121 and mx<156 and my<131 then cid=1 if clp1 then sts.n=sts.n+1 sts.q=2 sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
+		end
+		--slider
+		if (sts.t>2 and sts.t<8) or sts.t==16 then
+			rect(20,88,180,2,2)
+			rect(20+sts.sl*1.8,85,2,8,6)
+			if mx>19 and my>85 and mx<200 and my<93 then cid=1 if cl1 then sts.sl=(mx-20)/1.8 end end
+		end
+		--Number on the slider
+		if (sts.t>3 and sts.t<8) or sts.t==16 then
+			print(F(sts.sl+0.5),100,68,7,false,2)
+		end
+
+		------------
+		if sts.t==2 then
+			print("Is this the exact time?",51,3,7)
+			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
+		end
+
+		if sts.t==3 then
+			print("How accurate is this time?",51,3,7)
+			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
+			print("not accurate",12,76,7)
+			print("accurate",160,76,7)
+		end
+
+		if sts.t==4 then print("Pull the slider until the given number becomes prime",29,3,7,false,1,true) end
+		if sts.t==5 then print("Pull the slider until the number becomes more than 50",29,3,7,false,1,true) end
+		if sts.t==6 then print("How many numbers from 0 to 100 have 3 divisors exist?",29,3,7,false,1,true) end
+		if sts.t==7 then print("Pull the slider until the number becomes completely by chance",11,3,7,false,1,true) end
+		if sts.t==8 then print("Do you know the authors of this game?",19,3,7,false,1,false) end
+		if sts.t==9 then print("Do the authors of this game know you?",19,3,7,false,1,false) end
+		if sts.t==11 then
+			if sts.q==1 then
+				print([[Have you just answered "yes" to the last empty question?]],19,3,7,false,1,true)
+			else
+				print([[Have you just answered "no" to the last empty question?]],19,3,7,false,1,true)
+			end
+		end
+		if sts.t==12 then
+			if sts.q==1 then
+				print([[Why did you answer "yes"]].."\n\n "..[[to the last question?]],55,3,7,false,1,false)
+			else
+				print([[Why did you answer "no"]] .."\n\n "..[[to the last question?]],55,3,7,false,1,false)
+			end
+		end
+		if sts.t==13 then print("Do you consider yourself happy?",30,3,7,false,1,false) end
+		if sts.t==14 then print("Have you ever thought that you have mental disorders?",20,3,7,false,1,true) end
+		if sts.t==15 then print("Do you think you have a lot of friends?",10,3,7,false,1,false) end
+		if sts.t==16 then print("How many friends do you have?",35,3,7,false,1,false) end
+		if sts.t==17 then print("Do you really like this game?",35,3,7,false,1,false) end
+		if sts.t==18 then print("Have you answered the truth?",35,3,7,false,1,false) end
+		if sts.t==19 then print("Do you want to start the game?",35,3,7,false,1,false) end
+		if sts.t==20 then print("Do you like this survey?",40,3,7,false,1,false) end
+		if sts.t==21 then print("Are you positive to the chairs?",35,3,7,false,1,false) end
+		if sts.t==22 then print("Is there a Chinese layout on your keyboard?",1,3,7,false,1,false) end
+		if sts.t==23 then print("Why?",107,3,7,false,1,false) end
+		if sts.t==24 then print("_",107,3,7,false,1,false) end
+		if sts.t==27 then print("Have you ever found HanamileH\n\n   rather cute and pretty?",42,3,7,false,1,false) end
+		if sts.t==28 then print(" Have you ever had dreams with\n\nthe participation of HanamileH?",36,3,7,false,1,false) end
+		if sts.t==29 then print("Would you like to ever meet HanamileH live?",6,3,7,false,1,false) end
+		if sts.t==30 then print("Why are you still answering this survey?",10,3,7,false,1,false) end
+		if sts.t==31 then print("Do you want me to help you?",44,3,7,false,1,false) end
+		if sts.t==32 then
+			print("Press any button to start the game",22,3,7,false,1,false)
+		
+			clip(1,10,238,125)
+			for x=0,240,23 do for y=0,135,13 do
+				local dx,dy=x-mx+10,y-my+5
+				local d=(dx^2+dy^2)^0.5
+
+				local px,py=mx+dx*(20/d+1),my+dy*(20/d+1)
+
+				rect(px-1,py-1,19,9,4)
+				print("any",px,py+1,0)
+				print("any",px,py,7)
+			end end
+			clip()
+			rectb(1,10,238,125,2)
+
+			if mx>54 and my>2 and mx<75 and my<10 then cid=1 if clp1 then sts.t=33 sts.t2=60 end end
+		end
+		if sts.t==33 then
+			print("Your statistics:",73,3,7,false,1,false)
+			print("Press the buttons \"yes\": "..sts.y.." times",31,34,7)
+			print("Press the buttons \"no\" : "..sts.n.." times",31,44,7)
+			print("Spent empty: "..F(time()/1000).." seconds",62,54,7)
+			print("Are you satisfied with your results?",20,97,7)
+		end
+
+		if sts.t==35 then open="game" poke(0x7FC3F,1,1) end
+	end
 	--------------------------
 	-- loading ---------------
 	--------------------------
