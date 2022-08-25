@@ -641,6 +641,35 @@ local draw={
 	}
 }
 
+--maps
+local maps={}
+
+maps[0]={ --main gameroom
+	w={ --table for walls
+	--{X, Y, Z, angle, face, type}
+	},
+	o={ --table for objects
+	 --{X, Y, Z, type, [additional.parameters (not necessarily)]}
+	},
+	p={}, --table for portals (leave empty if the portals are not needed)
+	lg={} --light bridge generators
+}
+--
+for x=0,10 do
+	for y=0,2 do
+		maps[0].w[#maps[0].w+1]={x,y,0 ,3,1,R(1,2)}
+		maps[0].w[#maps[0].w+1]={x,y,11,3,2,R(1,2)}
+		maps[0].w[#maps[0].w+1]={0 ,y,x,1,2,R(1,2)}
+		maps[0].w[#maps[0].w+1]={11,y,x,1,1,R(1,2)}
+	end
+
+
+	for z=0,10 do
+		maps[0].w[#maps[0].w+1]={x,0,z,2,2,1}
+		maps[0].w[#maps[0].w+1]={x,3,z,2,1,2}
+	end
+end
+--
 local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
 end
@@ -1764,6 +1793,63 @@ function update_world()
 		end
 	end
 end
+
+local function load_world(world_id) --Loads the world from ROM memory (from the 'Maps' table)
+	--init
+	draw.map={}
+	draw.world={v={},f={},sp={}}
+	draw.p={nil,nil}
+	draw.pr={}
+	draw.lg={}
+	draw.objects={
+		c={}, --cubes
+		cd={}, --cube dispensers
+		lb={}, --light bridges
+		b={}, --buttons
+		t={} --turrets
+	}
+	
+	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
+		table.insert(draw.world.v,{x*96,y*128,z*96})
+	end end end
+	
+	for i=1,4 do
+		q3={}
+		for x=0,world_size[1]-1 do
+			q2={}
+			for y=0,world_size[2]-1 do
+				q={}
+				for z=0,world_size[3]-1 do
+					q[z]={0,0}
+				end
+				q2[y]=q
+			end
+			q3[x]=q2
+		end
+		draw.map[i]=q3
+	end
+
+	--foolproof
+	if maps[world_id]==nil then
+		error("Unknown ID in the world | "..world_id)
+	end
+	----
+	for i=1,#maps[world_id].w do
+		addwall(maps[world_id].w[i][1],maps[world_id].w[i][2],maps[world_id].w[i][3],maps[world_id].w[i][4],maps[world_id].w[i][5],maps[world_id].w[i][6])
+	end
+	for i=1,#maps[world_id].o do
+		addobj(maps[world_id].o[i][1],maps[world_id].o[i][2],maps[world_id].o[i][3],maps[world_id].o[i][4],maps[world_id].o[i][5])
+	end
+	for i=1,#maps[world_id].lg do
+		draw.lg[i]=maps[world_id].lg[i]
+	end
+
+	if maps[world_id].p then
+		draw.p=maps[world_id].p
+	end
+	----
+	update_world()
+end
 --palette
 local pal="0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6fad67918ffbe3cff00ff"
 function respal()
@@ -1785,6 +1871,7 @@ function darkpal(c)
 		poke(0x03FC0+i,peek(0x03FC0+i)*c)
 	end
 end
+
 --css content
 if not st.css_content then
 	pal="0000000000003838385d5d5d7d7d7dbababad6d6d6ffffffff00ffff00003499ba65eef6b2f6fad67918ffbe3cff00ff"
@@ -1807,29 +1894,8 @@ t2=0
 t=0
 local speed=4
 
-for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
-	table.insert(draw.world.v,{x*96,y*128,z*96})
-	--table.insert(draw.world.sp,{x*96,y*128,z*96})
-end end end
-
-for i=1,4 do
-	q3={}
-	for x=0,world_size[1]-1 do
-		q2={}
-		for y=0,world_size[2]-1 do
-			q={}
-			for z=0,world_size[3]-1 do
-				q[z]={0,0}
-			end
-			q2[y]=q
-		end
-		q3[x]=q2
-	end
-	draw.map[i]=q3
-end
-
 for x=0,10 do for z=0,10 do
-	addwall(x,0,z,2,2,1)
+	--addwall(x,0,z,2,2,1)
 	--if R()>0.5 then addwall(x,2,z,2,3,R(1,5)) end
 	--addwall(x,3,z,2,1,1)
 end end
@@ -1850,7 +1916,7 @@ for x=0,10 do
 	-- addwall(0 ,2,x ,1,2,2)
 	-- addwall(11,2,x ,1,1,2)
 end
-
+--[[
 addwall(1,0,0,3,1,10)
 addwall(2,0,0,3,1,8)
 addwall(2,0,11,3,2,9)
@@ -1897,12 +1963,13 @@ addobj(16,0,336,6,-1)
 addobj(16,0,432,6,math.huge)
 
 addobj(300,0,300,13)
+]]
 
 --init
 local tm1,tm2 = 0,0
 local p={t=0,t1=0,t2=0,t3=0,t4=0} --pause
 local ls={t=0,pr=0} --loading screen
-update_world()
+load_world(0)
 poke(0x7FC3F,1,1)
 
 --music(0)
@@ -2056,18 +2123,18 @@ function TIC()
 		unitic.turret_update()
 		fps_.t3=time()
 	 --scripts
-		for i=1,5 do
-			if draw.objects.b[i].tick then
-				if draw.objects.b[i].s then addwall(0,0,i-1,1,2,19) else addwall(0,0,i-1,1,2,18) end
-				update_world()
-			end
-		end
+		-- for i=1,5 do
+		-- 	if draw.objects.b[i].tick then
+		-- 		if draw.objects.b[i].s then addwall(0,0,i-1,1,2,19) else addwall(0,0,i-1,1,2,18) end
+		-- 		update_world()
+		-- 	end
+		-- end
 		--if t%30==0 then addobj(1010,180,560,2) end
 	 --render
 		unitic.render()
 		fps_.t4=time()
 	 --portal gun
-		portal_gun()
+		pcall(portal_gun)
 	 --sounds
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) and s.t1==0 then sfx(1) if key(64) then s.t1=15 else s.t1=20 end end
@@ -2099,9 +2166,6 @@ function TIC()
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
 				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			},
-			{
-				draw.objects.t[1].cd
 			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
