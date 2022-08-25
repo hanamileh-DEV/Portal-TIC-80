@@ -45,11 +45,18 @@ music=true,
 sfx=true,
 }
 
-save={ --saving the game --not pmem(0)~=0
-i=false, --How for the first time the player went into the game
+save={ --saving the game
+i=not pmem(0)~=0, --How for the first time the player went into the game
 lvl=pmem(0),
-} 
+st=pmem(1) --settings (All settings except the sensitivity of the mouse in binary form)
+}
 
+if save.st&16~=0 then
+	st.r_p  =save.st&1~=0
+	st.h_q_p=save.st&2~=0
+	st.music=save.st&4~=0
+	st.sfx  =save.st&8~=0
+end
 
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
@@ -2003,9 +2010,9 @@ function TIC()
 			print("Exit"      ,min(ms.t*2-60,4)+(1-ms.t6)*20,125,7)
 			vbank(0)
 			--buttons
-			if my>44  and my<55  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) else ms.t1=min(1,ms.t1+0.05) end
+ 			if my>44  and my<55  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" end else ms.t1=min(1,ms.t1+0.05) end
 
-			if my>54  and my<65  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load" music() else open="main|newgame" sfx(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
+			if my>54  and my<65  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" music() else open="main|newgame" sfx(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
 
 			if my>74  and my<85  then cid=1 ms.t3=max(ms.t3-0.05,0.5) else ms.t3=min(1,ms.t3+0.05) end
 			if my>94  and my<105 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
@@ -2018,8 +2025,8 @@ function TIC()
 			print("Continue?",4,65,7)
 
 			print("Accept",4+(1-ms.t1)*20,85,7)
-			print("Cancel",4+(1-ms.t2)*20,105,7)
-			if my>84  and my<95  then cid=1 ms.t1=max(ms.t1-0.05,0.5) else ms.t1=min(1,ms.t1+0.05) end
+			print("Cancel",4+(1-ms.t2)*20,105,7) 
+			if my>84  and my<95  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 end else ms.t1=min(1,ms.t1+0.05) end
 			if my>104 and my<115 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
 		elseif open=="main|authors" then
 			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
@@ -2044,12 +2051,20 @@ function TIC()
 			if st.h_q_p then print("On",117,85,13) else print("Off",117,85,11) end
 
 			--buttons
-			if my>54  and my<64  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(18) st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
+			if my>54  and my<64  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(18) music(2) st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
 			if my>64  and my<74  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(18) st.sfx  =not st.sfx   end else ms.t2=min(1,ms.t2+0.05) end
 			if my>74  and my<84  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then sfx(18) st.r_p  =not st.r_p   end else ms.t3=min(1,ms.t3+0.05) end
 			if my>84  and my<94  then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p=not st.h_q_p end else ms.t4=min(1,ms.t4+0.05) end
 			if my>104 and my<114 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then sfx(16) --[[coming soon]] end else ms.t5=min(1,ms.t5+0.05) end
 			if my>124 and my<134 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t6=min(1,ms.t6+0.05) end
+			--saving the settings
+			save.st=0
+			if st.r_p   then save.st=save.st+1 end
+			if st.h_q_p then save.st=save.st+2 end
+			if st.music then save.st=save.st+4 end
+			if st.sfx   then save.st=save.st+8 end
+			save.st=save.st+16
+			pmem(1,save.st)
 		end
 	end
 	--trace(mx.." "..my,12)
@@ -2072,6 +2087,17 @@ function TIC()
 		clip()
 		rect(193,28,38,2,10)
 		rect(193,118,38,2,13)
+	end
+	--------------------------
+	-- load lvl --------------
+	--------------------------
+	if open=="load lvl" then
+		if save.lvl==0 then save.lvl=1 end
+		save.lvl=0
+		pmem(0,save.lvl)
+		load_world(save.lvl)
+		poke(0x7FC3F,1,1)
+		open="game"
 	end
 	--------------------------
 	-- pause -----------------
@@ -2253,6 +2279,9 @@ function TIC()
 			end
 		vbank(0) end
 	end
+	--settings
+	if not st.sfx then sfx(-1) sfx(-1,0,1) end
+	if not st.music then music(-1) end
 	--cursor id
 	vbank(0)
 	poke4(0x07FF6,cid)
@@ -2267,6 +2296,7 @@ function TIC()
 	end
 	fr[1]=fr[1]/#avf
 end
+
 
 function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
