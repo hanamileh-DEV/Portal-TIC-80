@@ -641,7 +641,9 @@ local draw={
 		b={}, --buttons
 		t={} --turrets
 	},
-	world={v={},f={},sp={}},
+	world={v={},f={},sp={}}, --main world
+	world_bp={f={}}, --the world for the blue portal
+	world_op={f={}}, --the world for the orange portal
 	map={},
 	pr={}, --particles
 	p={ --portals
@@ -745,75 +747,13 @@ function unitic.update(draw_portal,p_id)
 	for ind = 1, #draw.world.v do
 		unitic.poly.v[ind] = { draw.world.v[ind][1], draw.world.v[ind][2], draw.world.v[ind][3] }
 	end
-
-	--quick clipping for portals
+	--faces
 	if draw_portal==nil then
-		for ind=1,#draw.world.f do unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-	elseif draw_portal==true and p_id==1 then
-		if draw.p[2][4]==1 and draw.p[2][5]==1 then
-
-			for ind=1,#draw.world.f do
-				if (draw.world.f[ind][1]%world_size[4]%world_size[1]>(draw.p[2][1]+1) or draw.world.f[ind][2]%world_size[4]%world_size[1]>(draw.p[2][1]+1) or draw.world.f[ind][3]%world_size[4]%world_size[1]>(draw.p[2][1]+1))==false and
-					(draw.world.f[ind][1]%world_size[4]%world_size[1]~=0 or draw.world.f[ind][2]%world_size[4]%world_size[1]~=0 or draw.world.f[ind][3]%world_size[4]%world_size[1]~=0)
-				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-			end
-
-		elseif draw.p[2][4]==1 and draw.p[2][5]==2 then
-
-			for ind=1,#draw.world.f do
-				if (draw.world.f[ind][1]%world_size[4]%world_size[1]<(draw.p[2][1]+1) or draw.world.f[ind][2]%world_size[4]%world_size[1]<(draw.p[2][1]+1) or draw.world.f[ind][3]%world_size[4]%world_size[1]<(draw.p[2][1]+1))==false or
-				(draw.world.f[ind][1]%world_size[4]%world_size[1]==0 or draw.world.f[ind][2]%world_size[4]%world_size[1]==0 or draw.world.f[ind][3]%world_size[4]%world_size[1]==0)
-				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-			end
-
-		elseif draw.p[2][4]==3 and draw.p[2][5]==1 then
-
-			for ind=1,#draw.world.f do
-				if (draw.world.f[ind][1]//world_size[4]%world_size[1]<(draw.p[2][3]) or draw.world.f[ind][2]//world_size[4]%world_size[1]<(draw.p[2][3]) or draw.world.f[ind][3]//world_size[4]%world_size[1]<(draw.p[2][3]))==false
-				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-			end
-
-		elseif draw.p[2][4]==3 and draw.p[2][5]==2 then
-
-			for ind=1,#draw.world.f do
-				if (draw.world.f[ind][1]//world_size[4]%world_size[1]>(draw.p[2][3]) or draw.world.f[ind][2]//world_size[4]%world_size[1]>(draw.p[2][3]) or draw.world.f[ind][3]//world_size[4]%world_size[1]>(draw.p[2][3]))==false
-				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-			end
-		else error()
-		end
-
-	elseif draw_portal==true and p_id==2 then
-		if draw.p[1][4]==1 and draw.p[1][5]==1 then
-
-			for ind=1,#draw.world.f do
-				if (draw.world.f[ind][1]%world_size[4]%world_size[1]>(draw.p[1][1]+1) or draw.world.f[ind][2]%world_size[4]%world_size[1]>(draw.p[1][1]+1) or draw.world.f[ind][3]%world_size[4]%world_size[1]>(draw.p[1][1]+1))==false and
-					(draw.world.f[ind][1]%world_size[4]%world_size[1]~=0 or draw.world.f[ind][2]%world_size[4]%world_size[1]~=0 or draw.world.f[ind][3]%world_size[4]%world_size[1]~=0)
-				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-			end
-
-		elseif draw.p[1][4]==1 and draw.p[1][5]==2 then
-
-			for ind=1,#draw.world.f do
-				if (draw.world.f[ind][1]%world_size[4]%world_size[1]<(draw.p[1][1]+1) or draw.world.f[ind][2]%world_size[4]%world_size[1]<(draw.p[1][1]+1) or draw.world.f[ind][3]%world_size[4]%world_size[1]<(draw.p[1][1]+1))==false or
-				(draw.world.f[ind][1]%world_size[4]%world_size[1]==0 or draw.world.f[ind][2]%world_size[4]%world_size[1]==0 or draw.world.f[ind][3]%world_size[4]%world_size[1]==0)
-				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-			end
-
-		elseif draw.p[1][4]==3 and draw.p[1][5]==1 then
-
-			for ind=1,#draw.world.f do
-				if (draw.world.f[ind][1]//world_size[4]%world_size[1]<(draw.p[1][3]) or draw.world.f[ind][2]//world_size[4]%world_size[1]<(draw.p[1][3]) or draw.world.f[ind][3]//world_size[4]%world_size[1]<(draw.p[1][3]))==false
-				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-			end
-
-		elseif draw.p[1][4]==3 and draw.p[1][5]==2 then
-
-			for ind=1,#draw.world.f do
-				if (draw.world.f[ind][1]//world_size[4]%world_size[1]>(draw.p[1][3]) or draw.world.f[ind][2]//world_size[4]%world_size[1]>(draw.p[1][3]) or draw.world.f[ind][3]//world_size[4]%world_size[1]>(draw.p[1][3]))==false
-				then unitic.poly.f[#unitic.poly.f+1]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-			end
-		else error("unknown data about 1 portal | rotation: "..draw.p[1][4].." normal:"..draw.p[1][5])
-		end
+		for ind=1,#draw.world.f do unitic.poly.f[ind]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
+	elseif draw_portal and p_id==1 then
+		for ind=1,#draw.world_bp.f do unitic.poly.f[ind]={draw.world_bp.f[ind][1],draw.world_bp.f[ind][2],draw.world_bp.f[ind][3],f=draw.world_bp.f[ind].f,uv=draw.world_bp.f[ind].uv} end
+	elseif draw_portal and p_id==2 then
+		for ind=1,#draw.world_op.f do unitic.poly.f[ind]={draw.world_op.f[ind][1],draw.world_op.f[ind][2],draw.world_op.f[ind][3],f=draw.world_op.f[ind].f,uv=draw.world_op.f[ind].uv} end
 	else
 		error("unknown function inputs | "..draw_portal.." "..p_id)
 	end
@@ -921,7 +861,7 @@ function unitic.update_pr() --update particles
 		draw.pr[i].x = draw.pr[i].x+draw.pr[i].vx
 		draw.pr[i].y = draw.pr[i].y+draw.pr[i].vy
 		draw.pr[i].z = draw.pr[i].z+draw.pr[i].vz
-		
+
 		draw.pr[i].t = draw.pr[i].t+1
 
 		if draw.pr[i].t==draw.pr[i].lt then table.remove(draw.pr,i) i=i-1 end
@@ -1611,7 +1551,7 @@ function unitic.turret_update()
 		local ang=math.atan(x0-plr.x,z0-plr.z)-t_ang
 
 		if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
-			local x=raycast(x0,y0+35,z0,plr.x,plr.y,plr.z,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true}) 
+			local x=raycast(x0,y0+35,z0,plr.x,plr.y,plr.z,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
 			if not x then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
 				if draw.objects.t[i].cd>40 then
 					plr.hp=plr.hp-R(1,2)
@@ -1748,7 +1688,9 @@ end
 
 function update_world()
 	draw.world.f={}
-	for angle=1,4 do for x0=0,world_size[1]-1 do for y0=0,world_size[2]-1 do for z0=0,world_size[3]-1 do
+	draw.world_bp.f={}
+	draw.world_op.f={}
+	for angle=1,3 do for x0=0,world_size[1]-1 do for y0=0,world_size[2]-1 do for z0=0,world_size[3]-1 do
 		local face = draw.map[angle][x0][y0][z0][1]
 		local type = draw.map[angle][x0][y0][z0][2]-1
 
@@ -1757,19 +1699,20 @@ function update_world()
 		------
 		if type~=-1 then
 			if angle==1 then
-				table.insert(draw.world.f,{x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
-				table.insert(draw.world.f,{x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
 			end
 
 			if angle==2 then
-				table.insert(draw.world.f,{x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,0+type1*24,24+type1*24},y={152+type2*24,176+type2*24,152+type2*24}}})
-				table.insert(draw.world.f,{x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,24+type1*24,24+type1*24},y={176+type2*24,176+type2*24,152+type2*24}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,0+type1*24,24+type1*24},y={152+type2*24,176+type2*24,152+type2*24}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,24+type1*24,24+type1*24},y={176+type2*24,176+type2*24,152+type2*24}}})
 			end
 
 			if angle==3 then
-				table.insert(draw.world.f,{x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
-				table.insert(draw.world.f,{x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
 			end
+
 
 			if face == 2 and (angle == 1 or angle == 3) then
 				local idx = #draw.world.f
@@ -1781,6 +1724,88 @@ function update_world()
 		end
 		------
 	end end end end
+	--the world for blue and orange portals
+	if draw.p[1] and draw.p[2] then
+		for i=1,#draw.world.f do
+			--blue portal
+			local draw_wall=true
+
+			if draw.p[2][4]==1 and draw.p[2][5]==1 then
+				if (draw.world.f[i].w[3]>=draw.p[2][1]) --X
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==1) --X
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[5]>draw.p[2][3]) --Z
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[5]<draw.p[2][3]) --Z
+				then draw_wall=false end
+
+			elseif draw.p[2][4]==1 and draw.p[2][5]==2 then
+				if (draw.world.f[i].w[3]<draw.p[2][1]) --X
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==2) --X
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[5]>draw.p[2][3]) --Z
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[5]<draw.p[2][3]) --Z
+				then draw_wall=false end
+
+			elseif draw.p[2][4]==3 and draw.p[2][5]==1 then
+				if (draw.world.f[i].w[5]<draw.p[2][3]) --Z
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==1) --Z
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[3]<draw.p[2][1]) --X
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[3]>draw.p[2][1]) --X
+				then draw_wall=false end
+
+			elseif draw.p[2][4]==3 and draw.p[2][5]==2 then
+				if (draw.world.f[i].w[5]>=draw.p[2][3]) --Z
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==2) --Z
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[3]<draw.p[2][1]) --X
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[3]>draw.p[2][1]) --X
+				then draw_wall=false end
+			end
+
+			
+			if (draw.world.f[i].w[2]==2 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[4]>draw.p[2][2]) --Y
+			or (draw.world.f[i].w[2]==2 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[4]<draw.p[2][2]) --Y
+			then draw_wall=false end
+
+			if draw_wall then draw.world_bp.f[#draw.world_bp.f+1]=draw.world.f[i] end
+
+			--orange portal
+			local draw_wall=true
+
+			if draw.p[1][4]==1 and draw.p[1][5]==1 then
+				if (draw.world.f[i].w[3]>=draw.p[1][1]) --X
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==1) --X
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[5]>draw.p[1][3]) --Z
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[5]<draw.p[1][3]) --Z
+				then draw_wall=false end
+
+			elseif draw.p[1][4]==1 and draw.p[1][5]==2 then
+				if (draw.world.f[i].w[3]<draw.p[1][1]) --X
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==2) --X
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[5]>draw.p[1][3]) --Z
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[5]<draw.p[1][3]) --Z
+				then draw_wall=false end
+
+			elseif draw.p[1][4]==3 and draw.p[1][5]==1 then
+				if (draw.world.f[i].w[5]<draw.p[1][3]) --Z
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==1) --Z
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[3]<draw.p[1][1]) --X
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[3]>draw.p[1][1]) --X
+				then draw_wall=false end
+
+			elseif draw.p[1][4]==3 and draw.p[1][5]==2 then
+				if (draw.world.f[i].w[5]>=draw.p[1][3]) --Z
+				or (draw.world.f[i].w[2]==3 and draw.world.f[i].w[1]==2) --Z
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[3]<draw.p[1][1]) --X
+				or (draw.world.f[i].w[2]==1 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[3]>draw.p[1][1]) --X
+				then draw_wall=false end
+			end
+
+			
+			if (draw.world.f[i].w[2]==2 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[4]>draw.p[1][2]) --Y
+			or (draw.world.f[i].w[2]==2 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[4]<draw.p[1][2]) --Y
+			then draw_wall=false end
+
+			if draw_wall then draw.world_op.f[#draw.world_op.f+1]=draw.world.f[i] end
+		end
+	end
 	--light bridge generator
 	draw.objects.lb={}
 	draw.world.sp={}
@@ -1789,7 +1814,7 @@ function update_world()
 			local lx,ly,lz=draw.lg[i][1],draw.lg[i][2],draw.lg[i][3]
 			local vx,vz=0,0
 			if     draw.lg[i][4]==1 and draw.lg[i][5]==1 then vx=-1 lx=lx-1
-			elseif draw.lg[i][4]==1 and draw.lg[i][5]==2 then vx=1 
+			elseif draw.lg[i][4]==1 and draw.lg[i][5]==2 then vx=1
 			elseif draw.lg[i][4]==3 and draw.lg[i][5]==1 then vz=1
 			elseif draw.lg[i][4]==3 and draw.lg[i][5]==2 then vz=-1 lz=lz-1 else error(draw.lg[i][4].." | "..draw.lg[i][5])
 			end
@@ -1948,6 +1973,7 @@ local speed=4
 local tm1,tm2 = 0,0
 local p={t=0,t1=0,t2=0,t3=0,t4=0} --pause
 local ls={t=0,pr=0} --loading screen
+local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --main screen
 load_world(-1)
@@ -1968,6 +1994,156 @@ function TIC()
 
 	clp1 = tm1 == 1
 	clp2 = tm2 == 1
+	--------------------------
+	-- logo ------------------
+	--------------------------
+	if open=="logo" then
+		l_.t=l_.t+1
+		--GUI
+		cls(1)
+		spr(112,88,24,0,1,0,0,8,9)
+		print("Powered by Unitic 1.3",66,113,7)
+		--pal
+		respal()
+		if l_.t<60 then darkpal(min(l_.t/30,1))
+		elseif l_.t<90 then darkpal((90-l_.t)/30) end
+		if l_.t>=90 or (keyp() and l_.t>10) then sync(1,0,false) load_world(-1) open="main" music(2) end
+	end
+	--------------------------
+	-- start -----------------
+	--------------------------
+	if open=="start" then
+		if sts.t2>0 then sts.t2=sts.t2-1 end
+
+		cls(1)
+
+		if sts.t==1 then
+			print("Enter the current time.",51,3,7)
+			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],80,50,6,true,2)
+			if sts.i<2 then
+			line(79+sts.i*12,61,91+sts.i*12,61,7)
+			else
+			line(79+sts.i*12+12,61,91+sts.i*12+12,61,7)
+			end
+
+			if keyp(1) or btnp(2) then sts.i=sts.i-1 end
+			if keyp(4) or btnp(3) then sts.i=sts.i+1 end
+			sts.i=sts.i%4
+			
+			if keyp(23) or btnp(0) then sts.time[sts.i+1]=sts.time[sts.i+1]+1 end
+			if keyp(19) or btnp(1) then sts.time[sts.i+1]=sts.time[sts.i+1]-1 end
+
+			sts.time[1]=sts.time[1]%3 sts.time[1]=sts.time[1]*10+sts.time[2]
+			sts.time[1]=sts.time[1]%24 sts.time[2]=sts.time[1]%10 sts.time[1]=sts.time[1]//10
+			sts.time[3]=sts.time[3]%6 sts.time[4]=sts.time[4]%10
+		end
+		--confirm button
+		if sts.t2==0 and sts.t~=2 and (sts.t<8  or sts.t==16) then
+			rect(94,122,40,8,2)
+			print("Confirm",95,123,7)
+			if mx>93 and my>121 and mx<134 and my<131 then cid=1 if clp1 then sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
+		end
+		--Yes/no button
+		if sts.t2==0 and (sts.t==2 or sts.t>7) and sts.t~=16 and sts.t~=32 then
+			rect(67,122,18,8,2)
+			rect(143,122,13,8,2)
+			print("Yes",68,123,7)
+			print("No",144,123,7)
+			if mx>66  and my>121 and mx<85  and my<131 then cid=1 if clp1 then sts.y=sts.y+1 sts.q=1 sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
+			if mx>143 and my>121 and mx<156 and my<131 then cid=1 if clp1 then sts.n=sts.n+1 sts.q=2 sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
+		end
+		--slider
+		if (sts.t>2 and sts.t<8) or sts.t==16 then
+			rect(20,88,180,2,2)
+			rect(20+sts.sl*1.8,85,2,8,6)
+			if mx>19 and my>85 and mx<200 and my<93 then cid=1 if cl1 then sts.sl=(mx-20)/1.8 end end
+		end
+		--Number on the slider
+		if (sts.t>3 and sts.t<8) or sts.t==16 then
+			print(F(sts.sl+0.5),100,68,7,false,2)
+		end
+
+		------------
+		if sts.t==2 then
+			print("Is this the exact time?",51,3,7)
+			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
+		end
+
+		if sts.t==3 then
+			print("How accurate is this time?",51,3,7)
+			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
+			print("not accurate",12,76,7)
+			print("accurate",160,76,7)
+		end
+
+		if sts.t==4 then print("Pull the slider until the given number becomes prime",29,3,7,false,1,true) end
+		if sts.t==5 then print("Pull the slider until the number becomes more than 50",29,3,7,false,1,true) end
+		if sts.t==6 then print("How many numbers from 0 to 100 have 3 divisors exist?",29,3,7,false,1,true) end
+		if sts.t==7 then print("Pull the slider until the number becomes completely by chance",11,3,7,false,1,true) end
+		if sts.t==8 then print("Do you know the authors of this game?",19,3,7,false,1,false) end
+		if sts.t==9 then print("Do the authors of this game know you?",19,3,7,false,1,false) end
+		if sts.t==11 then
+			if sts.q==1 then
+				print([[Have you just answered "yes" to the last empty question?]],19,3,7,false,1,true)
+			else
+				print([[Have you just answered "no" to the last empty question?]],19,3,7,false,1,true)
+			end
+		end
+		if sts.t==12 then
+			if sts.q==1 then
+				print([[Why did you answer "yes"]].."\n\n "..[[to the last question?]],55,3,7,false,1,false)
+			else
+				print([[Why did you answer "no"]] .."\n\n "..[[to the last question?]],55,3,7,false,1,false)
+			end
+		end
+		if sts.t==13 then print("Do you consider yourself happy?",30,3,7,false,1,false) end
+		if sts.t==14 then print("Have you ever thought that you have mental disorders?",20,3,7,false,1,true) end
+		if sts.t==15 then print("Do you think you have a lot of friends?",10,3,7,false,1,false) end
+		if sts.t==16 then print("How many friends do you have?",35,3,7,false,1,false) end
+		if sts.t==17 then print("Do you really like this game?",35,3,7,false,1,false) end
+		if sts.t==18 then print("Have you answered the truth?",35,3,7,false,1,false) end
+		if sts.t==19 then print("Do you want to start the game?",35,3,7,false,1,false) end
+		if sts.t==20 then print("Do you like this survey?",40,3,7,false,1,false) end
+		if sts.t==21 then print("Are you positive to the chairs?",35,3,7,false,1,false) end
+		if sts.t==22 then print("Is there a Chinese layout on your keyboard?",1,3,7,false,1,false) end
+		if sts.t==23 then print("Why?",107,3,7,false,1,false) end
+		if sts.t==24 then print("_",107,3,7,false,1,false) end
+		if sts.t==27 then print("Have you ever found HanamileH\n\n   rather cute and pretty?",42,3,7,false,1,false) end
+		if sts.t==28 then print(" Have you ever had dreams with\n\nthe participation of HanamileH?",36,3,7,false,1,false) end
+		if sts.t==29 then print("Would you like to ever meet HanamileH live?",6,3,7,false,1,false) end
+		if sts.t==30 then print("Why are you still answering this survey?",10,3,7,false,1,false) end
+		if sts.t==31 then print("Do you want me to help you?",44,3,7,false,1,false) end
+		if sts.t==32 then
+			print("Press any button to start the game",22,3,7,false,1,false)
+		
+			clip(1,10,238,125)
+			for x=0,240,23 do for y=0,135,13 do
+				local dx,dy=x-mx+10,y-my+5
+				local d=(dx^2+dy^2)^0.5
+
+				local px,py=mx+dx*(20/d+1),my+dy*(20/d+1)
+
+				rect(px-1,py-1,19,9,4)
+				print("any",px,py+1,0)
+				print("any",px,py,7)
+			end end
+			clip()
+			rectb(1,10,238,125,2)
+
+			if mx>54 and my>2 and mx<75 and my<10 then cid=1 if clp1 then sts.t=33 sts.t2=60 end end
+		end
+		if sts.t==33 then
+			print("Your statistics:",73,3,7,false,1,false)
+			print("Press the buttons \"yes\": "..sts.y.." times",31,34,7)
+			print("Press the buttons \"no\" : "..sts.n.." times",31,44,7)
+			print("Spent empty: "..F(time()/1000).." seconds",62,54,7)
+			print("Are you satisfied with your results?",20,97,7)
+		end
+
+		if sts.t==35 then open="game" poke(0x7FC3F,1,1) end
+	end
+	--------------------------
+	--trace(mx.." "..my,12)
 	--------------------------
 	-- logo ------------------
 	--------------------------
@@ -2025,7 +2201,7 @@ function TIC()
 			print("Continue?",4,65,7)
 
 			print("Accept",4+(1-ms.t1)*20,85,7)
-			print("Cancel",4+(1-ms.t2)*20,105,7) 
+			print("Cancel",4+(1-ms.t2)*20,105,7)
 			if my>84  and my<95  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 end else ms.t1=min(1,ms.t1+0.05) end
 			if my>104 and my<115 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
 		elseif open=="main|authors" then
@@ -2257,7 +2433,7 @@ function TIC()
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
 				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			}
+			},
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
 		
