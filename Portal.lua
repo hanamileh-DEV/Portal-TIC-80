@@ -46,7 +46,7 @@ sfx=true,
 }
 
 save={ --saving the game
-i=not pmem(0)~=0, --How for the first time the player went into the game
+i=pmem(0)==0, --How for the first time the player went into the game
 lvl=pmem(0),
 st=pmem(1) --settings (All settings except the sensitivity of the mouse in binary form)
 }
@@ -1972,7 +1972,7 @@ t=0 -- Global timer (+1 for each code call)
 local speed=4
 --init
 local tm1,tm2 = 0,0
-local p={t=0,t1=0,t2=0,t3=0,t4=0} --pause
+local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1} --pause
 local ls={t=0,pr=0} --loading screen
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
@@ -2098,7 +2098,6 @@ function TIC()
 			pmem(1,save.st)
 		end
 	end
-	--trace(mx.." "..my,12)
 	--------------------------
 	-- calibrattion ----------
 	--------------------------
@@ -2256,6 +2255,7 @@ function TIC()
 	-- load lvl --------------
 	--------------------------
 	if open=="load lvl" then
+		music()
 		if save.lvl==0 then save.lvl=1 end
 		save.lvl=0
 		pmem(0,save.lvl)
@@ -2266,7 +2266,7 @@ function TIC()
 	--------------------------
 	-- pause -----------------
 	--------------------------
-	if open=="pause" then
+	if open=="pause" or open=="pause|settings" or open=="pause|accept" then
 		p.t=p.t+1
 		--GUI
 		vbank(0)
@@ -2275,47 +2275,60 @@ function TIC()
 		cls(0)
 		--logo
 		spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3)
-		--text
-		print("Pause",min(p.t*2,37),30,7)
 
-		print("Resume"       ,1+p.t1/2,50,7)
-		print("Restart level",1+p.t2/2,59,7)
-		print("Settings"     ,1+p.t3/2,79,7)
-		print("Exit"         ,1+p.t4/2,119,7)
-		--buttons
-		if my>46 and my<57 then p.t1=min(p.t1+2,20) cid=1 if clp1 then open="game" poke(0x7FC3F,1,1) music(0) end else p.t1=max(p.t1-1,0) end
-		if my>56 and my<67 then p.t2=min(p.t2+2,20) cid=1 else p.t2=max(p.t2-1,0) end
-		if my>76 and my<87 then p.t3=min(p.t3+2,20) cid=1 if clp1 then open="pause|settings"                  end else p.t3=max(p.t3-1,0) end
-		if my>116 and my<127 then p.t4=min(p.t4+2,20) cid=1 if clp1 then exit() end else p.t4=max(p.t4-1,0) end
-		--Resume button
-		if keyp(44) and p.t>1 then open="game" poke(0x7FC3F,1,1) music(0) end
-	end
-	--------------------------
-	-- pause|settings --------
-	--------------------------
-	if open=="pause|settings" then
-		p.t=p.t+1
-		--GUI
-		vbank(0)
-		memcpy(0x0,0x8000,240*136/2)
-		vbank(1)
-		cls(0)
-		--logo
-		spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3)
-		--text
-		print("Pause",min(p.t*2,37),30,7)
+		if open=="pause" then
+			print("Pause"        ,min(p.t*2,37), 35,7)
+			print("Resume"       ,4+(1-p.t1)*20, 55,7)
+			print("Restart level",4+(1-p.t2)*20, 65,7)
+			print("Settings"     ,4+(1-p.t3)*20, 85,7)
+			print("Exit"         ,4+(1-p.t4)*20,125,7)
+			--buttons
+			if my>54  and my<64  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="game" sfx(17) poke(0x7FC3F,1,1) music()  end else p.t1=min(p.t1+0.05,1) end
+			if my>64  and my<74  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl" save.lvl=save.lvl-1            end else p.t2=min(p.t2+0.05,1) end
+			if my>84  and my<94  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx(16)                  end else p.t3=min(p.t3+0.05,1) end
+			if my>124 and my<134 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx(16) end                    else p.t4=min(p.t4+0.05,1) end
+		elseif open=="pause|settings" then
+			print("Mouse sensevity: "..F(st.m_s),4,35,7)
+			print("Music: "                  ,4,55,7)
+			print("Sfx: "                    ,4,65,7)
+			print("Rendering portals: "      ,4,75,7)
+			print("High quality portals: "   ,4,85,7)
+			print("Back"                     ,4,125,7)
+			--on / off
+			if st.music then print("On",117,55,13) else print("Off",117,55,11) end
+			if st.sfx   then print("On",117,65,13) else print("Off",117,65,11) end
+			if st.r_p   then print("On",117,75,13) else print("Off",117,75,11) end
+			if st.h_q_p then print("On",117,85,13) else print("Off",117,85,11) end
+			--mouse sensevity slider
+			rect(4,45,100,2,3)
+			rect(4+st.m_s-20,43,2,6,6)
 
-		print("Resume"       ,1+p.t1/2,50,7)
-		print("Restart level",1+p.t2/2,59,7)
-		print("Settings"     ,1+p.t3/2,79,7)
-		print("Exit"         ,1+p.t4/2,119,7)
-		--buttons
-		if my>46 and my<57 then p.t1=min(p.t1+2,20) cid=1 if clp1 then open="game" poke(0x7FC3F,1,1) music(0) end else p.t1=max(p.t1-1,0) end
-		if my>56 and my<67 then p.t2=min(p.t2+2,20) cid=1 else p.t2=max(p.t2-1,0) end
-		if my>76 and my<87 then p.t3=min(p.t3+2,20) cid=1 else p.t3=max(p.t3-1,0) end
-		if my>116 and my<127 then p.t4=min(p.t4+2,20) cid=1 if clp1 then exit() end else p.t4=max(p.t4-1,0) end
+			if my>40 and my<54   then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
+			--buttons
+			if my>54  and my<64  then cid=1 p.t1=max(p.t1-0.05,0.5) if clp1 then sfx(18) music(3,7,0) st.music=not st.music              end else p.t1=min(1,p.t1+0.05) end
+			if my>64  and my<74  then cid=1 p.t2=max(p.t2-0.05,0.5) if clp1 then sfx(18) st.sfx  =not st.sfx                             end else p.t2=min(1,p.t2+0.05) end
+			if my>74  and my<84  then cid=1 p.t3=max(p.t3-0.05,0.5) if clp1 then sfx(18) st.r_p  =not st.r_p                             end else p.t3=min(1,p.t3+0.05) end
+			if my>84  and my<94  then cid=1 p.t4=max(p.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p=not st.h_q_p                           end else p.t4=min(1,p.t4+0.05) end
+			if my>124 and my<134 then cid=1 p.t5=max(p.t5-0.05,0.5) if clp1 then sfx(17) open="pause" p.t1=1 p.t2=1 p.t3=1 p.t4=1 p.t5=1 end else p.t5=min(1,p.t5+0.05) end
+			--saving the settings
+			save.st=0
+			if st.r_p   then save.st=save.st+1 end
+			if st.h_q_p then save.st=save.st+2 end
+			if st.music then save.st=save.st+4 end
+			if st.sfx   then save.st=save.st+8 end
+			save.st=save.st+16
+			pmem(1,save.st)
+		elseif open=="pause|accept" then
+			print("Do you really want to leave the game?",4,45,7)
+			print("Your current game will not be saved",4,55,7)
+			print("Accept",4+(1-p.t1)*20,85,7)
+			print("Back"  ,4+(1-p.t2)*20,105,7)
+			if my>84  and my<94  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(-1) end else p.t1=min(p.t1+0.05,1) end
+			if my>104 and my<114 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx(17)                               end else p.t2=min(p.t2+0.05,1) end
+		end
+
 		--Resume button
-		if keyp(44) and p.t>1 then open="game" poke(0x7FC3F,1,1) music(0) end
+		if keyp(44) and p.t>1 then open="game" poke(0x7FC3F,1,1) end
 	end
 	--------------------------
 	-- game ------------------
@@ -2457,30 +2470,35 @@ end
 function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
 	if open=="pause" then vbank(1)poke(0x03FF9,0)vbank(0)poke(0x03FF9,0)
-		if scn_y==0 or scn_y==67 or scn_y==87 or scn_y==127 then
+		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==93 or scn_y==133 then
 			respal()
 			darkpal(max(1-p.t/30,0.4))
 		end
-		if scn_y==47 then
+		if scn_y==53  then darkpal(p.t1) end
+		if scn_y==63  then darkpal(p.t2) end
+		if scn_y==83  then darkpal(p.t3) end
+		if scn_y==123 then darkpal(p.t4) end
+	end
+
+	if open=="pause|settings" then
+		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==83 or scn_y==93 or scn_y==133 then
 			respal()
-			darkpal(max(1-p.t/30,0.4))
-			darkpal(1-p.t1/35)
+			darkpal(0.2)
 		end
-		if scn_y==57 then
+		if scn_y==53  then darkpal(p.t1) end
+		if scn_y==63  then darkpal(p.t2) end
+		if scn_y==73  then darkpal(p.t3) end
+		if scn_y==83  then darkpal(p.t4) end
+		if scn_y==123 then darkpal(p.t5) end
+	end
+
+	if open=="pause|accept" then
+		if scn_y==0 or scn_y==93 or scn_y==113 then
 			respal()
-			darkpal(max(1-p.t/30,0.4))
-			darkpal(1-p.t2/35)
+			darkpal(0.2)
 		end
-		if scn_y==77 then
-			respal()
-			darkpal(max(1-p.t/30,0.4))
-			darkpal(1-p.t3/35)
-		end
-		if scn_y==117 then
-			respal()
-			darkpal(max(1-p.t/30,0.4))
-			darkpal(1-p.t4/35)
-		end
+		if scn_y==83  then darkpal(p.t1) end
+		if scn_y==103 then darkpal(p.t2) end
 	end
 
 	if open=="main" then
@@ -3124,8 +3142,8 @@ end
 -- 022:0000000000000000000000000000000000000000000000000000000000000000000000009008e79008e79008e79008f70000000000000000000000000000000000000000000000000000000000000000000000009008e79008e79008e79008f70000000000000000000000000000000000000000000000000000000000000000000000007008e77008e77008e77008f7000000000000000000000000000000000000000000000000000000000000000000000000b008e7b008e7b008e7b008f7
 -- 023:4999d74998d74a88d74998d748a8d74998d74a88d74998d748a8d74998d74a88d74998d748a8d74998d74a88d74998d7c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5e008d5
 -- 024:c999d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d5c008d59008d59008d59008d59008d59008d59008d59008d59008d59008d59008d59008d59008d59008d59008d59008d59008d57008d57008d57008d57008d57008d57008d57008d57008d57008d57008d57008d57008d57008d57008d57008d57008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5b008d5
--- 025:9008e79008f79008e79008f79008e79008f74008e94008f94008e94008f9b008e7b008f7c008e7c008e7c008e7c008f79008e79008f79008e79008f79008e79008f75008e95008f95008e95008f9b008e7b008f7c008e7c008e7c008e7c008f77008e77008f77008e77008f77008e77008f74008e94008f94008e94008f9b008e7b008f7c008e7c008e7c008e7c008f7e008e7e008f7e008e7e008f7e008e7e008f7c008e7c008f7c008e7c008f7b008e7b008f7e008e7e008e7e008e7e008f7
--- 026:9008e94008ebb008e9c008e99008e94008ebb008e9c008e99008e94008ebb008e9c008e9e008e9c008e9b008e9c008e99008e94008ebb008e9c008e99008e94008ebb008e9c008e99008e94008ebb008e9c008e9e008e9c008e9b008e9c008e99008e94008ebb008e9c008e99008e94008ebb008e9c008e99008e94008ebb008e9c008e9e008e9c008e9b008e9c008e99008e94008ebb008e9c008e99008e94008ebb008e9c008e99008e94008ebb008e9c008e9e008e9c008e9b008e9c008e9
+-- 025:9008e79008f79008e79008f79008e79008f74008e94008f94008e94008f9b008e7b008f7c008e7c008e7c008e7c008f79008e79008f79008e79008f79008e79008f75008e95008f95008e95008f9b008e7b008f7c008e7c008e7c008e7c008f77008e77008f77008e77008f77008e77008f74008e94008f94008e94008f9b008e7b008f7c008e7c008e7c008e7c008f7e008e7e008f7e008e7e008f7e008e7e008f7c008e7c008f7c008e7c008f7b008e7b008f7e008e7e008e7e008e7eff9f7
+-- 026:9ff9e94999ebbaa9e9cbb9e99ff9e94999ebbaa9e9cbb9e99ff9e94999ebbaa9e9cff9e9e999e9caa9e9bbb9e9cff9e99999e94aa9ebbbb9e9cff9e99999e94aa9ebbbb9e9cff9e99999e94aa9ebbbb9e9cff9e9e999e9caa9e9bbb9e9cff9e99ff9e94999ebbaa9e9cbb9e99ff9e94999ebbaa9e9cbb9e99ff9e94999ebbaa9e9cff9e9e999e9caa9e9bbb9e9cff9e99999e94aa9ebbbb9e9cff9e99999e94aa9ebbbb9e9cff9e99999e94aa9ebbbb9e9cff9e9e999e9caa9e9bbf9e9cff9e9
 -- 027:9008c59008c59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c59008c59008c59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c5
 -- 028:9008c79008c79008c79008c79008c79008c79008c79008c74008c94008c94008c94008c9b008c7b008c7c008c7c008c75008c75008c75008c75008c75008c75008c75008c75008c77008c77008c77008c77008c78008c78008c78008c78008c79008c79008c79008c79008c79008c79008c79008c79008c74008c94008c94008c94008c9b008c7b008c7c008c7c008c75008c75008c75008c75008c75008c75008c75008c75008c77008c77008c77008c77008c78008c78008c78008c78008c7
 -- 029:9008e74008e9b008e7c008e79008e74008e9b008e7c008e79008e74008e9b008e7c008e7e008e7c008e7b008e7c008e79008e74008e9b008e7c008e79008e74008e9b008e7c008e79008e74008e9b008e7c008e7e008e7c008e7b008e7c008e79008e74008e9b008e7c008e79008e74008e9b008e7c008e79008e74008e9b008e7c008e7e008e7c008e7b008e7c008e79008e74008e9b008e7c008e79008e74008e9b008e7c008e79008e74008e9b008e7c008e7e008e7c008e7b008e7c008e7
@@ -3140,7 +3158,7 @@ end
 -- 038:9008d7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 039:9008e99008e99008f90000009008e99008e99008f9000000c008e9c008e9c008e9c008e9c008f9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 040:9008e79008e79008f70000009008e79008e79008f70000009008e79008e79008e79008e79008f7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
--- 041:9008d79008d79008c70000009008d79008d79008c7000000c008d7c008d7c008d7c008d7c008c7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- 041:9008d79008d79008c70000009008d79008d79008c7000000c008d7c008d7c008d7c008d7c008c7000000000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 042:9008d59008d59008c50000009008d59008d59008c5000000c008d5c008d5c008d5c008d5c008c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 043:9028c5902cc59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c59008c59028c59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c5
 -- 044:9428d79428c74008d94008c9c008d7c008c7e008d7e008c7b008d7b008c7c008d7c008c79008d79008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c75008d95008c9b008d7b008c7e008d7e008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c7b008d7b008c7c008d7c008c79008d79008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c75008d95008c9b008d7b008c7e008d7e008c78008d78008c7
