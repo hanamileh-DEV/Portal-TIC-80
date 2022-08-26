@@ -671,7 +671,9 @@ maps[0]={ --main gameroom
 	 --{X, Y, Z, type, [additional.parameters (not necessarily)]}
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
-	lg={} --light bridge generators
+	lg={}, --light bridge generators
+	plr={x=32,y=64,z=32,tx=0,ty=0}, --player's position and the angle of rotation of the camera
+	music=0 --Music ID for this level 
 }
 maps[-1]={ --world from the main menu
 w={
@@ -692,7 +694,9 @@ w={
 },
 o={},
 p={},
-lg={}
+lg={},
+plr={x=0,y=0,z=0,tx=0,ty=0},
+music=-1,
 }
 --
 for x=0,10 do
@@ -2257,9 +2261,19 @@ function TIC()
 	if open=="load lvl" then
 		music()
 		if save.lvl==0 then save.lvl=1 end
-		save.lvl=0
+		save.lvl=0 --debug
+
 		pmem(0,save.lvl)
 		load_world(save.lvl)
+		plr.hp=100
+		plr.hp2=100
+		plr.x=maps[save.lvl].plr.x
+		plr.y=maps[save.lvl].plr.y
+		plr.z=maps[save.lvl].plr.z
+		plr.tx=maps[save.lvl].plr.tx
+		plr.ty=maps[save.lvl].plr.ty
+		music(maps[save.lvl].music)
+
 		poke(0x7FC3F,1,1)
 		open="game"
 	end
@@ -2283,10 +2297,10 @@ function TIC()
 			print("Settings"     ,4+(1-p.t3)*20, 85,7)
 			print("Exit"         ,4+(1-p.t4)*20,125,7)
 			--buttons
-			if my>54  and my<64  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="game" sfx(17) poke(0x7FC3F,1,1) music()  end else p.t1=min(p.t1+0.05,1) end
-			if my>64  and my<74  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl" save.lvl=save.lvl-1            end else p.t2=min(p.t2+0.05,1) end
-			if my>84  and my<94  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx(16)                  end else p.t3=min(p.t3+0.05,1) end
-			if my>124 and my<134 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx(16) end                    else p.t4=min(p.t4+0.05,1) end
+			if my>54  and my<64  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="game" sfx(17) poke(0x7FC3F,1,1) music(maps[save.lvl].music)end else p.t1=min(p.t1+0.05,1) end
+			if my>64  and my<74  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                                                  end else p.t2=min(p.t2+0.05,1) end
+			if my>84  and my<94  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx(16)                                    end else p.t3=min(p.t3+0.05,1) end
+			if my>124 and my<134 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx(16) end                                      else p.t4=min(p.t4+0.05,1) end
 		elseif open=="pause|settings" then
 			print("Mouse sensevity: "..F(st.m_s),4,35,7)
 			print("Music: "                  ,4,55,7)
@@ -2328,7 +2342,7 @@ function TIC()
 		end
 
 		--Resume button
-		if keyp(44) and p.t>1 then open="game" poke(0x7FC3F,1,1) end
+		if keyp(44) and p.t>1 then open="game" music(maps[save.lvl].music) poke(0x7FC3F,1,1) end
 	end
 	--------------------------
 	-- game ------------------
