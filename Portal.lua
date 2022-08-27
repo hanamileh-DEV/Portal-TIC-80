@@ -672,8 +672,9 @@ maps[0]={ --main gameroom
 	},
 	o={ --table for objects
 	 --{X, Y, Z, type, [additional.parameters (not necessarily)]}
+	 {800,0,900,11}
 	},
-	p={}, --table for portals (leave empty if the portals are not needed)
+	p={}, --table for portals (leave empty if the portals are not needed) --800 60 900
 	lg={{0,0,1,1,2}}, --light bridge generators
 	plr={x=32,y=64,z=32,tx=0,ty=0}, --player's position and the angle of rotation of the camera
 	music=0 --Music ID for this level 
@@ -715,7 +716,7 @@ for x=0,10 do
 
 	for z=0,10 do
 		maps[0].w[#maps[0].w+1]={x,0,z,2,2,1}
-		maps[0].w[#maps[0].w+1]={x,3,z,2,1,2}
+		if R()>0.5 then maps[0].w[#maps[0].w+1]={x,2,z,2,3,R(1,5)} end
 	end
 end
 
@@ -730,6 +731,33 @@ end
 for x=0,3 do
 	maps[-1].w[#maps[-1].w+1]={x,0,0,3,1,2}
 end
+
+maps[0].w[#maps[0].w+1]={0,0,1,1,2,9}
+
+maps[0].w[#maps[0].w+1]={2,0,0,3,1,8}
+maps[0].w[#maps[0].w+1]={3,0,11,3,2,9}
+maps[0].w[#maps[0].w+1]={0,1,2,1,2,16}
+maps[0].w[#maps[0].w+1]={0,1,3,1,2,17}
+maps[0].w[#maps[0].w+1]={0,0,2,1,2,18}
+maps[0].w[#maps[0].w+1]={0,0,3,1,2,19}
+maps[0].w[#maps[0].w+1]={0,0,6,3,3,12}
+maps[0].w[#maps[0].w+1]={1,0,6,3,3,11}
+maps[0].w[#maps[0].w+1]={2,0,5,1,1,2}
+maps[0].w[#maps[0].w+1]={3,0,5,1,2,2}
+maps[0].w[#maps[0].w+1]={2,0,6,3,1,2}
+maps[0].w[#maps[0].w+1]={2,0,5,3,2,2}
+maps[0].w[#maps[0].w+1]={2,1,5,2,2,2}
+maps[0].w[#maps[0].w+1]={3,0,6,3,3,14}
+maps[0].w[#maps[0].w+1]={4,0,6,3,3,13}
+maps[0].w[#maps[0].w+1]={5,0,6,3,3,1}
+maps[0].w[#maps[0].w+1]={6,0,6,3,3,15}
+maps[0].w[#maps[0].w+1]={7,0,6,3,3,3}
+maps[0].w[#maps[0].w+1]={8,0,6,3,3,3}
+maps[0].w[#maps[0].w+1]={9,0,6,3,3,4}
+maps[0].w[#maps[0].w+1]={10,0,6,3,3,7}
+maps[0].w[#maps[0].w+1]={6,0,5,2,3,8}
+maps[0].w[#maps[0].w+1]={6,0,6,2,3,8}
+maps[0].w[#maps[0].w+1]={3,0,5,2,3,8}
 --
 
 local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
