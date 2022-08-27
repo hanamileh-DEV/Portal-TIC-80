@@ -674,7 +674,7 @@ maps[0]={ --main gameroom
 	 --{X, Y, Z, type, [additional.parameters (not necessarily)]}
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
-	lg={}, --light bridge generators
+	lg={{0,0,1,1,2}}, --light bridge generators
 	plr={x=32,y=64,z=32,tx=0,ty=0}, --player's position and the angle of rotation of the camera
 	music=0 --Music ID for this level 
 }
@@ -735,6 +735,20 @@ end
 local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
 end
+--sprite editor
+
+local function setpix(sx,sy,color)
+	local id=sx//8+sy//8*16
+	local adr=sx%8+sy%8*8
+	poke4(0x8000+id*64+adr,color)
+end
+
+local function getpix(sx,sy)
+	local id=sx//8+sy//8*16
+	local adr=sx%8+sy%8*8
+	return peek4(0x8000+id*64+adr)
+end
+--collision
 
 local function coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) --collision of two cubes
 	-- x1,x2=min(x1,x2),max(x1,x2)
@@ -1344,6 +1358,17 @@ function unitic.portal_collision()
 end
 
 function unitic.render()
+	--dynamic textures
+	for x0=0,15 do --light bridge
+		for y0=0,11 do setpix(x0,y0+234,15) end
+		local y0=(math.sin((t%30+x0*2)/5)+1)*6
+		local y1=(math.cos((t%30+x0*2)/5)+1)*6
+		local y2=(math.sin(t/20)+1)*6
+		setpix(x0,F(y0)+234,11)
+		setpix(x0,F(y1)+234,10)
+		setpix(x0,F(y2)+234,11)
+	end
+	--3d
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 
 	local dist1, dist2, dist = math.huge, math.huge, false
@@ -1956,7 +1981,6 @@ function darkpal(c)
 		poke(0x03FC0+i,peek(0x03FC0+i)*c)
 	end
 end
-
 --css content
 if not st.css_content then
 	pal="0000000000003838385d5d5d7d7d7dbababad6d6d6ffffffff00ffff00003499ba65eef6b2f6fad67918ffbe3cff00ff"
@@ -3077,8 +3101,8 @@ end
 -- 205:1111111111111111111111111111111122222222333333333333333322222222
 -- 206:1111233211112332111123321111233222222332333333323333333222222222
 -- 207:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 208:ffffffffffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfc
--- 209:ffffffffffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfc
+-- 208:ffffffffaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffff
+-- 209:ffffffffaaaaaaaaffffffffffffffffffffffffffffffffffffffffffffffff
 -- 210:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 211:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 212:aaaaaaaa00000000000000000000000000000000000000000000000000000000
@@ -3093,8 +3117,8 @@ end
 -- 221:2222222233333333434343433333333334343434333333334343434322222222
 -- 222:2222222233333332434343423333333234343432333333324343434222222222
 -- 223:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 224:bfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffffffffffff
--- 225:bfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffffffffffff
+-- 224:ffffffffffffffffffffffffffffffffffffffffffffffffaaaaaaaaffffffff
+-- 225:ffffffffffffffffffffffffffffffffffffffffffffffffaaaaaaaaffffffff
 -- 226:000000000000000000000000000000000000000000000000dddddddd00000000
 -- 227:00000000000000000000000000000000000000000000000000000000a0000000
 -- 233:44444444555544445666544a5666544a5666544a5666544a5555444444444444
