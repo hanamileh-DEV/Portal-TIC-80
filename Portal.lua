@@ -46,9 +46,12 @@ sfx=true,
 }
 
 save={ --saving the game
-i=pmem(0)==0, --How for the first time the player went into the game
+i=pmem(0)~=0, --How for the first time the player went into the game
 lvl=pmem(0),
-st=pmem(1) --settings (All settings except the sensitivity of the mouse in binary form)
+st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
+bt=pmem(2), --the best time to pass skilltests
+d=pmem(3), --the number of player deaths (in the main game)
+ct=pmem(4), --current time passing the main game
 }
 
 if save.st&16~=0 then
@@ -698,6 +701,8 @@ lg={},
 plr={x=0,y=0,z=0,tx=0,ty=0},
 music=-1,
 }
+
+local st_maps={} --a set of skilltest levels
 --
 for x=0,10 do
 	for y=0,2 do
@@ -1981,6 +1986,7 @@ local ls={t=0,pr=0} --loading screen
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --main screen
+
 load_world(-1)
 --poke(0x7FC3F,1,1)
 local open="logo" sync(1,1,false)
@@ -2057,7 +2063,7 @@ function TIC()
 
 			print("Accept",4+(1-ms.t1)*20,85,7)
 			print("Cancel",4+(1-ms.t2)*20,105,7)
-			if my>84  and my<95  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 end else ms.t1=min(1,ms.t1+0.05) end
+			if my>84  and my<95  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end else ms.t1=min(1,ms.t1+0.05) end
 			if my>104 and my<115 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
 		elseif open=="main|authors" then
 			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
@@ -2101,6 +2107,8 @@ function TIC()
 			save.st=save.st+16
 			pmem(1,save.st)
 		end
+
+		if mx==0 and my==0 then cid=1 if clp1 then exit() trace("SUS") end end
 	end
 	--------------------------
 	-- calibrattion ----------
@@ -2259,7 +2267,9 @@ function TIC()
 	-- load lvl --------------
 	--------------------------
 	if open=="load lvl" then
-		music()
+		if st_t then save.ct=save.ct+(tstamp()-st_t) end
+		pmem(4,save.ct)
+
 		if save.lvl==0 then save.lvl=1 end
 		save.lvl=0 --debug
 
@@ -2276,6 +2286,7 @@ function TIC()
 
 		poke(0x7FC3F,1,1)
 		open="game"
+		st_t=tstamp() --The start time of this level
 	end
 	--------------------------
 	-- pause -----------------
@@ -2418,8 +2429,9 @@ function TIC()
 		if plr.cd>120 then plr.hp=min(plr.hp+1,100) end
 		if plr.y<-400 then plr.hp=max(plr.hp-2,0) end
 		--if plr.hp<=0 then exit() trace("died :p",2) end
-
 		plr.hp2 = plr.hp
+	 --
+		pmem(4,save.ct+(tstamp()-st_t))
 	 --pause
 		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" music(3,7,0) poke(0x7FC3F,0,1) end
 		p.t=0
@@ -2441,6 +2453,9 @@ function TIC()
 				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 			},
+			{
+				save.ct+(tstamp()-st_t)
+			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
 		
@@ -2462,6 +2477,7 @@ function TIC()
 			end
 		vbank(0) end
 	end
+	-------------------------------------------
 	--settings
 	if not st.sfx then sfx(-1) sfx(-1,0,1) end
 	if not st.music then music(-1) end
