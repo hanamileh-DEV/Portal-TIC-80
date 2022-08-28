@@ -139,7 +139,7 @@ local model={
 	{--light bridge (+Z) (7)
 		v={{ 48,4, 48},{ 48,4,-48},{-48,4, 48},{-48,4,-48}},
 		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}}
-	}, 
+	},
 	{--button -X (8)
 		v={
 			{6   ,46  ,6   },
@@ -673,7 +673,7 @@ maps[0]={ --main gameroom
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={{0,0,1,1,2}}, --light bridge generators
 	plr={x=32,y=64,z=32,tx=0,ty=0}, --player's position and the angle of rotation of the camera
-	music=0 --Music ID for this level 
+	music=0 --Music ID for this level
 }
 
 maps[-1]={ --world from the main menu
@@ -865,7 +865,7 @@ function unitic.update(draw_portal,p_id)
 	--objects (1)--
 	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
-	
+
 	for i=1,#draw.objects.c  do unitic.obj[#unitic.obj+1]=draw.objects.c [i] end
 	for i=1,#draw.objects.cd do unitic.obj[#unitic.obj+1]=draw.objects.cd[i] end
 	for i=1,#draw.objects.lb do unitic.obj[#unitic.obj+1]=draw.objects.lb[i] end
@@ -1215,15 +1215,15 @@ function unitic.cube_update() --all physics related to cubes
 			local inbp = false --is the cube in the blue portal
 			local inop = false --is the cube in the orange portal
 			local bf   = false --is the cube in the blue field
-			
+
 			local x1=max((cx-25)//96,0) -- +-24
 			local y1=max((cy-25)//128,0)
 			local z1=max((cz-25)//96,0)
-		
+
 			local x2=min((cx+25)//96,world_size[1]-1)
 			local y2=min((cy+25)//128,world_size[2]-1)
 			local z2=min((cz+25)//96,world_size[3]-1)
-			
+
 			for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
 				if wall_coll[draw.map[1][x0][y0][z0][2]] then
 					if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
@@ -1241,11 +1241,11 @@ function unitic.cube_update() --all physics related to cubes
 						if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
 						or coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 						or coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
-		
+
 						if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
 						or coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 						or coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
-		
+
 						if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
 						or coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 						or coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
@@ -1253,7 +1253,7 @@ function unitic.cube_update() --all physics related to cubes
 				elseif draw.map[1][x0][y0][z0][2]==7 then
 					if coll(clx - 24,  cly - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then bf = true end
 				end
-		
+
 				if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
 					if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then colx = true end
 					if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then coly = true end
@@ -1261,7 +1261,7 @@ function unitic.cube_update() --all physics related to cubes
 				elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
 					if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx(0,"C-6",-1,1) end
 				end
-		
+
 				if wall_coll[draw.map[3][x0][y0][z0][2]] then
 					if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
 					if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
@@ -1278,11 +1278,11 @@ function unitic.cube_update() --all physics related to cubes
 						if coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
 						or coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 						or coll( cx - 24, cly - 24, clz - 24,  cx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
-		
+
 						if coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
 						or coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 						or coll(clx - 24,  cy - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
-		
+
 						if coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
 						or coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 						or coll(clx - 24, cly - 24,  cz - 24, clx + 24, cly + 24, cz + 24, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
@@ -1735,7 +1735,7 @@ function unitic.button_update()
 				if draw.objects.b[i].t~=0 then sfx(17) end draw.objects.b[i].s=false draw.objects.b[i].t1=0 draw.objects.b[i].tick=true
 			end
 		end
-		
+
 		local dist=((draw.objects.b[i].x-plr.x)^2 + (draw.objects.b[i].y-plr.y)^2 + (draw.objects.b[i].z-plr.z)^2) ^ 0.5
 		local rc=raycast(
 			draw.objects.b[i].x,draw.objects.b[i].y+26,draw.objects.b[i].z,
@@ -1765,7 +1765,7 @@ local function portal_gun()
 	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
 	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
-	
+
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
@@ -1909,7 +1909,7 @@ function update_world()
 				then draw_wall=false end
 			end
 
-			
+
 			if (draw.world.f[i].w[2]==2 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[4]>draw.p[2][2]) --Y
 			or (draw.world.f[i].w[2]==2 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[4]<draw.p[2][2]) --Y
 			then draw_wall=false end
@@ -1948,7 +1948,7 @@ function update_world()
 				then draw_wall=false end
 			end
 
-			
+
 			if (draw.world.f[i].w[2]==2 and draw.world.f[i].w[1]==2 and draw.world.f[i].w[4]>draw.p[1][2]) --Y
 			or (draw.world.f[i].w[2]==2 and draw.world.f[i].w[1]==1 and draw.world.f[i].w[4]<draw.p[1][2]) --Y
 			then draw_wall=false end
@@ -2039,11 +2039,11 @@ local function load_world(world_id) --Loads the world from ROM memory (from the 
 		b={}, --buttons
 		t={} --turrets
 	}
-	
+
 	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
 		table.insert(draw.world.v,{x*96,y*128,z*96})
 	end end end
-	
+
 	for i=1,4 do
 		q3={}
 		for x=0,world_size[1]-1 do
@@ -2253,7 +2253,7 @@ function TIC()
 	if open=="calibration" then vbank(1) cls() respal() vbank(0) respal()
 		if sts.t2>0 then sts.t2=sts.t2-1 end
 		cls(1)
-		
+
 		if clp1 then sfx(16) end
 		--
 		if sts.t==1 then
@@ -2268,7 +2268,7 @@ function TIC()
 			if keyp(1) or btnp(2) then sts.i=sts.i-1 end
 			if keyp(4) or btnp(3) then sts.i=sts.i+1 end
 			sts.i=sts.i%4
-			
+
 			if keyp(23) or btnp(0) then sts.time[sts.i+1]=sts.time[sts.i+1]+1 end
 			if keyp(19) or btnp(1) then sts.time[sts.i+1]=sts.time[sts.i+1]-1 end
 
@@ -2354,7 +2354,7 @@ function TIC()
 		if sts.t==31 then print("Do you want me to help you?",44,3,7,false,1,false) end
 		if sts.t==32 then
 			print("Press any button to start the game",22,3,7,false,1,false)
-		
+
 			clip(1,10,238,125)
 			for x=0,240,23 do for y=0,135,13 do
 				local dx,dy=x-mx+10,y-my+5
@@ -2606,7 +2606,7 @@ function TIC()
 			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
-		
+
 		vbank(1) do
 			for i=1,#debug_text[plr.dt] do
 				local text_size=print(debug_text[plr.dt][i], 240,0)
@@ -2636,7 +2636,7 @@ function TIC()
 
 		circ(195,101,33,13)
 		circ(195,101,20,0)
-		
+
 		line(207,70 ,213,92 ,0)
 		line(225,87 ,213,109,0)
 		line(227,110,204,119,0)
