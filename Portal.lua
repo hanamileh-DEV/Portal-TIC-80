@@ -76,7 +76,7 @@ local unitic = {
 	p    = {} --particles
 }
 local model={
-	{--cube
+	{--cube (1)
 	v={{ 24, 24, 24},{ 24,-24, 24},{ 24, 24,-24},{ 24,-24,-24},{-24, 24, 24},{-24,-24, 24},{-24, 24,-24},{-24,-24,-24},},
 	f={
 		 {5,3,1,uv={{96,256},{72,232},{72,256},-1},f=2},
@@ -93,7 +93,7 @@ local model={
 		 {5,1,2,uv={{96,232},{72,232},{72,256},-1},f=2},
 	}
 	},
-	{--cube companion
+	{--cube companion (2)
 	v={{ 24, 24, 24},{ 24,-24, 24},{ 24, 24,-24},{ 24,-24,-24},{-24, 24, 24},{-24,-24, 24},{-24, 24,-24},{-24,-24,-24},},
 	f={
 		 {5,3,1,uv={{96,256-24},{72,232-24},{72,256-24},-1},f=2},
@@ -110,7 +110,7 @@ local model={
 		 {5,1,2,uv={{96,232-24},{72,232-24},{72,256-24},-1},f=2},
 	}
 	},
-	{ --cube ejector (idk what its called)
+	{ --cube dispenser (3)
 		v={{24,24,24},{24,-24,24},{24,24,-24},{24,-24,-24},{-24,24,24},{-24,-24,24},{-24,24,-24},{-24,-24,-24},},
 		f={
 			{5,3,1,uv={{120,232},{96, 208},{96 ,232},-1},f=3},
@@ -126,15 +126,23 @@ local model={
 			{1,3,4,uv={{120,232},{96, 232},{96 ,256},-1},f=3},
 			{5,1,2,uv={{120,232},{96, 232},{96 ,256},-1},f=3}}
 	},
-	{--light bridge (-X +X)
-		v={{-48,4,-48},{48,4,-48},{-48,4,48},{48,4,48}},
+	{--light bridge (-X) (4)
+		v={{-48,4, 48},{ 48,4, 48},{-48,4,-48},{ 48,4,-48}},
+		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}}
+	},
+	{ --light bridge (+X) (5)
+		v={{-48,4,-48},{ 48,4,-48},{-48,4, 48},{ 48,4, 48}},
 		f={{1,2,3,uv={{0,232},{16,232},{0,248}},f=3},{2,3,4,uv={{16,232},{0,248},{16,248}},f=3}}
 	},
-	{--light bridge (-Z +Z)
-		v={{-48,4,-48},{-48,4,48},{48,4,-48},{48,4,48}},
-		f={{1,2,3,uv={{0,232},{16,232},{0,248}},f=3},{2,3,4,uv={{16,232},{0,248},{16,248}},f=3}}
+	{--light bridge (-Z) (6)
+		v={{-48,4,-48},{-48,4, 48},{ 48,4,-48},{ 48,4, 48}},
+		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}}
 	},
-	{--button -X
+	{--light bridge (+Z) (7)
+		v={{ 48,4, 48},{ 48,4,-48},{-48,4, 48},{-48,4,-48}},
+		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}}
+	}, 
+	{--button -X (8)
 		v={
 			{6   ,46  ,6   },
 			{6   ,0   ,6   },
@@ -164,7 +172,7 @@ local model={
 			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
 		}
 	},
-	{--button +X
+	{--button +X (9)
 		v={
 			{-6   ,46  ,-6  },
 			{-6   ,0   ,-6  },
@@ -194,7 +202,7 @@ local model={
 			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
 		}
 	},
-	{--button -Z
+	{--button -Z (10)
 		v={
 			{-6  ,46  ,6   },
 			{-6  ,0   ,6   },
@@ -224,7 +232,7 @@ local model={
 			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
 		}
 	},
-	{--button +Z
+	{--button +Z (11)
 		v={
 			{6   ,46  ,-6   },
 			{6   ,0   ,-6   },
@@ -254,7 +262,7 @@ local model={
 			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
 		}
 	},
-	{ --turret -X
+	{ --turret -X (12)
 		v={
 			 {7,0  ,0},
 			 {28,27 ,0},
@@ -347,7 +355,7 @@ local model={
 			{29,27,26,uv={{122,138},{122,136},{120,136},-1},f=2},
 		}
 	},
-	{ --turret +X
+	{ --turret +X (13)
 		v={
 			 {-7,0,0},
 			 {-28,27,0},
@@ -440,7 +448,7 @@ local model={
 			{29,27,26,uv={{122,138},{122,136},{120,136},-1},f=2},
 		}
 	},
-	{ --turret -Z
+	{ --turret -Z (14)
 		v={
 			{0  ,0  ,7},
 			{0  ,27 ,28},
@@ -533,7 +541,7 @@ local model={
 			{29,27,26,uv={{122,138},{122,136},{120,136},-1},f=2},
 		}
 	},
-	{ --turret +Z
+	{ --turret +Z (15)
 		v={
 			 {0,0  ,-7 },
 			 {0,27 ,-28},
@@ -629,7 +637,7 @@ local model={
 }
 
 local s = { --sounds
-t1=0,
+t1=0, --sad story about a lonely variable in one table
 }
 
 local world_size={12,4,12}
@@ -642,25 +650,15 @@ local draw={
 		cd={}, --cube dispensers
 		lb={}, --light bridges
 		b={}, --buttons
-		t={} --turrets
+		t={}, --turrets
 	},
 	world={v={},f={},sp={}}, --main world
 	world_bp={f={}}, --the world for the blue portal
 	world_op={f={}}, --the world for the orange portal
 	map={},
 	pr={}, --particles
-	p={ --portals
-		-- list table with following fields:
-		-- {x, y, z, plane, normal}
-		nil,
-		nil,
-	},
-	lg={--light bridge generators
-		--{2,0,0,3,1},
-		--{2,0,11,3,2},
-		--{0,0,5,1,2},
-		--{11,0,5,1,1}
-	}
+	p={nil,nil}, --portals
+	lg={}--light bridge generators
 }
 
 --maps
@@ -672,7 +670,7 @@ maps[0]={ --main gameroom
 	},
 	o={ --table for objects
 	 --{X, Y, Z, type, [additional parameters]}
-	 {800,0,900,11}
+	 {800,0,900,13},
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={{0,0,1,1,2}}, --light bridge generators
@@ -746,8 +744,6 @@ maps[0].w[#maps[0].w+1]={2,0,0,3,1,8}
 maps[0].w[#maps[0].w+1]={3,0,11,3,2,9}
 maps[0].w[#maps[0].w+1]={0,1,2,1,2,16}
 maps[0].w[#maps[0].w+1]={0,1,3,1,2,17}
-maps[0].w[#maps[0].w+1]={0,0,2,1,2,18}
-maps[0].w[#maps[0].w+1]={0,0,3,1,2,19}
 maps[0].w[#maps[0].w+1]={0,0,6,3,3,12}
 maps[0].w[#maps[0].w+1]={1,0,6,3,3,11}
 maps[0].w[#maps[0].w+1]={2,0,5,1,1,2}
@@ -1416,8 +1412,8 @@ function unitic.render()
 	--dynamic textures
 	for x0=0,15 do --light bridge
 		for y0=0,11 do setpix(x0,y0+234,15) end
-		local y0=(math.sin((t%30+x0*2)/5)+1)*6
-		local y1=(math.cos((t%30+x0*2)/5)+1)*6
+		local y0=(math.sin((-t%30+x0*2)/5)+1)*6
+		local y1=(math.cos((-t%30+x0*2)/5)+1)*6
 		local y2=(math.sin(t/20)+1)*6
 		setpix(x0,F(y0)+234,11)
 		setpix(x0,F(y1)+234,10)
@@ -1778,26 +1774,26 @@ function addwall(x, y, z, angle, face, type)
 end
 
 function addobj(x, y, z, type,t1) --objects
-	if type==1 or type==2 then
+	if type==1 or type==2 then --cubes
 		draw.objects.c[#draw.objects.c+1]=
 		{type=type, --type
 		x=x,y=y,z=z, --object coordinates
 		vy=0, --velocity
 		draw=true, --whether to display the model
 		model=model[type]}
-	elseif type==3 then
+	elseif type==3 then --cube dispenser
 		draw.objects.cd[#draw.objects.cd+1]=
 		{type=type,
 		x=x,y=y,z=z,
 		draw=true,
 		model=model[type]}
-	elseif type==4 or type==5 then
+	elseif type==4 or type==5 or type==6 or type==7 then --light bridges
 		draw.objects.lb[#draw.objects.lb+1]=
 		{type=type,
 		x=x,y=y,z=z,
 		draw=true,
 		model=model[type]}
-	elseif type==6 or type==7 or type==8 or type==9 then
+	elseif type==8 or type==9 or type==10 or type==11 then --buttons
 		draw.objects.b[#draw.objects.b+1]=
 		{type=type,
 		x=x,y=y,z=z,
@@ -1806,7 +1802,7 @@ function addobj(x, y, z, type,t1) --objects
 		tick=false, --sends a signal 1 tick long while pressing the button
 		s=false, --button signal
 		draw=true,model={v=model[type].v,f=model[type].f}}
-	elseif type==10 or type==11 or type==12 or type==13 then
+	elseif type==12 or type==13 or type==14 or type==15 then --turrets
 		draw.objects.t[#draw.objects.t+1]=
 		{type=type,
 		x=x,y=y,z=z,
@@ -1949,7 +1945,13 @@ function update_world()
 			end
 			--trace("----------------------------------",15)
 			for _=1,100 do --bridge lenght limiter
-				if vx==-1 or vx==1 then addobj(48+lx*96,ly*128,48+lz*96,4) else addobj(48+lx*96,ly*128,48+lz*96,5) end
+				--if vx==-1 or vx==1 then addobj(48+lx*96,ly*128,48+lz*96,4) else addobj(48+lx*96,ly*128,48+lz*96,5) end
+				if     vx==-1 then addobj(48+lx*96,ly*128,48+lz*96,4)
+				elseif vx==1  then addobj(48+lx*96,ly*128,48+lz*96,5)
+				elseif vz==-1 then addobj(48+lx*96,ly*128,48+lz*96,6)
+				elseif vz==1  then addobj(48+lx*96,ly*128,48+lz*96,7)
+				end
+
 				lx=lx+vx
 				lz=lz+vz
 
@@ -2871,7 +2873,6 @@ end
 -- 172:fffffffffffffffffffffffffff999ffffffffffffffffffffffffffffffff88
 -- 173:fffffffffffffffffff888fffffffffffffffff9ffffffffffffffff8fffffff
 -- 174:ffffffffffffffffffffffffffffffff99ffffffffffffffffffffffffffffff
--- 175:afff000dafff000dafff000dafff000da000fffda000fffda000fffda000fffd
 -- 176:6555555265555552655555526555555265565555655555556555555554444444
 -- 177:2fffffff2fffffff2fffffff2fffffff22ffffff22ffffff22ffffff422fffff
 -- 178:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -2887,71 +2888,66 @@ end
 -- 188:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 -- 189:ffffffffffffffffffffff88fffffffff999ffffffffffffffffffffffffffff
 -- 190:ffffffffffffffff8ffffffffffffffffffffffff999ffffffffffffffffffff
--- 191:afff000dafff000dafff000dafff000da000fffda000fffda000fffda000fffd
 -- 192:555555555ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc
 -- 193:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 194:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 195:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 196:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 197:55555555ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4
--- 198:6666666665555555656555556555555565555655655555556565556565555553
--- 199:6666666655555555655565555555555556555556555555555555555533333333
--- 200:6666666555555554655565545555555455565454555555545555555433555554
--- 201:6666666665555555656555556555555565555655655555556565556565555553
--- 202:6666666655555555655565555555555556555556555555555555555533333333
--- 203:6666666555555554655565545555555455565454555555545555555433555554
--- 204:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 205:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 206:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 207:afff000dafff000dafff000dafff000da000fffda000fffda000fffda000fffd
+-- 198:2b2333332b2322222b2322222b2322222b2322222b2322222b2322222b232222
+-- 199:3333333322222222222222222222222222222222222222222222222222222222
+-- 200:333332b2222232b2222232b2222232b2222232b2222232b2222232b2222232b2
+-- 201:2b2222222b2222222333333323ffffff23ffffff23ffffff23ffffff23ffffff
+-- 202:222222222222222233333333ffffffffffffffffffffffffffffffffffffffff
+-- 203:222222b2222222b233333332ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 204:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 205:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 206:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 208:5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa
 -- 209:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 210:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 211:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 212:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 213:bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4
--- 214:6555555365555553656555536555555365555553655555536565556365555553
--- 215:aaaaaaaaa1aaaaa1aa1aaa1aaaa1a1aaaaaa1aaaaaa1a1aaaa1aaa1aa1aaaaa1
--- 216:a3545454a3555554a3555554a3555554a3555554a3554554a3555554a3555554
--- 217:6555555365555553656555536555555365555553655555536565556365555553
--- 218:ddddddddddddddd1dddddd1dddddd1ddddddd1ddd1dd1ddddd1d1dddddd1dddd
--- 219:d3545454d3555554d3555554d3555554d3555554d3554554d3555554d3555554
--- 220:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 221:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 222:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 223:afff000dafff000dafff000dafff000da000fffda000fffda000fffda000fffd
+-- 214:2b2322222b2322222b2322222b2322222b2322222b2322222b2322222b232222
+-- 215:2222222222222222222222222222222222222222222222222222222222222222
+-- 216:222232b2222232b2222232b2222232b2222232b2222232b2222232b2222232b2
+-- 217:23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff
+-- 218:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+-- 219:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 220:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 221:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 222:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 224:5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb
 -- 225:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 226:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 227:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 228:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 229:ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4
--- 230:6555555365555553656555526555555565555555655555556555655565555555
--- 231:aaaaaaaa33333333222222225555555555555455555555555545555555555555
--- 232:a354555433555554225555545555555454555454555555545555555455555554
--- 233:6555555365555553656555526555555565555555655555556555655565555555
--- 234:dddddddd33333333222222225555555555555455555555555545555555555555
--- 235:d354555433555554225555545555555454555454555555545555555455555554
--- 236:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 237:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 238:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 239:afff000dafff000dafff000dafff000da000fffda000fffda000fffda000fffd
+-- 230:2b2322222b2322222b2322222b2333332b22222233333333333333332b222222
+-- 231:2222222222222222222222223333333322222222333333333333333322222222
+-- 232:222232b2222232b2222232b2333332b2222222b23333333333333333222222b2
+-- 233:23ffffff23ffffff23ffffff23ffffff23ffffff33ffffff33ffffff23ffffff
+-- 234:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+-- 235:ffffff32ffffff32ffffff32ffffff32ffffff33ffffff33ffffff32ffffff32
+-- 236:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 237:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 238:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 240:5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5555555554444444
 -- 241:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb5555555544444444
 -- 242:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb5555555544444444
 -- 243:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb4444444444444444
 -- 244:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb4444444444444444
 -- 245:aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb44444444444444444
--- 246:6555555565555555655555556555555565565555655555556555555554444444
--- 247:5555555555555554455545555555555555555554555555555555555544444444
--- 248:5554555455555554555555545555555455455454555555545555555444444444
--- 249:6555555565555555655555556555555565565555655555556555555554444444
--- 250:5555555555555554455545555555555555555554555555555555555544444444
--- 251:5554555455555554555555545555555455455454555555545555555444444444
--- 252:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 253:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 254:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
--- 255:afff000dafff000dafff000dafff000da000fffda000fffda000fffda000fffd
+-- 246:2b2222222b2222222b2222222b2222222b2222222b2222222b2222222b222222
+-- 247:2222222222222222222222222222222222222222222222222222222222222222
+-- 248:222222b2222222b2222222b2222222b2222222b2222222b2222222b2222222b2
+-- 249:23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff
+-- 250:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+-- 251:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 252:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 253:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 254:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- </TILES>
 
 -- <TILES1>
