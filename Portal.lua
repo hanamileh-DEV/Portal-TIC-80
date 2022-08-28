@@ -2204,7 +2204,7 @@ function TIC()
 		elseif open=="main|authors" then
 			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
 			print("Author of the engine: HanamileH"         ,1,55,7)
-			print("Coders:             HanamileH & Soxfox42",1,75,7)
+			print("Coders:             HanamileH & soxfox42",1,75,7)
 			print("Level designers: [Random dude]"          ,1,85,7)
 			print("Testers:            [Random dude]"       ,1,95,7)
 			print("Back",4+(1-ms.t1)*20,115,7)
