@@ -1016,13 +1016,8 @@ function unitic.draw()
 		p2d.y = unitic.fov * y0 / z0 + 68
 
 		if z0 < -1 then
-			if st.css_content then
-				pix(p2d.x, p2d.y, 0)
-				print(i, p2d.x, p2d.y, 7)
-			else
-				print("ERROR", p2d.x, p2d.y+1, 1)
-				print("ERROR", p2d.x, p2d.y, 9)
-			end
+			pix(p2d.x, p2d.y, 0)
+			print(i, p2d.x, p2d.y, 7)
 		end
 	end
 	if #unitic.p~=0 then
@@ -2623,11 +2618,6 @@ function TIC()
 			print("HP: "..plr.hp,1,130,7)
 
 			if plr.noclip then print("Noclip", 104, 85, 7) end
-			if not st.css_content then
-				rect(116,0,140,7,14)
-				print("!",117,1,7*((time()/500)//1%2),false,1,true)
-				print("Something is creating script errors",120,1,7,false,1,true)
-			end
 		vbank(0) end
 	end
 	--------------------------
