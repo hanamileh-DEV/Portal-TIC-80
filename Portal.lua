@@ -1690,10 +1690,10 @@ end
 function unitic.turret_update()
 	for i=1,#draw.objects.t do
 		local t_ang=0
-		if     draw.objects.t[i].type==10 then t_ang=pi2
-		elseif draw.objects.t[i].type==11 then t_ang=-pi2
-		elseif draw.objects.t[i].type==12 then t_ang=0
-		elseif draw.objects.t[i].type==13 then t_ang=-math.pi end
+		if     draw.objects.t[i].type==12 then t_ang=pi2
+		elseif draw.objects.t[i].type==13 then t_ang=-pi2
+		elseif draw.objects.t[i].type==14 then t_ang=0
+		elseif draw.objects.t[i].type==15 then t_ang=-math.pi end
 
 		local x0=draw.objects.t[i].x
 		local y0=draw.objects.t[i].y
@@ -1706,7 +1706,7 @@ function unitic.turret_update()
 				if draw.objects.t[i].cd>40 then
 					plr.hp=plr.hp-R(1,2)
 					if plr.cd3<2 then plr.cd3=5 sfx(4,"C-3",-1,1) end
-					if draw.objects.t[i].type==12 or draw.objects.t[i].type==13 then
+					if draw.objects.t[i].type==14 or draw.objects.t[i].type==15 then
 						for _=1,2 do
 							addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
 							addp(x0+16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
