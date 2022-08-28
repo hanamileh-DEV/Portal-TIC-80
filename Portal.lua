@@ -762,6 +762,38 @@ maps[0].w[#maps[0].w+1]={10,0,6,3,3,7}
 maps[0].w[#maps[0].w+1]={6,0,5,2,3,8}
 maps[0].w[#maps[0].w+1]={6,0,6,2,3,8}
 maps[0].w[#maps[0].w+1]={3,0,5,2,3,8}
+
+--song text
+local s_t={
+	"This is one of the",
+	"few games that took",
+	"us weeks of hard",
+	"work to develop.",
+	"    ",
+	"Yes, we are not the",
+	"first to make portal",
+	"3D in TIC-80",
+	"(although in face we",
+	"were the first to do",
+	"it) but we are the",
+	"first to turn it into",
+	"a full-fledged game",
+	"with a bunch of",
+	"interesting mechanics,",
+	"putting out soul into",
+	"the development of",
+	"this game.",
+	"    ",
+	"We hope you enjoyed",
+	"this game and it",
+	"deserves a like,",
+	"we really tried",
+	"very hard.",
+	"    ",
+	"uwu",
+}
+
+local s_t2={1,1} --some data to display the text above
 --
 
 local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
@@ -2111,6 +2143,7 @@ load_world(-1)
 --poke(0x7FC3F,1,1)
 local open="logo" sync(1,1,false)
 
+--local open="still alive" music(7)
 function TIC()
 	--fps counter
 	t1 = time()
@@ -2596,6 +2629,51 @@ function TIC()
 				print("Something is creating script errors",120,1,7,false,1,true)
 			end
 		vbank(0) end
+	end
+	--------------------------
+	-- still alive -----------
+	--------------------------
+	if open=="still alive" then
+		cls(0)
+		rectb(1,1,120,133,13)
+		rectb(122,1,117,65,13)
+		print("music by HanamileH",124,3,13)
+		print("midi by Marioverehrer",124,10,13)
+		print("game by HanamileH",124,17,13)
+		print("& Soxfox42",124,24,13)
+		print("I hope you",124,38,13)
+		print("liked the game",124,45,13)
+
+		circ(195,101,33,13)
+		circ(195,101,20,0)
+		
+		line(207,70 ,213,92 ,0)
+		line(225,87 ,213,109,0)
+		line(227,110,204,119,0)
+		line(216,127,190,121,0)
+		line(190,134,177,111,0)
+		line(166,117,176,95 ,0)
+		line(163,91 ,193,81 ,0)
+		line(182,70 ,203,84 ,0)
+		--text
+		if t%3==0 then
+			s_t2[1]=s_t2[1]+1
+			if s_t2[1]>#s_t[s_t2[2]] then s_t2[2]=s_t2[2]+1 s_t2[1]=0 end
+			if s_t2[2]>#s_t then s_t2[2]=#s_t s_t2[1]=#s_t[#s_t] end
+		end
+
+		for i=max(s_t2[2]-17,1),s_t2[2] do
+			if i~=s_t2[2] then
+				print(s_t[i],3,(i-max(s_t2[2]-15,1))*7+3,13)
+			else
+				if t%20<10 then
+					print(s_t[i]:sub(1,s_t2[1]).."_",3,(i-max(s_t2[2]-17,1))*7+3,13)
+				else
+					print(s_t[i]:sub(1,s_t2[1]),3,(i-max(s_t2[2]-17,1))*7+3,13)
+				end
+			end
+		end
+		line(0,0,240,0,0)
 	end
 	-------------------------------------------
 	--settings
