@@ -771,14 +771,14 @@ local s_t={
 	"Yes, we are not the",
 	"first to make portal",
 	"3D in TIC-80",
-	"(although in face we",
+	"(although in fact we",
 	"were the first to do",
 	"it) but we are the",
 	"first to turn it into",
 	"a full-fledged game",
 	"with a bunch of",
 	"interesting mechanics,",
-	"putting out soul into",
+	"putting our soul into",
 	"the development of",
 	"this game.",
 	"    ",
@@ -788,7 +788,6 @@ local s_t={
 	"we really tried",
 	"very hard.",
 	"    ",
-	"uwu",
 }
 
 local s_t2={1,1} --some data to display the text above
@@ -2630,7 +2629,7 @@ function TIC()
 		print("music by HanamileH",124,3,13)
 		print("midi by Marioverehrer",124,10,13)
 		print("game by HanamileH",124,17,13)
-		print("& Soxfox42",124,24,13)
+		print("& soxfox42",124,24,13)
 		print("I hope you",124,38,13)
 		print("liked the game",124,45,13)
 
