@@ -1527,7 +1527,7 @@ function unitic.render()
 	end
 end
 
-local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitflats) -- walk along a segment, checking whether it collides with the walls
+local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk along a segment, checking whether it collides with the walls
 	-- convert to tile space
 	x1, y1, z1, x2, y2, z2 = x1 / 96, y1 / 128, z1 / 96, x2 / 96, y2 / 128, z2 / 96
 	-- DDA, loosely based on https://lodev.org/cgtutor/raycasting.html
@@ -1567,33 +1567,42 @@ local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitflats) -- walk along a se
 			x, tx = x + sx, tx + lx
 			if (x + ox) * sx > x2 * sx or (x + ox) < 0 or (x + ox) > world_size[1] - 1 then
 				return
-			end
-			if hitwalls[draw.map[1][x + ox][y][z][2]] then
-				return x + ox, y, z, 1
-			end
-			if x < 0 then
+			elseif hitwalls[draw.map[1][x + ox][y][z][2]] then
+				if precise then
+					local ratio = (x + ox - x1) / dirx
+					return (x + ox) * 96, (y1 + diry * ratio) * 128, (z1 + dirz * ratio) * 96, 1
+				else
+					return x + ox, y, z, 1
+				end
+			elseif x < 0 then
 				return
 			end
 		elseif ty < tz then
 			y, ty = y + sy, ty + ly
 			if (y + oy) * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
 				return
-			end
-			if hitflats[draw.map[2][x][y + oy][z][2]] then
-				return x, y + oy, z, 2
-			end
-			if y < 0 then
+			elseif hitfloors[draw.map[2][x][y + oy][z][2]] then
+				if precise then
+					local ratio = (y + oy - y1) / diry
+					return (x1 + dirx * ratio) * 96, (y + oy) * 128, (z1 + dirz * ratio) * 96, 1
+				else
+					return x, y + oy, z, 2
+				end
+			elseif y < 0 then
 				return
 			end
 		else
 			z, tz = z + sz, tz + lz
 			if (z + oz) * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
 				return
-			end
-			if hitwalls[draw.map[3][x][y][z + oz][2]] then
-				return x, y, z + oz, 3
-			end
-			if z < 0 then
+			elseif hitwalls[draw.map[3][x][y][z + oz][2]] then
+				if precise then
+					local ratio = (z + oz - z1) / dirz
+					return (x1 + dirx * ratio) * 96, (y1 + diry * ratio) * 128, (z + oz) * 96, 1
+				else
+					return x, y, z + oz, 3
+				end
+			elseif z < 0 then
 				return
 			end
 		end
