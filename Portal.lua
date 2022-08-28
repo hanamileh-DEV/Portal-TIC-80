@@ -2194,7 +2194,7 @@ function TIC()
 
 		elseif open=="main|newgame" then
 			print("Warning",4,35,8)
-			print("Your current conservation",4,45,7)
+			print("Your current save",4,45,7)
 			print("will be removed.",4,55,7)
 			print("Continue?",4,65,7)
 
@@ -2211,7 +2211,7 @@ function TIC()
 			print("Back",4+(1-ms.t1)*20,115,7)
 			if my>114 and my<125 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t1=min(1,ms.t1+0.05) end
 		elseif open=="main|settings" then
-			print("Mouse sensevity: "..F(st.m_s),4,35,7)
+			print("Mouse sensitivity: "..F(st.m_s),4,35,7)
 			print("Music: "                  ,4,55,7)
 			print("Sfx: "                    ,4,65,7)
 			print("Rendering portals: "      ,4,75,7)
@@ -2223,7 +2223,7 @@ function TIC()
 			if st.sfx   then print("On",117,65,13) else print("Off",117,65,11) end
 			if st.r_p   then print("On",117,75,13) else print("Off",117,75,11) end
 			if st.h_q_p then print("On",117,85,13) else print("Off",117,85,11) end
-			--mouse sensevity slider
+			--mouse sensitivity slider
 			rect(4,45,100,2,3)
 			rect(4+st.m_s-20,43,2,6,6)
 
@@ -2460,7 +2460,7 @@ function TIC()
 			if my>84  and my<94  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx(16)                                    end else p.t3=min(p.t3+0.05,1) end
 			if my>124 and my<134 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx(16) end                                      else p.t4=min(p.t4+0.05,1) end
 		elseif open=="pause|settings" then
-			print("Mouse sensevity: "..F(st.m_s),4,35,7)
+			print("Mouse sensitivity: "..F(st.m_s),4,35,7)
 			print("Music: "                  ,4,55,7)
 			print("Sfx: "                    ,4,65,7)
 			print("Rendering portals: "      ,4,75,7)
@@ -2471,7 +2471,7 @@ function TIC()
 			if st.sfx   then print("On",117,65,13) else print("Off",117,65,11) end
 			if st.r_p   then print("On",117,75,13) else print("Off",117,75,11) end
 			if st.h_q_p then print("On",117,85,13) else print("Off",117,85,11) end
-			--mouse sensevity slider
+			--mouse sensitvity slider
 			rect(4,45,100,2,3)
 			rect(4+st.m_s-20,43,2,6,6)
 
