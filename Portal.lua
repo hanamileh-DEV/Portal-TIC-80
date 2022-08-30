@@ -1235,10 +1235,6 @@ function unitic.cube_update() --all physics related to cubes
 			local cy=draw.objects.c[i].y
 			local cz=draw.objects.c[i].z
 
-			local colx = false
-			local coly = false
-			local colz = false
-
 			local inbp = false --is the cube in the blue portal
 			local inop = false --is the cube in the orange portal
 			local bf   = false --is the cube in the blue field
