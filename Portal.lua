@@ -669,10 +669,11 @@ maps[0]={ --main gameroom
 	o={ --table for objects
 	 --{X, Y, Z, type, [additional parameters]}
 	 {800,0,900,13},
+	 {800,600,900,2},
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={{0,0,1,1,2}}, --light bridge generators
-	plr={x=32,y=64,z=32,tx=0,ty=0}, --player's position and the angle of rotation of the camera
+	lift={{0,0,0,2},nil}, --Initial and final elevator (X Y Z angle) [0 -X, 1 -Z 2 +X, 3 +Z]
 	music=0 --Music ID for this level
 }
 
@@ -716,7 +717,7 @@ w={
 o={},
 p={},
 lg={},
-plr={x=0,y=0,z=0,tx=0,ty=0},
+lift={nil,nil},
 music=-1,
 }
 
@@ -1073,7 +1074,7 @@ function unitic.draw()
 	end
 end
 
-local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true}
+local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true}
 function unitic.player_collision()
 	local colx = false
 	local coly = false
@@ -1448,6 +1449,7 @@ end
 
 function unitic.render()
 	--dynamic textures
+
 	for x0=0,15 do --light bridge
 		for y0=0,11 do setpix(x0,y0+234,15) end
 		local y0=(math.sin((-t%30+x0*2)/5)+1)*6
@@ -2091,6 +2093,20 @@ local function load_world(world_id) --Loads the world from ROM memory (from the 
 	if maps[world_id].p then
 		draw.p=maps[world_id].p
 	end
+	--lift
+	for i=1,2 do
+		if maps[world_id].lift[i] then
+			local x0, y0, z0=maps[world_id].lift[i][1], maps[world_id].lift[i][2], maps[world_id].lift[i][3]
+			addwall(x0,y0  ,z0,2,2,1)
+			addwall(x0,y0+1,z0,2,1,1)
+
+			if     maps[world_id].lift[i][4]==0 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,3,19)addwall(x0,y0,z0+1,3,2,18)
+			elseif maps[world_id].lift[i][4]==1 then addwall(x0,y0,z0,1,3,19)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
+			elseif maps[world_id].lift[i][4]==2 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,3,19)
+			elseif maps[world_id].lift[i][4]==3 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,3,19)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
+			end
+		end
+	end
 	----
 	update_world()
 end
@@ -2131,7 +2147,7 @@ local ls={t=0,pr=0} --loading screen
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --main screen
-
+local l_an={t=0,i=true} --lift animation
 load_world(-1)
 --poke(0x7FC3F,1,1)
 local open="logo" sync(1,1,false)
@@ -2427,6 +2443,17 @@ function TIC()
 	-- load lvl --------------
 	--------------------------
 	if open=="load lvl" then
+		--lift texture
+		-- for x=0,19 do
+		-- 	for y=0,28 do
+		-- 		if x==10 then
+		-- 			setpix(x+74,y+99,4)
+		-- 		else
+		-- 			setpix(x+74,y+99,5)
+		-- 		end
+		-- 	end
+		-- end
+		--
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
 		pmem(4,save.ct)
 
@@ -2437,13 +2464,15 @@ function TIC()
 		load_world(save.lvl)
 		plr.hp=100
 		plr.hp2=100
-		plr.x=maps[save.lvl].plr.x
-		plr.y=maps[save.lvl].plr.y
-		plr.z=maps[save.lvl].plr.z
-		plr.tx=maps[save.lvl].plr.tx
-		plr.ty=maps[save.lvl].plr.ty
+		plr.x=maps[save.lvl].lift[1][1]*96+48
+		plr.y=maps[save.lvl].lift[1][2]*128+64
+		plr.z=maps[save.lvl].lift[1][3]*96+48
+		plr.tx=0
+		plr.ty=pi2*maps[save.lvl].lift[1][4]
+
 		music(maps[save.lvl].music)
 
+		mx,my=0,0
 		poke(0x7FC3F,1,1)
 		open="game"
 		st_t=tstamp() --The start time of this level
@@ -2980,12 +3009,12 @@ end
 -- 195:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 196:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 197:55555555ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4
--- 198:2b2333332b2322222b2322222b2322222b2322222b2322222b2322222b232222
+-- 198:1b1333331b1322221b1322221b1322221b1322221b1322221b1322221b132222
 -- 199:3333333322222222222222222222222222222222222222222222222222222222
--- 200:333332b2222232b2222232b2222232b2222232b2222232b2222232b2222232b2
--- 201:2b2222222b2222222333333323ffffff23ffffff23ffffff23ffffff23ffffff
--- 202:222222222222222233333333ffffffffffffffffffffffffffffffffffffffff
--- 203:222222b2222222b233333332ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 200:333331b1222231b1222231b1222231b1222231b1222231b1222231b1222231b1
+-- 201:1b1111111b1111111333333313ffffff13ffffff13ffffff13ffffff13ffffff
+-- 202:111111111111111133333333ffffffffffffffffffffffffffffffffffffffff
+-- 203:111111b1111111b133333331ffffff31ffffff31ffffff31ffffff31ffffff31
 -- 204:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 205:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 206:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
@@ -2995,12 +3024,12 @@ end
 -- 211:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 212:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 213:bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4
--- 214:2b2322222b2322222b2322222b2322222b2322222b2322222b2322222b232222
+-- 214:1b1322221b1322221b1322221b1322221b1322221b1322221b1322221b132222
 -- 215:2222222222222222222222222222222222222222222222222222222222222222
--- 216:222232b2222232b2222232b2222232b2222232b2222232b2222232b2222232b2
--- 217:23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff
+-- 216:222231b1222231b1222231b1222231b1222231b1222231b1222231b1222231b1
+-- 217:13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff
 -- 218:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 219:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 219:ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31
 -- 220:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 221:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 222:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
@@ -3010,12 +3039,12 @@ end
 -- 227:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 228:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 229:ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4
--- 230:2b2322222b2322222b2322222b2333332b22222233333333333333332b222222
--- 231:2222222222222222222222223333333322222222333333333333333322222222
--- 232:222232b2222232b2222232b2333332b2222222b23333333333333333222222b2
--- 233:23ffffff23ffffff23ffffff23ffffff23ffffff33ffffff33ffffff23ffffff
+-- 230:1b1322221b1322221b1322221b1333331b11111122222222222222221b111111
+-- 231:2222222222222222222222223333333311111111222222222222222211111111
+-- 232:222231b1222231b1222231b1333331b1111111b12222222222222222111111b1
+-- 233:13ffffff13ffffff13ffffff13ffffff13ffffff23ffffff23ffffff13ffffff
 -- 234:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 235:ffffff32ffffff32ffffff32ffffff32ffffff33ffffff33ffffff32ffffff32
+-- 235:ffffff31ffffff31ffffff31ffffff31ffffff31ffffff32ffffff32ffffff31
 -- 236:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 237:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 238:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
@@ -3025,12 +3054,12 @@ end
 -- 243:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb4444444444444444
 -- 244:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb4444444444444444
 -- 245:aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb44444444444444444
--- 246:2b2222222b2222222b2222222b2222222b2222222b2222222b2222222b222222
--- 247:2222222222222222222222222222222222222222222222222222222222222222
--- 248:222222b2222222b2222222b2222222b2222222b2222222b2222222b2222222b2
--- 249:23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff
+-- 246:1b1111111b1111111b1111111b1111111b1111111b1111111b1111111b111111
+-- 247:1111111111111111111111111111111111111111111111111111111111111111
+-- 248:111111b1111111b1111111b1111111b1111111b1111111b1111111b1111111b1
+-- 249:13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff
 -- 250:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 251:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 251:ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31
 -- 252:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 253:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 254:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
