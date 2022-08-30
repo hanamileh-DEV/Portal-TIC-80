@@ -1592,30 +1592,32 @@ function unitic.render()
 							local div = minz/1e-10
 							mz1,mz2,mz3,mz4=mz1/div,mz2/div,mz3/div,mz4/div
 						end
-						ttri(
-							portal[1][1],portal[1][2],
-							portal[2][1],portal[2][2],
-							portal[3][1],portal[3][2],
-							24,232,
-							0,232,
-							24,200,
-							0,15,
-							mz1,
-							mz2,
-							mz3
-						)
-						ttri(
-							portal[2][1],portal[2][2],
-							portal[4][1],portal[4][2],
-							portal[3][1],portal[3][2],
-							0,232,
-							0,200,
-							24,200,
-							0,15,
-							mz2,
-							mz4,
-							mz3
-						)
+						if not (portal[1][4] and portal[2][4] and portal[3][4] and portal[4][4]) then
+							ttri(
+								portal[1][1],portal[1][2],
+								portal[2][1],portal[2][2],
+								portal[3][1],portal[3][2],
+								24,232,
+								0,232,
+								24,200,
+								0,15,
+								mz1,
+								mz2,
+								mz3
+							)
+							ttri(
+								portal[2][1],portal[2][2],
+								portal[4][1],portal[4][2],
+								portal[3][1],portal[3][2],
+								0,232,
+								0,200,
+								24,200,
+								0,15,
+								mz2,
+								mz4,
+								mz3
+							)
+						end
 					end vbank(0)
 					if dist then
 						cam.x = 96*x1 + relx2
