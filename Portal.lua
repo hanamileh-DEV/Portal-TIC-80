@@ -1340,7 +1340,7 @@ function unitic.cube_update() --all physics related to cubes
 				local x0=draw.objects.lb[i2].x
 				local y0=draw.objects.lb[i2].y
 				local z0=draw.objects.lb[i2].z
-				local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48)
+				local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 - 48, y0 + 5, z0 - 48, x0 + 48, y0 + 5, z0 + 48)
 				update_pos_vel(sx, sy, sz)
 			end
 
