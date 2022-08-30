@@ -663,7 +663,7 @@ end
 
 function unitic.update(draw_portal,p_id)
 	--writing all polygons in unitic.poly
-	unitic.poly = { v = {}, f = {}, sp = {} } draw_portal=nil
+	unitic.poly = { v = {}, f = {}, sp = {} }
 	unitic.obj  = {}
 	unitic.p    = {}
 	--world--
