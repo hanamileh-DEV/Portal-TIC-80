@@ -1395,23 +1395,42 @@ function unitic.render()
 				if st.r_both and draw.p[1] and draw.p[2] then
 					vbank(1) do
 						cls(0)
-						cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
-						unitic.update()
-						local portal = dist and draw.p_verts[1] or draw.p_verts[2]
-						local mz1,mz2,mz3,mz4=
-							unitic.poly.v[portal[1][1]][3],
-							unitic.poly.v[portal[1][2]][3],
-							unitic.poly.v[portal[1][3]][3],
-							unitic.poly.v[portal[2][2]][3]
+						local p_verts = dist and draw.p_verts[1] or draw.p_verts[2]
+						local portal = {draw.world.v[p_verts[1][1]], draw.world.v[p_verts[1][2]], draw.world.v[p_verts[1][3]], draw.world.v[p_verts[2][2]]}
+
+						local txsin = math.sin(plr.tx)
+						local txcos = math.cos(plr.tx)
+						local tysin = math.sin(-plr.ty)
+						local tycos = math.cos(-plr.ty)
+						for ind = 1, 4 do
+							local a1 = portal[ind][1] - plr.x
+							local b1 = portal[ind][2] - plr.y
+							local c1 = portal[ind][3] - plr.z
+
+							local c2 = c1 * tycos - a1 * tysin
+
+							local a3 = c1 * tysin + a1 * tycos
+							local b3 = b1 * txcos - c2 * txsin
+							local c3 = b1 * txsin + c2 * txcos
+							local c4 = c3
+							if c4>-0.001 then c4=-0.001 end
+							local z0 = unitic.fov / c4
+
+							local x0 = a3 * z0 + 120
+							local y0 = b3 * z0 + 68
+
+							portal[ind] = {x0, y0, -c4, c3 > 0}
+						end
+						local mz1, mz2, mz3, mz4 = portal[1][3], portal[2][3], portal[3][3], portal[4][3]
 						local minz = min(mz1, mz2, mz3, mz4)
 						if minz > 1e-10 then
 							local div = minz/1e-10
 							mz1,mz2,mz3,mz4=mz1/div,mz2/div,mz3/div,mz4/div
 						end
 						ttri(
-							unitic.poly.v[portal[1][1]][1],unitic.poly.v[portal[1][1]][2],
-							unitic.poly.v[portal[1][2]][1],unitic.poly.v[portal[1][2]][2],
-							unitic.poly.v[portal[1][3]][1],unitic.poly.v[portal[1][3]][2],
+							portal[1][1],portal[1][2],
+							portal[2][1],portal[2][2],
+							portal[3][1],portal[3][2],
 							24,232,
 							0,232,
 							24,200,
@@ -1421,9 +1440,9 @@ function unitic.render()
 							mz3
 						)
 						ttri(
-							unitic.poly.v[portal[2][1]][1],unitic.poly.v[portal[2][1]][2],
-							unitic.poly.v[portal[2][2]][1],unitic.poly.v[portal[2][2]][2],
-							unitic.poly.v[portal[2][3]][1],unitic.poly.v[portal[2][3]][2],
+							portal[2][1],portal[2][2],
+							portal[4][1],portal[4][2],
+							portal[3][1],portal[3][2],
 							0,232,
 							0,200,
 							24,200,
