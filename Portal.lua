@@ -4,7 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
-local version="DEV 0.1.6"
+local version="DEV 0.2.0"
 
 --[[
 license:
@@ -38,6 +38,7 @@ local pi2 = math.pi / 2
 local st={ --settings
 m_s=60, --mouse sensitivity
 r_p=true, --rendering portals
+r_both=true, -- render both portals
 h_q_p=false, --high quality portals
 music=true,
 sfx=true,
@@ -656,8 +657,11 @@ local draw={
 	map={},
 	pr={}, --particles
 	p={nil,nil}, --portals
+	p_verts={}, --portal vertices
 	lg={}--light bridge generators
 }
+
+local fps_={t1=0,t2=0,t3=0,t4=0,t5=0,t6=0,t7=0,t8=0,t9=0}
 
 --maps
 local maps={}
@@ -891,16 +895,19 @@ function unitic.update(draw_portal,p_id)
 	--objects (1)--
 	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
-
-	for i=1,#draw.objects.c  do unitic.obj[#unitic.obj+1]=draw.objects.c [i] end
-	for i=1,#draw.objects.cd do unitic.obj[#unitic.obj+1]=draw.objects.cd[i] end
-	for i=1,#draw.objects.lb do unitic.obj[#unitic.obj+1]=draw.objects.lb[i] end
+	
+	local i2=0
+	for i=1,#draw.objects.c  do i2=i2+1 unitic.obj[i2]=draw.objects.c [i] end
+	for i=1,#draw.objects.cd do i2=i2+1 unitic.obj[i2]=draw.objects.cd[i] end
+	for i=1,#draw.objects.lb do i2=i2+1 unitic.obj[i2]=draw.objects.lb[i] end
 	for i=1,#draw.objects.b  do
 		if draw.objects.b[i].s and draw.objects.b[i].tick then draw.objects.b[i].model.f=f2 elseif draw.objects.b[i].tick then draw.objects.b[i].model.f=f1 end
-		unitic.obj[#unitic.obj+1]=draw.objects.b[i]
+		i2=i2+1 unitic.obj[i2]=draw.objects.b[i]
 	end
-	for i=1,#draw.objects.t do unitic.obj[#unitic.obj+1]=draw.objects.t[i] end
+	for i=1,#draw.objects.t do i2=i2+1 unitic.obj[i2]=draw.objects.t[i] end
 	--objects (2)--
+	local i2=#unitic.poly.f
+
 	for ind1 = 1, #unitic.obj do
 		if unitic.obj[ind1].draw then
 			local vt=#unitic.poly.v
@@ -911,7 +918,8 @@ function unitic.update(draw_portal,p_id)
 				unitic.poly.v[#unitic.poly.v+1]={px,py,pz}
 			end
 			for ind2=1,#unitic.obj[ind1].model.f do
-				unitic.poly.f[#unitic.poly.f+1]={unitic.obj[ind1].model.f[ind2][1]+vt, unitic.obj[ind1].model.f[ind2][2]+vt, unitic.obj[ind1].model.f[ind2][3]+vt, f=unitic.obj[ind1].model.f[ind2].f,uv={x={unitic.obj[ind1].model.f[ind2].uv[1][1],unitic.obj[ind1].model.f[ind2].uv[2][1],unitic.obj[ind1].model.f[ind2].uv[3][1]},y={unitic.obj[ind1].model.f[ind2].uv[1][2],unitic.obj[ind1].model.f[ind2].uv[2][2],unitic.obj[ind1].model.f[ind2].uv[3][2]}}}
+				i2=i2+1
+				unitic.poly.f[i2]={unitic.obj[ind1].model.f[ind2][1]+vt, unitic.obj[ind1].model.f[ind2][2]+vt, unitic.obj[ind1].model.f[ind2][3]+vt, f=unitic.obj[ind1].model.f[ind2].f,uv={x={unitic.obj[ind1].model.f[ind2].uv[1][1],unitic.obj[ind1].model.f[ind2].uv[2][1],unitic.obj[ind1].model.f[ind2].uv[3][1]},y={unitic.obj[ind1].model.f[ind2].uv[1][2],unitic.obj[ind1].model.f[ind2].uv[2][2],unitic.obj[ind1].model.f[ind2].uv[3][2]}}}
 			end
 		end
 	end
@@ -1482,8 +1490,6 @@ function unitic.render()
 			setpix((b_f[y0+1][2]+t//2*23)%24+96,y0+153,b_f[y0+1][3]-2)
 		end
 	end
-	--3d
-	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 
 	local dist1, dist2, dist = math.huge, math.huge, false
 	if draw.p[1] then
@@ -1499,66 +1505,11 @@ function unitic.render()
 		dist=dist1 < dist2
 	end
 
-	vbank(1)
-		cls(1)
-		unitic.update_pr()
-		unitic.update()
-		unitic.draw()
-		if draw.p[1] or draw.p[2] then
-			--portal overlays
-			local v_id={}
-			if dist then
-				v_id={
-					draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+1,
-					draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+1}
-				if draw.p[2][4]==1 then
-					v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+1
-					v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+world_size[3]+1
-				else
-					v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+2
-					v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+2
-				end
-			else
-				v_id={
-					draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+1,
-					draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+1}
-				if draw.p[1][4]==1 then
-					v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+1
-					v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+world_size[3]+1
-				else
-					v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+2
-					v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+2
-				end
-			end
-
-			local p2d={x={},y={},z={},z2={}}
-			for i=1,#v_id do
-				p2d.x[i]=unitic.poly.v[v_id[i]][1]
-				p2d.y[i]=unitic.poly.v[v_id[i]][2]
-				p2d.z[i]=unitic.poly.v[v_id[i]][3]
-				p2d.z2[i]=unitic.poly.v[v_id[i]][4]
-			end
-
-			local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
-
-			if dist and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
-				ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99) --orange
-				ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
-			elseif dist==false and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
-				ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
-				ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0 ,200,24,200,0,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
-			end
-
-		end
-
-		--cross
-		pix(120,68,4)
-		if true then pix(120,68,7) end
-		if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
-		if draw.p[1] then spr(496, 117, 65, 1) end
-		if draw.p[2] then spr(497, 117, 65, 1) end
 	vbank(0)
-	cls(1)
+	cls()
+	fps_.t4=time()
+	fps_.t5=fps_.t4
+	fps_.t6=fps_.t4
 
 	if st.r_p and draw.p[1] and draw.p[2] then
 		local x1, y1, z1 = portalcenter(1)
@@ -1589,7 +1540,7 @@ function unitic.render()
 		elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
 		elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
 		end
-
+		fps_.t4=time()
 		if st.h_q_p or min(dist1,dist2)<128^2 or (t%2==0 and min(dist1,dist2)<512^2) or (t%3==0 and min(dist1,dist2)>=512^2) then
 				if dist then
 					cam.x = 96*x2 + relx1
@@ -1606,11 +1557,155 @@ function unitic.render()
 					cam.tx = plr.tx
 					unitic.update(true,2) unitic.draw() --orange portal
 				end
+				fps_.t5=time()
+
+				if st.r_both and draw.p[1] and draw.p[2] then
+					vbank(1) do
+						cls(0)
+						local p_verts = dist and draw.p_verts[1] or draw.p_verts[2]
+						local portal = {draw.world.v[p_verts[1][1]], draw.world.v[p_verts[1][2]], draw.world.v[p_verts[1][3]], draw.world.v[p_verts[2][2]]}
+
+						local txsin = math.sin(plr.tx)
+						local txcos = math.cos(plr.tx)
+						local tysin = math.sin(-plr.ty)
+						local tycos = math.cos(-plr.ty)
+						for ind = 1, 4 do
+							local a1 = portal[ind][1] - plr.x
+							local b1 = portal[ind][2] - plr.y
+							local c1 = portal[ind][3] - plr.z
+
+							local c2 = c1 * tycos - a1 * tysin
+
+							local a3 = c1 * tysin + a1 * tycos
+							local b3 = b1 * txcos - c2 * txsin
+							local c3 = b1 * txsin + c2 * txcos
+							local c4 = c3
+							if c4>-0.001 then c4=-0.001 end
+							local z0 = unitic.fov / c4
+
+							local x0 = a3 * z0 + 120
+							local y0 = b3 * z0 + 68
+
+							portal[ind] = {x0, y0, -c4, c3 > 0}
+						end
+						local mz1, mz2, mz3, mz4 = portal[1][3], portal[2][3], portal[3][3], portal[4][3]
+						local minz = min(mz1, mz2, mz3, mz4)
+						if minz > 1e-10 then
+							local div = minz/1e-10
+							mz1,mz2,mz3,mz4=mz1/div,mz2/div,mz3/div,mz4/div
+						end
+						if not (portal[1][4] and portal[2][4] and portal[3][4] and portal[4][4]) then
+							ttri(
+								portal[1][1],portal[1][2],
+								portal[2][1],portal[2][2],
+								portal[3][1],portal[3][2],
+								24,232,
+								0,232,
+								24,200,
+								0,15,
+								mz1,
+								mz2,
+								mz3
+							)
+							ttri(
+								portal[2][1],portal[2][2],
+								portal[4][1],portal[4][2],
+								portal[3][1],portal[3][2],
+								0,232,
+								0,200,
+								24,200,
+								0,15,
+								mz2,
+								mz4,
+								mz3
+							)
+						end
+					end vbank(0)
+					if dist then
+						cam.x = 96*x1 + relx2
+						cam.y = 128*y1 + rely2
+						cam.z = 96*z1 + relz2
+						cam.ty = plr.ty + math.pi * rotd2 / 2
+						cam.tx = plr.tx
+						unitic.update(true,2) unitic.draw() --orange portal
+					else
+						cam.x = 96*x2 + relx1
+						cam.y = 128*y2 + rely1
+						cam.z = 96*z2 + relz1
+						cam.ty = plr.ty + math.pi * rotd1 / 2
+						cam.tx = plr.tx
+						unitic.update(true,1) unitic.draw() --blue portal
+					end
+				end
 				memcpy(0x8000,0x0,240*136/2)
+				fps_.t6=time()
+				
 			else
 				memcpy(0x0,0x8000,240*136/2)
 			end
 	end
+
+	vbank(1)
+	if not st.potato_pc or R()<0.05 then cls(1) end
+	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
+	unitic.update_pr()
+	unitic.update()
+	fps_.t7=time()
+	unitic.draw()
+	fps_.t8=time()
+	if (draw.p[1] or draw.p[2]) and not (st.r_both and draw.p[1] and draw.p[2]) then
+		--portal overlays
+		local v_id={}
+		if dist then
+			v_id={
+				draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+1,
+				draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+1}
+			if draw.p[2][4]==1 then
+				v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+1
+				v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+world_size[3]+1
+			else
+				v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+2
+				v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+2
+			end
+		else
+			v_id={
+				draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+1,
+				draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+1}
+			if draw.p[1][4]==1 then
+				v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+1
+				v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+world_size[3]+1
+			else
+				v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+2
+				v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+2
+			end
+		end
+
+		local p2d={x={},y={},z={},z2={}}
+		for i=1,#v_id do
+			p2d.x[i]=unitic.poly.v[v_id[i]][1]
+			p2d.y[i]=unitic.poly.v[v_id[i]][2]
+			p2d.z[i]=unitic.poly.v[v_id[i]][3]
+			p2d.z2[i]=unitic.poly.v[v_id[i]][4]
+		end
+
+		local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
+
+		if dist and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
+			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99) --orange
+			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
+		elseif dist==false and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
+			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
+			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0 ,200,24,200,0,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
+		end
+	end
+
+	--cross
+	pix(120,68,4)
+	if true then pix(120,68,7) end
+	if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
+	if draw.p[1] then spr(496, 117, 65, 1) end
+	if draw.p[2] then spr(497, 117, 65, 1) end
+	fps_.t9=time()
 end
 
 local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk along a segment, checking whether it collides with the walls
@@ -1887,6 +1982,13 @@ function update_world()
 				end
 			end
 		end
+
+		local last = #draw.world.f
+		if type == 4 and angle ~= 2 then
+			draw.p_verts[1] = {draw.world.f[last - 1], draw.world.f[last]}
+		elseif type == 5 and angle ~= 2 then
+			draw.p_verts[2] = {draw.world.f[last - 1], draw.world.f[last]}
+		end
 		------
 	end end end end
 	--the world for blue and orange portals
@@ -2132,7 +2234,6 @@ function darkpal(c)
 	end
 end
 
-local fps_={t1=0,t2=0,t3=0,t4=0}
 local avf={} --average frame
 local fr={0,0,0} --framerate
 t1=0 --The start time of the frame drawing
@@ -2611,7 +2712,7 @@ function TIC()
 		fps_.t3=time()
 	 --render
 		unitic.render()
-		fps_.t4=time()
+		--fps_.t4=time()
 	 --portal gun
 		pcall(portal_gun)
 	 --sounds
@@ -2641,7 +2742,8 @@ function TIC()
 			{
 				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(t2).." ms.",
 				"Av: "..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).." ms. min: "..F(fr[2]+0.5).." ms. max: "..F(fr[3]+0.5).." ms.",
-				"Collision:"..F(fps_.t3-fps_.t2).." ms. render:"..F(fps_.t4-fps_.t3).." ms. other:"..F(fps_.t2-fps_.t1).." ms. "
+				"Other:"..max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0).." ms. portals:"..F(fps_.t5-fps_.t4).."|"..F(fps_.t6-fps_.t5).." ms.",
+				"Update:"..F(fps_.t7-fps_.t6).." ms. draw:"..F(fps_.t8-fps_.t7).." ms."
 			},
 			{
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
@@ -3253,22 +3355,22 @@ end
 -- 138:1222222212223222123222321222222212211222712112217611111565555555
 -- 139:1777777616666665166766651666656516766665766656657666666565555555
 -- 143:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 144:fffffffffffffffaffffffaafffffaacffffaaccfffaacccffaaccccffaacccc
--- 145:faaaaaafaaaaaaaaaccccccacccccccccccccccccccccccccccccccccccccccc
--- 146:ffffffffafffffffaaffffffcaafffffccaaffffcccaafffccccaaffccccaaff
--- 147:fffffffffffffffdffffffddfffffddeffffddeefffddeeeffddeeeeffddeeee
--- 148:fddddddfdddddddddeeeeeedeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 149:ffffffffdfffffffddffffffeddfffffeeddffffeeeddfffeeeeddffeeeeddff
+-- 144:fffffffffffffffffffffffffffffffcffffffccfffffcccffffccccffffcccc
+-- 145:fffffffffffffffffccccccfcccccccccccccccccccccccccccccccccccccccc
+-- 146:ffffffffffffffffffffffffcfffffffccffffffcccfffffccccffffccccffff
+-- 147:fffffffffffffffffffffffffffffffeffffffeefffffeeeffffeeeeffffeeee
+-- 148:fffffffffffffffffeeeeeefeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+-- 149:ffffffffffffffffffffffffefffffffeeffffffeeefffffeeeeffffeeeeffff
 -- 150:aaaaaaaaa0000000a0000000a0000000a0000000a0000000a0000000a0000000
 -- 151:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 152:aaaaaa00000000d0000000d0000000d0000000d0000000d0000000d0000000d0
 -- 159:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 160:ffaaccccfaacccccfaacccccfaacccccaaccccccaaccccccaaccccccaacccccc
+-- 160:ffffccccfffcccccfffcccccfffcccccffccccccffccccccffccccccffcccccc
 -- 161:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
--- 162:ccccaaffcccccaafcccccaafcccccaafccccccaaccccccaaccccccaaccccccaa
--- 163:ffddeeeefddeeeeefddeeeeefddeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeee
+-- 162:ccccffffcccccfffcccccfffcccccfffccccccffccccccffccccccffccccccff
+-- 163:ffffeeeefffeeeeefffeeeeefffeeeeeffeeeeeeffeeeeeeffeeeeeeffeeeeee
 -- 164:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 165:eeeeddffeeeeeddfeeeeeddfeeeeeddfeeeeeeddeeeeeeddeeeeeeddeeeeeedd
+-- 165:eeeeffffeeeeefffeeeeefffeeeeefffeeeeeeffeeeeeeffeeeeeeffeeeeeeff
 -- 166:a0000000a0000000a0000000a0000000a0000000a0000000a0000000a0000000
 -- 168:000000d0000000d0000000d0000000d0000000d0000000d0000000d0000000d0
 -- 169:5555555556666665566666655666666556666665566666545666654455555444
@@ -3278,12 +3380,12 @@ end
 -- 173:2222222233333333333333332222222211111111111111111111111111111111
 -- 174:2222222233333332333333322222233211112332111123321111233211112332
 -- 175:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 176:aaccccccaaccccccaaccccccaaccccccfaacccccfaacccccfaacccccffaacccc
+-- 176:ffccccccffccccccffccccccffccccccfffcccccfffcccccfffcccccffffcccc
 -- 177:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
--- 178:ccccccaaccccccaaccccccaaccccccaacccccaafcccccaafcccccaafccccaaff
--- 179:ddeeeeeeddeeeeeeddeeeeeeddeeeeeefddeeeeefddeeeeefddeeeeeffddeeee
+-- 178:ccccccffccccccffccccccffccccccffcccccfffcccccfffcccccfffccccffff
+-- 179:ffeeeeeeffeeeeeeffeeeeeeffeeeeeefffeeeeefffeeeeefffeeeeeffffeeee
 -- 180:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 181:eeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeeddfeeeeeddfeeeeeddfeeeeddff
+-- 181:eeeeeeffeeeeeeffeeeeeeffeeeeeeffeeeeefffeeeeefffeeeeefffeeeeffff
 -- 182:a0000000a0000000a0000000a0000000a0000000a0000000a0000000a0000000
 -- 184:000000d0000000d0000000d0000000d0000000d0000000d0000000d0000000d0
 -- 185:4444444455554444566654495666544956665449566654445555444444444444
@@ -3293,12 +3395,12 @@ end
 -- 189:1111111111111111111111111111111111111111111111111111111111111111
 -- 190:1111233211112332111123321111233211112332111123321111233211112332
 -- 191:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 192:ffaaccccffaaccccfffaacccffffaaccfffffaacffffffaafffffffaffffffff
--- 193:ccccccccccccccccccccccccccccccccccccccccaccccccaaaaaaaaafaaaaaaf
--- 194:ccccaaffccccaaffcccaafffccaaffffcaafffffaaffffffafffffffffffffff
--- 195:ffddeeeeffddeeeefffddeeeffffddeefffffddeffffffddfffffffdffffffff
--- 196:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedeeeeeedddddddddfddddddf
--- 197:eeeeddffeeeeddffeeeddfffeeddffffeddfffffddffffffdfffffffffffffff
+-- 192:ffffccccffffccccfffffcccffffffccfffffffcffffffffffffffffffffffff
+-- 193:ccccccccccccccccccccccccccccccccccccccccfccccccfffffffffffffffff
+-- 194:ccccffffccccffffcccfffffccffffffcfffffffffffffffffffffffffffffff
+-- 195:ffffeeeeffffeeeefffffeeeffffffeefffffffeffffffffffffffffffffffff
+-- 196:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefeeeeeefffffffffffffffff
+-- 197:eeeeffffeeeeffffeeefffffeeffffffefffffffffffffffffffffffffffffff
 -- 198:a0000000a0000000a0000000a0000000a0000000a00000000ddddddd00000000
 -- 199:000000000000000000000000000000000000000000000000dddddddd00000000
 -- 200:000000d0000000d0000000d0000000d0000000d0000000d0ddddddd000000000
