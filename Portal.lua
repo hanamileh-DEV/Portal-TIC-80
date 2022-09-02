@@ -53,11 +53,12 @@ d=pmem(3), --the number of player deaths (in the main game)
 ct=pmem(4), --current time passing the main game
 }
 
-if save.st&16~=0 then
-	st.r_p  =save.st&1~=0
-	st.h_q_p=save.st&2~=0
-	st.music=save.st&4~=0
-	st.sfx  =save.st&8~=0
+if save.st&32~=0 then
+	st.r_p   =save.st&1 ~=0
+	st.h_q_p =save.st&2 ~=0
+	st.music =save.st&4 ~=0
+	st.sfx   =save.st&8 ~=0
+	st.r_both=save.st&16~=0
 end
 
 --camera
@@ -2243,11 +2244,11 @@ t=0 -- Global timer (+1 for each code call)
 local speed=4
 --init
 local tm1,tm2 = 0,0
-local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1} --pause
+local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --pause
 local ls={t=0,pr=0} --loading screen
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
-local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --main screen
+local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1} --main screen
 local l_an={t=0,i=true} --lift animation
 load_world(-1)
 --poke(0x7FC3F,1,1)
@@ -2308,6 +2309,7 @@ function TIC()
 			print("Settings"  ,min(ms.t*2-40,4)+(1-ms.t4)*20, 95,7)
 			print("Authors"   ,min(ms.t*2-50,4)+(1-ms.t5)*20,105,7)
 			print("Exit"      ,min(ms.t*2-60,4)+(1-ms.t6)*20,125,7)
+			--if save.st&32~=0 then  print("We recommend that you look into the settings",75, 95,14,false,1,true) end
 			--version
 			local text_size=print("version "..version,240,0)
 			print("version "..version,238-text_size,130,7)
@@ -2341,18 +2343,20 @@ function TIC()
 			print("Back",4+(1-ms.t1)*20,115,7)
 			if my>114 and my<125 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t1=min(1,ms.t1+0.05) end
 		elseif open=="main|settings" then
-			print("Mouse sensitivity: "..F(st.m_s),4,35,7)
+			print("Mouse sensitivity: "..F(st.m_s),4,35,6)
 			print("Music: "                  ,4,55,7)
 			print("Sfx: "                    ,4,65,7)
 			print("Rendering portals: "      ,4,75,7)
 			print("High quality portals: "   ,4,85,7)
-			print("Calibration"              ,4,105,7)
+			print("Render both poratls:  "   ,4,95,7)
+			print("Calibration"              ,4,110,7)
 			print("Back"                     ,4,125,7)
 			--on / off
-			if st.music then print("On",117,55,13) else print("Off",117,55,11) end
-			if st.sfx   then print("On",117,65,13) else print("Off",117,65,11) end
-			if st.r_p   then print("On",117,75,13) else print("Off",117,75,11) end
-			if st.h_q_p then print("On",117,85,13) else print("Off",117,85,11) end
+			if st.music  then print("On",117,55,13) else print("Off",117,55,11) end
+			if st.sfx    then print("On",117,65,13) else print("Off",117,65,11) end
+			if st.r_p    then print("On",117,75,13) else print("Off",117,75,11) end
+			if st.h_q_p  then print("On",117,85,13) else print("Off",117,85,11) end
+			if st.r_both then print("On",117,95,13) else print("Off",117,95,11) end
 			--mouse sensitivity slider
 			rect(4,45,100,2,3)
 			rect(4+st.m_s-20,43,2,6,6)
@@ -2363,22 +2367,24 @@ function TIC()
 			if my>64  and my<74  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(18) st.sfx  =not st.sfx            end else ms.t2=min(1,ms.t2+0.05) end
 			if my>74  and my<84  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then sfx(18) st.r_p  =not st.r_p            end else ms.t3=min(1,ms.t3+0.05) end
 			if my>84  and my<94  then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p=not st.h_q_p          end else ms.t4=min(1,ms.t4+0.05) end
-			if my>104 and my<114 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then sfx(16) music(3,7,0)open="calibration" end else ms.t5=min(1,ms.t5+0.05) end
-			if my>124 and my<134 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t6=min(1,ms.t6+0.05) end
+			if my>94  and my<104 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then sfx(18) st.r_both=not st.r_both        end else ms.t5=min(1,ms.t5+0.05) end
+			if my>109 and my<119 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then sfx(16) music(3,7,0)open="calibration" end else ms.t6=min(1,ms.t6+0.05) end
+			if my>124 and my<134 then cid=1 ms.t7=max(ms.t7-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 ms.t7=1 end else ms.t7=min(1,ms.t7+0.05) end
 			--saving the settings
 			save.st=0
-			if st.r_p   then save.st=save.st+1 end
-			if st.h_q_p then save.st=save.st+2 end
-			if st.music then save.st=save.st+4 end
-			if st.sfx   then save.st=save.st+8 end
-			save.st=save.st+16
+			if st.r_p    then save.st=save.st+1 end
+			if st.h_q_p  then save.st=save.st+2 end
+			if st.music  then save.st=save.st+4 end
+			if st.sfx    then save.st=save.st+8 end
+			if st.r_both then save.st=save.st+16 end
+			save.st=save.st+32
 			pmem(1,save.st)
 		end
 
 		if mx==0 and my==0 then cid=1 if clp1 then open="sus" music() pal="1a1c2c5d275db13e53ef7d57ffcd75a7f07038b76425717929366f3b5dc941a6f673eff7f4f4f494b0c2566c86333c57" respal() end end
 	end
 	--------------------------
-	-- calibrattion ----------
+	-- calibration -----------
 	--------------------------
 	if open=="calibration" then vbank(1) cls() respal() vbank(0) respal()
 		if sts.t2>0 then sts.t2=sts.t2-1 end
@@ -2608,12 +2614,14 @@ function TIC()
 			print("Sfx: "                    ,4,65,7)
 			print("Rendering portals: "      ,4,75,7)
 			print("High quality portals: "   ,4,85,7)
+			print("Render both portals: "    ,4,95,7)
 			print("Back"                     ,4,125,7)
 			--on / off
-			if st.music then print("On",117,55,13) else print("Off",117,55,11) end
-			if st.sfx   then print("On",117,65,13) else print("Off",117,65,11) end
-			if st.r_p   then print("On",117,75,13) else print("Off",117,75,11) end
-			if st.h_q_p then print("On",117,85,13) else print("Off",117,85,11) end
+			if st.music  then print("On",117,55,13) else print("Off",117,55,11) end
+			if st.sfx    then print("On",117,65,13) else print("Off",117,65,11) end
+			if st.r_p    then print("On",117,75,13) else print("Off",117,75,11) end
+			if st.h_q_p  then print("On",117,85,13) else print("Off",117,85,11) end
+			if st.r_both then print("On",117,95,13) else print("Off",117,95,11) end
 			--mouse sensitvity slider
 			rect(4,45,100,2,3)
 			rect(4+st.m_s-20,43,2,6,6)
@@ -2621,17 +2629,19 @@ function TIC()
 			if my>40 and my<54   then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
 			--buttons
 			if my>54  and my<64  then cid=1 p.t1=max(p.t1-0.05,0.5) if clp1 then sfx(18) music(3,7,0) st.music=not st.music              end else p.t1=min(1,p.t1+0.05) end
-			if my>64  and my<74  then cid=1 p.t2=max(p.t2-0.05,0.5) if clp1 then sfx(18) st.sfx  =not st.sfx                             end else p.t2=min(1,p.t2+0.05) end
-			if my>74  and my<84  then cid=1 p.t3=max(p.t3-0.05,0.5) if clp1 then sfx(18) st.r_p  =not st.r_p                             end else p.t3=min(1,p.t3+0.05) end
-			if my>84  and my<94  then cid=1 p.t4=max(p.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p=not st.h_q_p                           end else p.t4=min(1,p.t4+0.05) end
-			if my>124 and my<134 then cid=1 p.t5=max(p.t5-0.05,0.5) if clp1 then sfx(17) open="pause" p.t1=1 p.t2=1 p.t3=1 p.t4=1 p.t5=1 end else p.t5=min(1,p.t5+0.05) end
+			if my>64  and my<74  then cid=1 p.t2=max(p.t2-0.05,0.5) if clp1 then sfx(18) st.sfx   =not st.sfx                            end else p.t2=min(1,p.t2+0.05) end
+			if my>74  and my<84  then cid=1 p.t3=max(p.t3-0.05,0.5) if clp1 then sfx(18) st.r_p   =not st.r_p                            end else p.t3=min(1,p.t3+0.05) end
+			if my>84  and my<94  then cid=1 p.t4=max(p.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p =not st.h_q_p                          end else p.t4=min(1,p.t4+0.05) end
+			if my>94  and my<104 then cid=1 p.t5=max(p.t5-0.05,0.5) if clp1 then sfx(18) st.r_both=not st.r_both                         end else p.t5=min(1,p.t5+0.05) end
+			if my>124 and my<134 then cid=1 p.t6=max(p.t6-0.05,0.5) if clp1 then sfx(17) open="pause" p.t1=1 p.t2=1 p.t3=1 p.t4=1 p.t5=1 end else p.t6=min(1,p.t6+0.05) end
 			--saving the settings
 			save.st=0
-			if st.r_p   then save.st=save.st+1 end
-			if st.h_q_p then save.st=save.st+2 end
-			if st.music then save.st=save.st+4 end
-			if st.sfx   then save.st=save.st+8 end
-			save.st=save.st+16
+			if st.r_p    then save.st=save.st+1 end
+			if st.h_q_p  then save.st=save.st+2 end
+			if st.music  then save.st=save.st+4 end
+			if st.sfx    then save.st=save.st+8 end
+			if st.r_both then save.st=save.st+16 end
+			save.st=save.st+32
 			pmem(1,save.st)
 		elseif open=="pause|accept" then
 			print("Do you really want to leave the game?",4,45,7)
@@ -2848,7 +2858,7 @@ function BDR(scn_y) scn_y=scn_y-4
 	end
 
 	if open=="pause|settings" then
-		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==83 or scn_y==93 or scn_y==133 then
+		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==83 or scn_y==93 or scn_y==103 or scn_y==133 then
 			respal()
 			darkpal(0.2)
 		end
@@ -2856,7 +2866,8 @@ function BDR(scn_y) scn_y=scn_y-4
 		if scn_y==63  then darkpal(p.t2) end
 		if scn_y==73  then darkpal(p.t3) end
 		if scn_y==83  then darkpal(p.t4) end
-		if scn_y==123 then darkpal(p.t5) end
+		if scn_y==93  then darkpal(p.t5) end
+		if scn_y==123 then darkpal(p.t6) end
 	end
 
 	if open=="pause|accept" then
@@ -2901,7 +2912,7 @@ function BDR(scn_y) scn_y=scn_y-4
 	end
 
 	if open=="main|settings" then
-		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==83 or scn_y==93 or scn_y==113 or scn_y==133 then
+		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==83 or scn_y==93 or scn_y==103 or scn_y==118 or scn_y==133 then
 			respal()
 			darkpal(0.2)
 		end
@@ -2909,8 +2920,9 @@ function BDR(scn_y) scn_y=scn_y-4
 		if scn_y==63  then darkpal(ms.t2) end
 		if scn_y==73  then darkpal(ms.t3) end
 		if scn_y==83  then darkpal(ms.t4) end
-		if scn_y==103 then darkpal(ms.t5) end
-		if scn_y==123 then darkpal(ms.t6) end
+		if scn_y==93  then darkpal(ms.t5) end
+		if scn_y==108 then darkpal(ms.t6) end
+		if scn_y==123 then darkpal(ms.t7) end
 	end
 
 	if open=="game" then
@@ -3313,12 +3325,12 @@ end
 -- 093:fffffffffffffffffff888fffffffffffffffff9ffffffffffffffff8fffffff
 -- 094:ffffffffffffffffffffffffffffffff99ffffffffffffffffffffffffffffff
 -- 095:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 096:7777777676666555766557777657777576577558757758887577588865758888
--- 097:5555555576bbbb67755555575888988588889888888898888888988888889888
--- 098:7777777655566665777556655777756585577565888577558885775588885755
--- 099:7777777676666555766557777657777576577558757758887577588865758888
--- 100:5555555576eeee67755555575888988588889888888898888888988888889888
--- 101:7777777655566665777556655777756585577565888577558885775588885755
+-- 096:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 097:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 098:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 099:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 100:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 101:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 102:4444444343333332433433324333323243433332433323324333333232222222
 -- 103:4444444343333332431111124122122112221222122212221232123212221222
 -- 104:4444444343333332433433324333323213433332133323321333333212222222
@@ -3329,31 +3341,37 @@ end
 -- 109:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 110:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 111:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 112:5775888857588888575888885759999957588888575888885758888857758888
--- 113:8899998889888898988888899888888998888889988888898988889888999988
--- 114:8888577588888575888885758888857599999575888885758888857588885775
--- 115:5775888857588888575888885759999957588888575888885758888857758888
--- 116:8899998889888898988888899888888998888889988888898988889888999988
--- 117:8888577588888575888885758888857599999575888885758888857588885775
+-- 112:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 113:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 114:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 115:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 116:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 117:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 118:4444444343333332433433324333323243433332433323324333333232222222
 -- 119:122212221222122212221222122212221232123212221222122ba222111aa111
 -- 120:1444444313333332133433321333323213433332133323321333333212222222
 -- 121:7777777676666665766766657666656576766665766656657666666565555555
 -- 122:122212221222122212221222122212221232123212221222122ba222111aa111
 -- 123:1777777616666665166766651666656516766665166656651666666515555555
+-- 124:7777777676666555766557777657777576577558757758887577588865758888
+-- 125:5555555576eeee67755555575888988588889888888898888888988888889888
+-- 126:7777777655566665777556655777756585577565888577558885775588885755
 -- 127:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 128:7575888875775888757758887657755876577775766557777666655565555555
--- 129:88898888888988888889888888898888588988857555555776bbbb6755555555
--- 130:8888575688857755888577558557756557777565777556655556666565555555
--- 131:7575888875775888757758887657755876577775766557777666655565555555
--- 132:88898888888988888889888888898888588988857555555776eeee6755555555
--- 133:8888575688857755888577558557756557777565777556655556666565555555
+-- 128:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 129:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 130:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 131:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 132:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 133:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 134:4444444343333332433433324333323243433332433323324333333232222222
 -- 135:1222222212223222123222321222222212211222412112214311111232222222
 -- 136:1444444313333332133433321333323213433332433323324333333232222222
 -- 137:7777777676666665766766657666656576766665766656657666666565555555
 -- 138:1222222212223222123222321222222212211222712112217611111565555555
 -- 139:1777777616666665166766651666656516766665766656657666666565555555
+-- 140:5775888857588888575888885759999957588888575888885758888857758888
+-- 141:8899998889888898988888899888888998888889988888898988889888999988
+-- 142:8888577588888575888885758888857599999575888885758888857588885775
 -- 143:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 144:fffffffffffffffffffffffffffffffcffffffccfffffcccffffccccffffcccc
 -- 145:fffffffffffffffffccccccfcccccccccccccccccccccccccccccccccccccccc
@@ -3364,6 +3382,9 @@ end
 -- 150:aaaaaaaaa0000000a0000000a0000000a0000000a0000000a0000000a0000000
 -- 151:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 152:aaaaaa00000000d0000000d0000000d0000000d0000000d0000000d0000000d0
+-- 156:7575888875775888757758887657755876577775766557777666655565555555
+-- 157:88898888888988888889888888898888588988857555555776eeee6755555555
+-- 158:8888575688857755888577558557756557777565777556655556666565555555
 -- 159:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 160:ffffccccfffcccccfffcccccfffcccccffccccccffccccccffccccccffcccccc
 -- 161:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
