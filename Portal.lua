@@ -2330,11 +2330,11 @@ function TIC()
 			print("perfomance evaluation",60,113,7)
 			print("please wait...",86,103,7)
 		else
-			--The following recommended parameters were selected:
 			print("The following recommended",47,5,7)
 			print("parameters were selected:",47,15,7)
-			local text_size=print("Evaluation result: "..F(is.t1).." points.",240,0)
-			print("Evaluation result: "..F(is.t1).." points.",120-text_size//2,105,2)
+			local p=F(1/is.t1*200000) --points
+			local text_size=print("Evaluation result: "..p.." points.",240,0)
+			print("Evaluation result: "..p.." points.",120-text_size//2,105,2)
 			
 			rect(0,28,240,21,2)
 			if is.t1>100 then
