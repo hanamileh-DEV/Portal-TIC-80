@@ -36,12 +36,14 @@ local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.ab
 local pi2 = math.pi / 2
 
 local st={ --settings
-m_s=60, --mouse sensitivity
-r_p=true, --rendering portals
+m_s   =60, --mouse sensitivity
+r_p   =true, --rendering portals
 r_both=true, -- render both portals
-h_q_p=false, --high quality portals
-music=true,
-sfx=true,
+h_q_p =false, --high quality portals
+p     =true, --particles
+d_t   =true, --dynamic textures
+music =true,
+sfx   =true,
 }
 
 save={ --saving the game
@@ -53,12 +55,14 @@ d=pmem(3), --the number of player deaths (in the main game)
 ct=pmem(4), --current time passing the main game
 }
 
-if save.st&32~=0 then
-	st.r_p   =save.st&1 ~=0
-	st.h_q_p =save.st&2 ~=0
-	st.music =save.st&4 ~=0
-	st.sfx   =save.st&8 ~=0
-	st.r_both=save.st&16~=0
+if save.st&2^31~=0 then
+	st.r_p   =save.st&2^0 ~=0
+	st.h_q_p =save.st&2^1 ~=0
+	st.music =save.st&2^2 ~=0
+	st.sfx   =save.st&2^3 ~=0
+	st.r_both=save.st&2^4 ~=0
+	st.p     =save.st&2^5 ~=0
+	st.d_t   =save.st&2^6 ~=0
 end
 
 --camera
@@ -1458,40 +1462,41 @@ end
 
 function unitic.render()
 	--dynamic textures
-
-	for x0=0,15 do --light bridge
-		for y0=0,11 do setpix(x0,y0+234,15) end
-		local y0=(math.sin((-t%30+x0*2)/5)+1)*6
-		local y1=(math.cos((-t%30+x0*2)/5)+1)*6
-		local y2=(math.sin(t/20)+1)*6
-		setpix(x0,F(y0)+234,11)
-		setpix(x0,F(y1)+234,10)
-		setpix(x0,F(y2)+234,11)
-	end
-	--blue / red field
-	for y0=0,31,2 do
-		if b_f[y0].d then
-			setpix((b_f[y0][1]+t//2)%24+24,y0+32,b_f[y0][3])
-			setpix((b_f[y0][2]+t//2)%24+24,y0+32,15)
-			--red field
-			setpix((b_f[y0][1]+t//2)%24+96,y0+64,b_f[y0][3]-2)
-			setpix((b_f[y0][2]+t//2)%24+96,y0+64,15)
-
-			setpix((b_f[y0][1]+t//2)%24+96,y0+152,b_f[y0][3]-2)
-			setpix((b_f[y0][2]+t//2)%24+96,y0+152,15)
+	if st.d_t then
+		for x0=0,15 do --light bridge
+			for y0=0,11 do setpix(x0,y0+234,15) end
+			local y0=(math.sin((-t%30+x0*2)/5)+1)*6
+			local y1=(math.cos((-t%30+x0*2)/5)+1)*6
+			local y2=(math.sin(t/20)+1)*6
+			setpix(x0,F(y0)+234,11)
+			setpix(x0,F(y1)+234,10)
+			setpix(x0,F(y2)+234,11)
 		end
-		if b_f[y0+1].d then
-			setpix((b_f[y0+1][1]+t//2*23)%24+24,y0+33,15)
-			setpix((b_f[y0+1][2]+t//2*23)%24+24,y0+33,b_f[y0+1][3])
-			--red field
-			setpix((b_f[y0+1][1]+t//2*23)%24+96,y0+65,15)
-			setpix((b_f[y0+1][2]+t//2*23)%24+96,y0+65,b_f[y0+1][3]-2)
+		--blue / red field
+		for y0=0,31,2 do
+			if b_f[y0].d then
+				setpix((b_f[y0][1]+t//2)%24+24,y0+32,b_f[y0][3])
+				setpix((b_f[y0][2]+t//2)%24+24,y0+32,15)
+				--red field
+				setpix((b_f[y0][1]+t//2)%24+96,y0+64,b_f[y0][3]-2)
+				setpix((b_f[y0][2]+t//2)%24+96,y0+64,15)
 
-			setpix((b_f[y0+1][1]+t//2*23)%24+96,y0+153,15)
-			setpix((b_f[y0+1][2]+t//2*23)%24+96,y0+153,b_f[y0+1][3]-2)
+				setpix((b_f[y0][1]+t//2)%24+96,y0+152,b_f[y0][3]-2)
+				setpix((b_f[y0][2]+t//2)%24+96,y0+152,15)
+			end
+			if b_f[y0+1].d then
+				setpix((b_f[y0+1][1]+t//2*23)%24+24,y0+33,15)
+				setpix((b_f[y0+1][2]+t//2*23)%24+24,y0+33,b_f[y0+1][3])
+				--red field
+				setpix((b_f[y0+1][1]+t//2*23)%24+96,y0+65,15)
+				setpix((b_f[y0+1][2]+t//2*23)%24+96,y0+65,b_f[y0+1][3]-2)
+
+				setpix((b_f[y0+1][1]+t//2*23)%24+96,y0+153,15)
+				setpix((b_f[y0+1][2]+t//2*23)%24+96,y0+153,b_f[y0+1][3]-2)
+			end
 		end
 	end
-
+	
 	local dist1, dist2, dist = math.huge, math.huge, false
 	if draw.p[1] then
 		local x1, y1, z1 = portalcenter(1)
@@ -2248,13 +2253,12 @@ local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --pause
 local ls={t=0,pr=0} --loading screen
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
-local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1} --main screen
+local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
+local is={t=0,t1=0,t2=0} --init setting
 local l_an={t=0,i=true} --lift animation
 load_world(-1)
---poke(0x7FC3F,1,1)
-local open="logo" sync(1,1,false)
 
---local open="still alive" music(7)
+local open="logo" sync(1,1,false)
 function TIC()
 	--fps counter
 	t1 = time()
@@ -2282,7 +2286,70 @@ function TIC()
 		respal()
 		if l_.t<60 then darkpal(min(l_.t/30,1))
 		elseif l_.t<90 then darkpal((90-l_.t)/30) end
-		if l_.t>=90 or (keyp() and l_.t>10) then sync(1,0,false) load_world(-1) open="main" music(2) end
+		if l_.t>=90 or (keyp() and l_.t>10) then
+			sync(1,0,false)
+			load_world(-1)
+			if save.st&2^31==0 or true then open="init setting" else open="main" music(2) end
+		end
+	end
+	--------------------------
+	-- Initial setting -------
+	--------------------------
+	if open=="init setting" then respal()
+		is.t=is.t+1
+		--[[
+		cls(1)
+		print("Would you like to turn on",52,3,7)
+		print("the rendering of two portals?",39,11,7)
+		print("This can significantly affect performance",8,27,4)
+		print("You can also choose rendering",39,51,7)
+		print("only the nearest of two portals",33,59,7)
+		print("that will affect performance noticeably less",39,75,4,false,1,true)
+		print("You can always configure this",41,91,14)
+		print("later in the settings menu",49,99,14)
+		print("Double rendering",1,123,7)
+		print("Single rendering",1,123,7)
+		print("Without rendering portals",1,123,7)
+		]]
+		if is.t==2 then
+			is.t1=time()
+			for i=1,300 do
+				cam.x=R(-999,999)
+				cam.y=R(-999,999)
+				cam.z=R(-999,999)
+				cam.tx=R(-99,99)
+				cam.ty=R(-99,99)
+				unitic.update()
+				unitic.draw()
+				if time()-is.t1>2000 then is.t1=is.t1-5000 break end
+			end
+			is.t1=time()-is.t1
+		end
+		cls(1)
+		if is.t<3 then
+			print("perfomance evaluation",60,113,7)
+			print("please wait...",86,103,7)
+		else
+			--The following recommended parameters were selected:
+			print("The following recommended",47,5,7)
+			print("parameters were selected:",47,15,7)
+			local text_size=print("Evaluation result: "..F(is.t1).." points.",240,0)
+			print("Evaluation result: "..F(is.t1).." points.",120-text_size//2,105,2)
+			
+			rect(0,28,240,21,2)
+			if is.t1>100 then
+				print("Rendering of both portals is chosen",23,36,0)
+				print("Rendering of both portals is chosen",23,35,7)
+				st.d_r_p=true
+			end
+			
+			print("You can always configure this",41,65,4)
+			print("later in the settings menu",49,75,4)
+
+			rect(94,122,41,8,2)
+			print("Accept",97,123,7)
+			if mx>93 and my>122 and mx<134 and my<131 then cid=1 if clp1 then music(2) open="main" clp1=false end end
+		end
 	end
 	--------------------------
 	-- main screen -----------
@@ -2301,7 +2368,8 @@ function TIC()
 
 		--GUI
 		vbank(1) cls(0)
-		spr(256,min(-104+ms.t*6,8),4,0,1,0,0,13,3)
+		if open~="main|settings" then spr(256,min(-104+ms.t*6,8),4,0,1,0,0,13,3) end
+
 		if open=="main" then
 			if not save.i then print("Continue"  ,min(ms.t*2-10,4)+(1-ms.t1)*20, 45,7) end
 			print("New game"  ,min(ms.t*2-20,4)+(1-ms.t2)*20, 55,7)
@@ -2309,20 +2377,19 @@ function TIC()
 			print("Settings"  ,min(ms.t*2-40,4)+(1-ms.t4)*20, 95,7)
 			print("Authors"   ,min(ms.t*2-50,4)+(1-ms.t5)*20,105,7)
 			print("Exit"      ,min(ms.t*2-60,4)+(1-ms.t6)*20,125,7)
-			--if save.st&32~=0 then  print("We recommend that you look into the settings",75, 95,14,false,1,true) end
 			--version
 			local text_size=print("version "..version,240,0)
 			print("version "..version,238-text_size,130,7)
 			vbank(0)
 			--buttons
- 			if my>44  and my<55  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" end else ms.t1=min(1,ms.t1+0.05) end
+ 			if my>42  and my<53  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" end else ms.t1=min(1,ms.t1+0.05) end
 
-			if my>54  and my<65  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" music() else open="main|newgame" sfx(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
+			if my>52  and my<63  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" music() else open="main|newgame" sfx(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
 
-			if my>74  and my<85  then cid=1 ms.t3=max(ms.t3-0.05,0.5) else ms.t3=min(1,ms.t3+0.05) end
-			if my>94  and my<105 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
-			if my>104 and my<115 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then open="main|authors" sfx(16) ms.t1=1 end else ms.t5=min(1,ms.t5+0.05) end
-			if my>124 and my<135 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then exit() end else ms.t6=min(1,ms.t6+0.05) end
+			if my>72  and my<83  then cid=1 ms.t3=max(ms.t3-0.05,0.5) else ms.t3=min(1,ms.t3+0.05) end
+			if my>92  and my<103 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
+			if my>102 and my<113 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then open="main|authors" sfx(16) ms.t1=1 end else ms.t5=min(1,ms.t5+0.05) end
+			if my>122 and my<133 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then exit() end else ms.t6=min(1,ms.t6+0.05) end
 
 		elseif open=="main|newgame" then
 			print("Warning",4,35,8)
@@ -2332,8 +2399,8 @@ function TIC()
 
 			print("Accept",4+(1-ms.t1)*20,85,7)
 			print("Cancel",4+(1-ms.t2)*20,105,7)
-			if my>84  and my<95  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end else ms.t1=min(1,ms.t1+0.05) end
-			if my>104 and my<115 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
+			if my>82  and my<93  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end else ms.t1=min(1,ms.t1+0.05) end
+			if my>102 and my<113 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
 		elseif open=="main|authors" then
 			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
 			print("Author of the engine: HanamileH"         ,1,55,7)
@@ -2341,47 +2408,8 @@ function TIC()
 			print("Level designers: [Random dude]"          ,1,85,7)
 			print("Testers:            [Random dude]"       ,1,95,7)
 			print("Back",4+(1-ms.t1)*20,115,7)
-			if my>114 and my<125 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t1=min(1,ms.t1+0.05) end
-		elseif open=="main|settings" then
-			print("Mouse sensitivity: "..F(st.m_s),4,35,6)
-			print("Music: "                  ,4,55,7)
-			print("Sfx: "                    ,4,65,7)
-			print("Rendering portals: "      ,4,75,7)
-			print("High quality portals: "   ,4,85,7)
-			print("Render both poratls:  "   ,4,95,7)
-			print("Calibration"              ,4,110,7)
-			print("Back"                     ,4,125,7)
-			--on / off
-			if st.music  then print("On",117,55,13) else print("Off",117,55,11) end
-			if st.sfx    then print("On",117,65,13) else print("Off",117,65,11) end
-			if st.r_p    then print("On",117,75,13) else print("Off",117,75,11) end
-			if st.h_q_p  then print("On",117,85,13) else print("Off",117,85,11) end
-			if st.r_both then print("On",117,95,13) else print("Off",117,95,11) end
-			--mouse sensitivity slider
-			rect(4,45,100,2,3)
-			rect(4+st.m_s-20,43,2,6,6)
-
-			if my>40 and my<54   then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
-			--buttons
-			if my>54  and my<64  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(18) music(2) st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
-			if my>64  and my<74  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(18) st.sfx  =not st.sfx            end else ms.t2=min(1,ms.t2+0.05) end
-			if my>74  and my<84  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then sfx(18) st.r_p  =not st.r_p            end else ms.t3=min(1,ms.t3+0.05) end
-			if my>84  and my<94  then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p=not st.h_q_p          end else ms.t4=min(1,ms.t4+0.05) end
-			if my>94  and my<104 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then sfx(18) st.r_both=not st.r_both        end else ms.t5=min(1,ms.t5+0.05) end
-			if my>109 and my<119 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then sfx(16) music(3,7,0)open="calibration" end else ms.t6=min(1,ms.t6+0.05) end
-			if my>124 and my<134 then cid=1 ms.t7=max(ms.t7-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 ms.t7=1 end else ms.t7=min(1,ms.t7+0.05) end
-			--saving the settings
-			save.st=0
-			if st.r_p    then save.st=save.st+1 end
-			if st.h_q_p  then save.st=save.st+2 end
-			if st.music  then save.st=save.st+4 end
-			if st.sfx    then save.st=save.st+8 end
-			if st.r_both then save.st=save.st+16 end
-			save.st=save.st+32
-			pmem(1,save.st)
+			if my>112 and my<123 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t1=min(1,ms.t1+0.05) end
 		end
-
-		if mx==0 and my==0 then cid=1 if clp1 then open="sus" music() pal="1a1c2c5d275db13e53ef7d57ffcd75a7f07038b76425717929366f3b5dc941a6f673eff7f4f4f494b0c2566c86333c57" respal() end end
 	end
 	--------------------------
 	-- calibration -----------
@@ -2517,16 +2545,6 @@ function TIC()
 		if sts.t==35 then open="main|settings" music(2) end
 	end
 	--------------------------
-	-- sus -------------------
-	--------------------------
-	if open=="sus" then --The most important addition
-		vbank(1) cls() vbank(0)
-		memcpy(0x0,0x8000+240*136/2,240*136/2)
-		print("uwu",111,85,0)
-		print("uwu",111,84,12)
-		if mx==239 and my==135 then cid=1 if clp1 then exit() trace("Never gonna give you up",12) end end
-	end
-	--------------------------
 	-- loading ---------------
 	--------------------------
 	if open=="load" then vbank(1) cls() vbank(0) respal()
@@ -2595,7 +2613,7 @@ function TIC()
 		vbank(1)
 		cls(0)
 		--logo
-		spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3)
+		if open~="pause|settings" then spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3) end
 
 		if open=="pause" then
 			print("Pause"        ,min(p.t*2,37), 35,7)
@@ -2604,52 +2622,17 @@ function TIC()
 			print("Settings"     ,4+(1-p.t3)*20, 85,7)
 			print("Exit"         ,4+(1-p.t4)*20,125,7)
 			--buttons
-			if my>54  and my<64  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="game" sfx(17) poke(0x7FC3F,1,1) music(maps[save.lvl].music)end else p.t1=min(p.t1+0.05,1) end
-			if my>64  and my<74  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                                                  end else p.t2=min(p.t2+0.05,1) end
-			if my>84  and my<94  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx(16)                                    end else p.t3=min(p.t3+0.05,1) end
-			if my>124 and my<134 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx(16) end                                      else p.t4=min(p.t4+0.05,1) end
-		elseif open=="pause|settings" then
-			print("Mouse sensitivity: "..F(st.m_s),4,35,7)
-			print("Music: "                  ,4,55,7)
-			print("Sfx: "                    ,4,65,7)
-			print("Rendering portals: "      ,4,75,7)
-			print("High quality portals: "   ,4,85,7)
-			print("Render both portals: "    ,4,95,7)
-			print("Back"                     ,4,125,7)
-			--on / off
-			if st.music  then print("On",117,55,13) else print("Off",117,55,11) end
-			if st.sfx    then print("On",117,65,13) else print("Off",117,65,11) end
-			if st.r_p    then print("On",117,75,13) else print("Off",117,75,11) end
-			if st.h_q_p  then print("On",117,85,13) else print("Off",117,85,11) end
-			if st.r_both then print("On",117,95,13) else print("Off",117,95,11) end
-			--mouse sensitvity slider
-			rect(4,45,100,2,3)
-			rect(4+st.m_s-20,43,2,6,6)
-
-			if my>40 and my<54   then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
-			--buttons
-			if my>54  and my<64  then cid=1 p.t1=max(p.t1-0.05,0.5) if clp1 then sfx(18) music(3,7,0) st.music=not st.music              end else p.t1=min(1,p.t1+0.05) end
-			if my>64  and my<74  then cid=1 p.t2=max(p.t2-0.05,0.5) if clp1 then sfx(18) st.sfx   =not st.sfx                            end else p.t2=min(1,p.t2+0.05) end
-			if my>74  and my<84  then cid=1 p.t3=max(p.t3-0.05,0.5) if clp1 then sfx(18) st.r_p   =not st.r_p                            end else p.t3=min(1,p.t3+0.05) end
-			if my>84  and my<94  then cid=1 p.t4=max(p.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p =not st.h_q_p                          end else p.t4=min(1,p.t4+0.05) end
-			if my>94  and my<104 then cid=1 p.t5=max(p.t5-0.05,0.5) if clp1 then sfx(18) st.r_both=not st.r_both                         end else p.t5=min(1,p.t5+0.05) end
-			if my>124 and my<134 then cid=1 p.t6=max(p.t6-0.05,0.5) if clp1 then sfx(17) open="pause" p.t1=1 p.t2=1 p.t3=1 p.t4=1 p.t5=1 end else p.t6=min(1,p.t6+0.05) end
-			--saving the settings
-			save.st=0
-			if st.r_p    then save.st=save.st+1 end
-			if st.h_q_p  then save.st=save.st+2 end
-			if st.music  then save.st=save.st+4 end
-			if st.sfx    then save.st=save.st+8 end
-			if st.r_both then save.st=save.st+16 end
-			save.st=save.st+32
-			pmem(1,save.st)
+			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="game" sfx(17) poke(0x7FC3F,1,1) music(maps[save.lvl].music)end else p.t1=min(p.t1+0.05,1) end
+			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                                                  end else p.t2=min(p.t2+0.05,1) end
+			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx(16) clp1=false                         end else p.t3=min(p.t3+0.05,1) end
+			if my>122 and my<133 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx(16) end                                      else p.t4=min(p.t4+0.05,1) end
 		elseif open=="pause|accept" then
 			print("Do you really want to leave the game?",4,45,7)
 			print("Your current game will not be saved",4,55,7)
 			print("Accept",4+(1-p.t1)*20,85,7)
 			print("Back"  ,4+(1-p.t2)*20,105,7)
-			if my>84  and my<94  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(-1) end else p.t1=min(p.t1+0.05,1) end
-			if my>104 and my<114 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx(17)                               end else p.t2=min(p.t2+0.05,1) end
+			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(-1) end else p.t1=min(p.t1+0.05,1) end
+			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx(17)                               end else p.t2=min(p.t2+0.05,1) end
 		end
 
 		--Resume button
@@ -2780,6 +2763,63 @@ function TIC()
 		vbank(0) end
 	end
 	--------------------------
+	-- settings menu ---------
+	--------------------------
+	if open=="main|settings" or open=="pause|settings" then vbank(1) cls(0)
+		print("Mouse sensitivity: "..F(st.m_s),4,5,7)
+		print("Music: "                  ,4,25,7)
+		print("Sfx: "                    ,4,35,7)
+		print("Rendering portals: "      ,4,45,7)
+		print("High quality portals: "   ,4,55,7)
+		print("Render both poratls:  "   ,4,65,7)
+		print("Particles:  "             ,4,75,7)
+		print("Dynamic textures:  "      ,4,85,7)
+
+		print("Back"                     ,4,125,7)
+
+		if open=="main|settings" then print("Calibration",4,105,7) end
+		--on / off
+		if st.music  then print("On",117,25,13) else print("Off",117,25,11) end
+		if st.sfx    then print("On",117,35,13) else print("Off",117,35,11) end
+		if st.r_p    then print("On",117,45,13) else print("Off",117,45,11) end
+		if st.h_q_p  then print("On",117,55,13) else print("Off",117,55,11) end
+		if st.r_both then print("On",117,65,13) else print("Off",117,65,11) end
+		if st.p      then print("On",117,75,13) else print("Off",117,75,11) end
+		if st.d_t    then print("On",117,85,13) else print("Off",117,85,11) end
+		--mouse sensitivity slider
+		rect(4,45-30,100,2,3)
+		rect(4+st.m_s-20,43-30,2,6,6)
+
+		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
+		--buttons
+		if my>22  and my<33  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(18) music(2) st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
+		if my>32  and my<43  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(18) st.sfx   =not st.sfx           end else ms.t2=min(1,ms.t2+0.05) end
+		if my>42  and my<53  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then sfx(18) st.r_p   =not st.r_p           end else ms.t3=min(1,ms.t3+0.05) end
+		if my>52  and my<63  then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p =not st.h_q_p         end else ms.t4=min(1,ms.t4+0.05) end
+		if my>62  and my<73  then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then sfx(18) st.r_both=not st.r_both        end else ms.t5=min(1,ms.t5+0.05) end
+		if my>72  and my<83  then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then sfx(18) st.p     =not st.p             end else ms.t6=min(1,ms.t6+0.05) end
+		if my>82  and my<93  then cid=1 ms.t7=max(ms.t7-0.05,0.5) if clp1 then sfx(18) st.d_t   =not st.d_t           end else ms.t7=min(1,ms.t7+0.05) end
+
+		if my>102 and my<113 and open=="main|settings" then cid=1 ms.t8=max(ms.t8-0.05,0.5) if clp1 then sfx(16) music(3,7,0)open="calibration" end else ms.t8=min(1,ms.t8+0.05) end
+
+		if my>122 and my<133 then cid=1 ms.t9=max(ms.t9-0.05,0.5)
+			if clp1 then sfx(17) 
+				if open=="main|settings" then open="main" else open="pause" end
+				ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 ms.t7=1 ms.t8=1 ms.t9=1 end
+		else ms.t9=min(1,ms.t9+0.05) end
+		--saving the settings
+		save.st=0
+		if st.r_p    then save.st=save.st+2^0 end
+		if st.h_q_p  then save.st=save.st+2^1 end
+		if st.music  then save.st=save.st+2^2 end
+		if st.sfx    then save.st=save.st+2^3 end
+		if st.r_both then save.st=save.st+2^4 end
+		if st.p      then save.st=save.st+2^5 end
+		if st.d_t    then save.st=save.st+2^6 end
+		save.st=save.st+2^31
+		pmem(1,save.st)
+	end
+	--------------------------
 	-- still alive -----------
 	--------------------------
 	if open=="still alive" then
@@ -2828,6 +2868,7 @@ function TIC()
 	--settings
 	if not st.sfx then sfx(-1) sfx(-1,0,1) end
 	if not st.music then music(-1) end
+	vbank(1)
 	--cursor id
 	vbank(0)
 	poke4(0x07FF6,cid)
@@ -2855,19 +2896,6 @@ function BDR(scn_y) scn_y=scn_y-4
 		if scn_y==63  then darkpal(p.t2) end
 		if scn_y==83  then darkpal(p.t3) end
 		if scn_y==123 then darkpal(p.t4) end
-	end
-
-	if open=="pause|settings" then
-		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==83 or scn_y==93 or scn_y==103 or scn_y==133 then
-			respal()
-			darkpal(0.2)
-		end
-		if scn_y==53  then darkpal(p.t1) end
-		if scn_y==63  then darkpal(p.t2) end
-		if scn_y==73  then darkpal(p.t3) end
-		if scn_y==83  then darkpal(p.t4) end
-		if scn_y==93  then darkpal(p.t5) end
-		if scn_y==123 then darkpal(p.t6) end
 	end
 
 	if open=="pause|accept" then
@@ -2911,18 +2939,20 @@ function BDR(scn_y) scn_y=scn_y-4
 		end
 	end
 
-	if open=="main|settings" then
-		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==83 or scn_y==93 or scn_y==103 or scn_y==118 or scn_y==133 then
+	if open=="main|settings" or open=="pause|settings" then
+		if scn_y==0 or (scn_y-3)%10==0 then
 			respal()
 			darkpal(0.2)
 		end
-		if scn_y==53  then darkpal(ms.t1) end
-		if scn_y==63  then darkpal(ms.t2) end
-		if scn_y==73  then darkpal(ms.t3) end
-		if scn_y==83  then darkpal(ms.t4) end
-		if scn_y==93  then darkpal(ms.t5) end
-		if scn_y==108 then darkpal(ms.t6) end
-		if scn_y==123 then darkpal(ms.t7) end
+		if scn_y==23  then darkpal(ms.t1) end
+		if scn_y==33  then darkpal(ms.t2) end
+		if scn_y==43  then darkpal(ms.t3) end
+		if scn_y==53  then darkpal(ms.t4) end
+		if scn_y==63  then darkpal(ms.t5) end
+		if scn_y==73  then darkpal(ms.t6) end
+		if scn_y==83  then darkpal(ms.t7) end
+		if scn_y==103 then darkpal(ms.t8) end
+		if scn_y==123 then darkpal(ms.t9) end
 	end
 
 	if open=="game" then
@@ -3432,8 +3462,8 @@ end
 -- 205:1111111111111111111111111111111122222222333333333333333322222222
 -- 206:1111233211112332111123321111233222222332333333323333333222222222
 -- 207:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 208:ffffffffaaaaaaaaffffffffbfbfbfbfffffffffbfbfbfbfffffffffbfbfbfbf
--- 209:ffffffffaaaaaaaaffffffffbfbfbfbfffffffffbfbfbfbfffffffffbfbfbfbf
+-- 208:ffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbf
+-- 209:ffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbf
 -- 210:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 211:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 212:aaaaaaaa00000000000000000000000000000000000000000000000000000000
@@ -3448,8 +3478,8 @@ end
 -- 221:2222222233333333434343433333333334343434333333334343434322222222
 -- 222:2222222233333332434343423333333234343432333333324343434222222222
 -- 223:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
--- 224:ffffffffbfbfbfbfffffffffbfbfbfbfffffffffbfbfbfbfaaaaaaaaffffffff
--- 225:ffffffffbfbfbfbfffffffffbfbfbfbfffffffffbfbfbfbfaaaaaaaaffffffff
+-- 224:fcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffff
+-- 225:fcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffff
 -- 226:000000000000000000000000000000000000000000000000dddddddd00000000
 -- 227:00000000000000000000000000000000000000000000000000000000a0000000
 -- 233:44444444555544445666544a5666544a5666544a5666544a5555444444444444
