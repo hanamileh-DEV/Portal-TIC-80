@@ -2289,7 +2289,7 @@ function TIC()
 		if l_.t>=90 or (keyp() and l_.t>10) then
 			sync(1,0,false)
 			load_world(-1)
-			if save.st&2^31==0 or true then open="init setting" else open="main" music(2) end
+			if save.st&2^31==0 then open="init setting" else open="main" music(2) end
 		end
 	end
 	--------------------------
@@ -2297,20 +2297,6 @@ function TIC()
 	--------------------------
 	if open=="init setting" then respal()
 		is.t=is.t+1
-		--[[
-		cls(1)
-		print("Would you like to turn on",52,3,7)
-		print("the rendering of two portals?",39,11,7)
-		print("This can significantly affect performance",8,27,4)
-		print("You can also choose rendering",39,51,7)
-		print("only the nearest of two portals",33,59,7)
-		print("that will affect performance noticeably less",39,75,4,false,1,true)
-		print("You can always configure this",41,91,14)
-		print("later in the settings menu",49,99,14)
-		print("Double rendering",1,123,7)
-		print("Single rendering",1,123,7)
-		print("Without rendering portals",1,123,7)
-		]]
 		if is.t==2 then
 			is.t1=time()
 			for i=1,300 do
@@ -2337,10 +2323,21 @@ function TIC()
 			print("Evaluation result: "..p.." points.",120-text_size//2,105,2)
 			
 			rect(0,28,240,21,2)
-			if is.t1>100 then
+			if is.t1>300 then
 				print("Rendering of both portals is chosen",23,36,0)
 				print("Rendering of both portals is chosen",23,35,7)
-				st.d_r_p=true
+				st.d_r=true
+				st.r_both=true
+			elseif is.t1>180 then
+				print("Rendering of one portal selected",30,36,0)
+				print("Rendering of one portal selected",30,35,7)
+				st.d_r=true
+				st.r_both=false
+			else
+				print("The rendering of portals is disabled",23,36,0)
+				print("The rendering of portals is disabled",23,35,7)
+				st.d_r=false
+				st.r_both=false
 			end
 			
 			print("You can always configure this",41,65,4)
