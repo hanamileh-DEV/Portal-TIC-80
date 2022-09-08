@@ -852,29 +852,21 @@ local function coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) --collision 
 	return (x1 < x4 and x2 > x3 and y1 < y4 and y2 > y3 and z1 < z4 and z2 > z3)
 end
 
-local function min_abs(first, ...)
-	local res = first
-	for _, n in ipairs({...}) do
-		if abs(n) < abs(res) then
-			res = n
-		end
-	end
-	return res
+local function min_abs(a, b)
+	if abs(a) < abs(b) then return a else return b end
 end
 
-local function coll_shift(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) -- collision of two cubes, return offset to apply to first cube
-	local px, py, pz = min(x3 - x2, 0), min(y3 - y2, 0), min(z3 - z2, 0)
-	local nx, ny, nz = max(x4 - x1, 0), max(y4 - y1, 0), max(z4 - z1, 0)
+local function coll_shift(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, axis)
+	if not coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) then
+		return 0
+	end
 
-	local x, y, z = min_abs(px, nx), min_abs(py, ny), min_abs(pz, nz)
-	local ax, ay, az = abs(x), abs(y), abs(z)
-
-	if ax < ay and ax < az then
-	    return x, 0, 0
-	elseif ay < az then
-	    return 0, y, 0
-	else
-	    return 0, 0, z
+	if axis == 1 then
+		return min_abs(x3 - x2, x4 - x1)
+	elseif axis == 2 then
+		return min_abs(y3 - y2, y4 - y1)
+	elseif axis == 3 then
+		return min_abs(z3 - z2, z4 - z1)
 	end
 end
 
@@ -1268,61 +1260,64 @@ function unitic.cube_update() --all physics related to cubes
 					if sz ~= 0 then draw.objects.c[i].vz = 0 end
 			end
 
+			local function collide(x3, y3, z3, x4, y4, z4)
+				-- try moving the current amount in each axis, partially cancelling if needed
+				local sx = coll_shift(
+					cx - 24, cly - 24, clz - 24, cx + 24, cly + 24, clz + 24,
+					x3, y3, z3, x4, y4, z4, 1
+				)
+				if sx ~= 0 then draw.objects.c[i].vx = 0 end
+				cx = cx + sx
+				local sy = coll_shift(
+					clx - 24, cy - 24, clz - 24, clx + 24, cy + 24, clz + 24,
+					x3, y3, z3, x4, y4, z4, 2
+				)
+				if sy ~= 0 then draw.objects.c[i].vy = 0 end
+				cy = cy + sy
+				local sz = coll_shift(
+					clx - 24, cly - 24, cz - 24, clx + 24, cly + 24, cz + 24,
+					x3, y3, z3, x4, y4, z4, 3
+				)
+				if sz ~= 0 then draw.objects.c[i].vz = 0 end
+				cz = cz + sz
+			end
+
 			for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
 				if wall_coll[draw.map[1][x0][y0][z0][2]] then
-					local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-					update_pos_vel(sx, sy, sz)
+					collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 				elseif draw.map[1][x0][y0][z0][2]==5 or draw.map[1][x0][y0][z0][2]==6 then
 					if not draw.p[1] or not draw.p[2] then
-						local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-						update_pos_vel(sx, sy, sz)
+						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 					else
 						if draw.map[1][x0][y0][z0][2]==5 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then inbp=true end
 						if draw.map[1][x0][y0][z0][2]==6 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then inop=true end
 
-						local sx, sy, sz
-
-						sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
-						cx, cy, cz = cx + sx, cy + sy, cz + sz
-
-						sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-						cx, cy, cz = cx + sx, cy + sy, cz + sz
-
-						sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-						cx, cy, cz = cx + sx, cy + sy, cz + sz
+						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
+						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+						collide(x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 					end
 				elseif draw.map[1][x0][y0][z0][2]==7 then
 					if coll(clx - 24,  cly - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then bf = true end
 				end
 
 				if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
-					local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
-					update_pos_vel(sx, sy, sz)
+					collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
 				elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
 					if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx(0,"C-6",-1,1) end
 				end
 
 				if wall_coll[draw.map[3][x0][y0][z0][2]] then
-					local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-					update_pos_vel(sx, sy, sz)
+					collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 				elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
 					if not draw.p[1] or not draw.p[2] then
-						local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-						update_pos_vel(sx, sy, sz)
+						collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 					else
 						if draw.map[3][x0][y0][z0][2]==5 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96) then inbp=true end
 						if draw.map[3][x0][y0][z0][2]==6 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96) then inop=true end
 
-						local sx, sy, sz
-
-						sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
-						cx, cy, cz = cx + sx, cy + sy, cz + sz
-
-						sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-						cx, cy, cz = cx + sx, cy + sy, cz + sz
-
-						sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-						cx, cy, cz = cx + sx, cy + sy, cz + sz
+						collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
+						collide(x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+						collide(x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 					end
 				elseif draw.map[3][x0][y0][z0][2]==7 then
 					if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then bf=true end
@@ -1334,8 +1329,7 @@ function unitic.cube_update() --all physics related to cubes
 				local x0=plr.x
 				local y0=plr.y
 				local z0=plr.z
-				local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 - 16, y0 - 64, z0 - 16, x0 + 16, y0 + 16, z0 + 16)
-				update_pos_vel(sx, sy, sz)
+				collide(x0 - 16, y0 - 64, z0 - 16, x0 + 16, y0 + 16, z0 + 16)
 			end
 
 			--collision with objects
@@ -1344,8 +1338,7 @@ function unitic.cube_update() --all physics related to cubes
 					local x0=draw.objects.c[i2].x
 					local y0=draw.objects.c[i2].y
 					local z0=draw.objects.c[i2].z
-					local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
-					update_pos_vel(sx, sy, sz)
+					collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
 				end
 			end
 
@@ -1353,16 +1346,14 @@ function unitic.cube_update() --all physics related to cubes
 				local x0=draw.objects.lb[i2].x
 				local y0=draw.objects.lb[i2].y
 				local z0=draw.objects.lb[i2].z
-				local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 - 48, y0 + 5, z0 - 48, x0 + 48, y0 + 5, z0 + 48)
-				update_pos_vel(sx, sy, sz)
+				collide(x0 - 48, y0 + 5, z0 - 48, x0 + 48, y0 + 5, z0 + 48)
 			end
 
 			for i2=1,#draw.objects.b do
 				local x0=draw.objects.b[i2].x
 				local y0=draw.objects.b[i2].y
 				local z0=draw.objects.b[i2].z
-				local sx, sy, sz = coll_shift(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
-				update_pos_vel(sx, sy, sz)
+				collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
 			end
 
 			--
