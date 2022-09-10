@@ -661,6 +661,7 @@ local draw={
 	world_op={f={}}, --the world for the orange portal
 	map={},
 	pr={}, --particles
+	pr_g={}, --particle generator (for a light bridge)
 	p={nil,nil}, --portals
 	p_verts={}, --portal vertices
 	lg={}--light bridge generators
@@ -1051,7 +1052,7 @@ function unitic.draw()
 			print(i, p2d.x, p2d.y, 7)
 		end
 	end
-	if #unitic.p~=0 then
+	if #unitic.p~=0 and st.p then
 		for i = 1, #unitic.p do
 			if unitic.p[i][4] then
 				local p2d = {x=unitic.p[i][1],y=unitic.p[i][2]}
@@ -1451,7 +1452,7 @@ function unitic.portal_collision()
 	end
 end
 
-function unitic.render()
+function unitic.render() --------
 	--dynamic textures
 	if st.d_t then
 		for x0=0,15 do --light bridge
@@ -1487,7 +1488,22 @@ function unitic.render()
 			end
 		end
 	end
-	
+	--particles
+	for i=1,#draw.pr_g do
+		local  x=draw.pr_g[i][1]*96
+		local  y=draw.pr_g[i][2]*128+4
+		local  z=draw.pr_g[i][3]*96
+		local vx=draw.pr_g[i][4]
+		local vz=draw.pr_g[i][5]
+		for i=0,15 do
+			if vx~=0 then
+				addp(x,y,z+i*96/16,-vx*R(1,4),R(-2,2),R(-2,2),R(2,10),R(10,11))
+			else
+				addp(x+i*96/16,y,z,R(-2,2),R(-2,2),-vz*R(1,4),R(2,10),R(10,11))
+			end
+		end
+	end
+	--
 	local dist1, dist2, dist = math.huge, math.huge, false
 	if draw.p[1] then
 		local x1, y1, z1 = portalcenter(1)
@@ -1947,6 +1963,8 @@ function update_world()
 	draw.world.f={}
 	draw.world_bp.f={}
 	draw.world_op.f={}
+	draw.pr_g={}
+
 	for angle=1,3 do for x0=0,world_size[1]-1 do for y0=0,world_size[2]-1 do for z0=0,world_size[3]-1 do
 		local face = draw.map[angle][x0][y0][z0][1]
 		local type = draw.map[angle][x0][y0][z0][2]-1
@@ -2082,9 +2100,7 @@ function update_world()
 			elseif draw.lg[i][4]==3 and draw.lg[i][5]==1 then vz=1
 			elseif draw.lg[i][4]==3 and draw.lg[i][5]==2 then vz=-1 lz=lz-1 else error(draw.lg[i][4].." | "..draw.lg[i][5])
 			end
-			--trace("----------------------------------",15)
 			for _=1,100 do --bridge lenght limiter
-				--if vx==-1 or vx==1 then addobj(48+lx*96,ly*128,48+lz*96,4) else addobj(48+lx*96,ly*128,48+lz*96,5) end
 				if     vx==-1 then addobj(48+lx*96,ly*128,48+lz*96,4)
 				elseif vx==1  then addobj(48+lx*96,ly*128,48+lz*96,5)
 				elseif vz==-1 then addobj(48+lx*96,ly*128,48+lz*96,6)
@@ -2127,12 +2143,12 @@ function update_world()
 					end
 				end
 				--if the bridge collides with a wall, we stop the loop
-				if lx<0 or lx>world_size[1]-1 or lz<0 or lz>world_size[3]-1 then break end
+				if lx<0 or lx>world_size[1]-1 or lz<0 or lz>world_size[3]-1 then draw.pr_g[#draw.pr_g+1]={lx,ly,lz,vx,vz} break end
 				if not (bp or op) then
-				if     vx==1  and draw.map[1][lx  ][ly][lz  ][2]~=0 and draw.map[1][lx  ][ly][lz  ][2]~=3 and draw.map[1][lx  ][ly][lz  ][2]~=15 then break
-				elseif vx==-1 and draw.map[1][lx+1][ly][lz  ][2]~=0 and draw.map[1][lx+1][ly][lz  ][2]~=3 and draw.map[1][lx+1][ly][lz  ][2]~=15 then break
-				elseif vz==1  and draw.map[3][lx  ][ly][lz  ][2]~=0 and draw.map[3][lx  ][ly][lz  ][2]~=3 and draw.map[3][lx  ][ly][lz  ][2]~=15 then break
-				elseif vz==-1 and draw.map[3][lx  ][ly][lz+1][2]~=0 and draw.map[3][lx  ][ly][lz+1][2]~=3 and draw.map[3][lx  ][ly][lz+1][2]~=15 then break
+				if     (vx==1  and draw.map[1][lx  ][ly][lz  ][2]~=0 and draw.map[1][lx  ][ly][lz  ][2]~=3 and draw.map[1][lx  ][ly][lz  ][2]~=15)
+				or (vx==-1 and draw.map[1][lx+1][ly][lz  ][2]~=0 and draw.map[1][lx+1][ly][lz  ][2]~=3 and draw.map[1][lx+1][ly][lz  ][2]~=15)
+				or (vz==1  and draw.map[3][lx  ][ly][lz  ][2]~=0 and draw.map[3][lx  ][ly][lz  ][2]~=3 and draw.map[3][lx  ][ly][lz  ][2]~=15)
+				or (vz==-1 and draw.map[3][lx  ][ly][lz+1][2]~=0 and draw.map[3][lx  ][ly][lz+1][2]~=3 and draw.map[3][lx  ][ly][lz+1][2]~=15) then draw.pr_g[#draw.pr_g+1]={lx,ly,lz,vx,vz} break
 				end end
 			end
 		end
@@ -2145,6 +2161,7 @@ local function load_world(world_id) --Loads the world from ROM memory (from the 
 	draw.world={v={},f={},sp={}}
 	draw.p={nil,nil}
 	draw.pr={}
+	draw.pr_g={}
 	draw.lg={}
 	draw.objects={
 		c={}, --cubes
