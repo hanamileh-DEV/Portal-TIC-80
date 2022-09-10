@@ -2236,6 +2236,7 @@ local fr={0,0,0} --framerate
 t1=0 --The start time of the frame drawing
 t2=0 --The time for drawing the current frame
 t=0 -- Global timer (+1 for each code call)
+stt=0 --The timer of the start of the game
 --player speed
 local speed=4
 --init
@@ -2246,7 +2247,6 @@ local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
 local is={t=0,t1=0,t2=0} --init setting
-local l_an={t=0,i=true} --lift animation
 load_world(-1)
 
 local open="logo" sync(1,1,false)
@@ -2556,17 +2556,6 @@ function TIC()
 	-- load lvl --------------
 	--------------------------
 	if open=="load lvl" then
-		--lift texture
-		-- for x=0,19 do
-		-- 	for y=0,28 do
-		-- 		if x==10 then
-		-- 			setpix(x+74,y+99,4)
-		-- 		else
-		-- 			setpix(x+74,y+99,5)
-		-- 		end
-		-- 	end
-		-- end
-		--
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
 		pmem(4,save.ct)
 
@@ -2588,6 +2577,7 @@ function TIC()
 		mx,my=0,0
 		poke(0x7FC3F,1,1)
 		open="game"
+		stt=0
 		st_t=tstamp() --The start time of this level
 	end
 	--------------------------
@@ -2630,11 +2620,14 @@ function TIC()
 	-- game ------------------
 	--------------------------
 	if open=="game" then
+		--debug
 		if keyp(21) then draw.objects.c = {{type=1, x=500,y=200,z=96, vx=0, vy=0, draw=true, model=model[1]}} end
 		if draw.objects.c[1] then
 			if btn(0) then draw.objects.c[1].vx = 5 elseif btn(1) then draw.objects.c[1].vx = -5 else draw.objects.c[1].vx = 0 end
 			if btn(2) then draw.objects.c[1].vz = 5 elseif btn(3) then draw.objects.c[1].vz = -5 else draw.objects.c[1].vz = 0 end
 		end
+		
+		stt=stt+1
 		fps_.t1=time()
 		plr.cd2=max(plr.cd2-1,0)
 		plr.cd3=max(plr.cd3-1,0)
@@ -2675,9 +2668,12 @@ function TIC()
 			if plr.cd3>0 then
 				updpal(1,0.2*(3-plr.cd3*0.2),0.2*(3-plr.cd3*0.2))
 			end
+			if stt<60 then
+				darkpal(stt/60)
+			end
 		end
 	 --camera rotation
-	 	if p.t==0 then
+	 	if p.t==0 and stt>2 then
 			plr.tx = plr.tx + my/(140-st.m_s)
 			plr.ty = plr.ty + mx/(140-st.m_s)
 	 	end
@@ -2707,6 +2703,16 @@ function TIC()
 		--if plr.hp<=0 then exit() trace("died :p",2) end
 		plr.hp2 = plr.hp
 		if plr.godmode then plr.hp=100 end
+	 --text
+		local text="Level "..save.lvl
+		local text_size=print(text,240,0)
+		if stt<60 then
+			print(text:sub(1,stt//4),120-text_size/2,91,1)
+			print(text:sub(1,stt//4),120-text_size/2,90,7)
+		elseif stt<120 then
+			print(text:sub(1,(59-stt)//4),120-text_size/2,91,1)
+			print(text:sub(1,(59-stt)//4),120-text_size/2,90,7)
+		end
 	 --
 		pmem(4,save.ct+(tstamp()-st_t))
 	 --pause
@@ -2875,10 +2881,13 @@ end
 
 function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
-	if open=="pause" then vbank(1)poke(0x03FF9,0)vbank(0)poke(0x03FF9,0)
+	if open=="pause" then vbank(1)poke(0x03FF9,0)respal()vbank(0)poke(0x03FF9,0)
 		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==93 or scn_y==133 then
 			respal()
 			darkpal(max(1-p.t/30,0.4))
+			if stt<60 then
+				darkpal(stt/60)
+			end
 		end
 		if scn_y==53  then darkpal(p.t1) end
 		if scn_y==63  then darkpal(p.t2) end
@@ -2890,6 +2899,9 @@ function BDR(scn_y) scn_y=scn_y-4
 		if scn_y==0 or scn_y==93 or scn_y==113 then
 			respal()
 			darkpal(0.2)
+			if stt<60 then
+				darkpal(stt/60)
+			end
 		end
 		if scn_y==83  then darkpal(p.t1) end
 		if scn_y==103 then darkpal(p.t2) end
@@ -2931,6 +2943,7 @@ function BDR(scn_y) scn_y=scn_y-4
 		if scn_y==0 or (scn_y-3)%10==0 then
 			respal()
 			darkpal(0.2)
+			if open=="pause|settings" and stt<60 then darkpal(stt/60) end
 		end
 		if scn_y==23  then darkpal(ms.t1) end
 		if scn_y==33  then darkpal(ms.t2) end
