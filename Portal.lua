@@ -682,7 +682,7 @@ maps[0]={ --main gameroom
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={{0,0,1,1,2}}, --light bridge generators
-	lift={{0,0,0,2},nil}, --Initial and final elevator (X Y Z angle) [0 -X, 1 -Z 2 +X, 3 +Z]
+	lift={{0,0,0,2},{0,0,10,0}}, --Initial and final elevator (X Y Z angle) [0 -X, 1 -Z 2 +X, 3 +Z]
 	music=0 --Music ID for this level
 }
 
@@ -2203,6 +2203,7 @@ local function load_world(world_id) --Loads the world from ROM memory (from the 
 			elseif maps[world_id].lift[i][4]==1 then addwall(x0,y0,z0,1,3,19)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
 			elseif maps[world_id].lift[i][4]==2 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,3,19)
 			elseif maps[world_id].lift[i][4]==3 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,3,19)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
+			else error()
 			end
 		end
 	end
@@ -2635,7 +2636,7 @@ function TIC()
 			if btn(2) then draw.objects.c[1].vz = 5 elseif btn(3) then draw.objects.c[1].vz = -5 else draw.objects.c[1].vz = 0 end
 		end
 		
-		stt=stt+1
+		if stt~=120 then stt=stt+1 end
 		fps_.t1=time()
 		plr.cd2=max(plr.cd2-1,0)
 		plr.cd3=max(plr.cd3-1,0)
@@ -2651,7 +2652,7 @@ function TIC()
 		if plr.cd3==0 and key(64) then speed = 8 else speed = 4 end
 		if plr.noclip then speed=12 end
 		if keyp(57) or keyp(22) then plr.noclip = not plr.noclip end
-	 --jump
+	--jump
 		if plr.noclip then
 			if key(48) then plr.y = plr.y + 8 end
 			if key(63) then plr.y = plr.y - 8 end
@@ -2678,6 +2679,8 @@ function TIC()
 			end
 			if stt<60 then
 				darkpal(stt/60)
+			elseif stt>120 then
+				darkpal(max(0,150-stt)/30)
 			end
 		end
 	 --camera rotation
@@ -2708,9 +2711,11 @@ function TIC()
 		if plr.hp2 == plr.hp then plr.cd=plr.cd+1 else plr.cd=0 end
 		if plr.cd>120 then plr.hp=min(plr.hp+1,100) end
 		if plr.y<-400 then plr.hp=max(plr.hp-2,0) end
-		--if plr.hp<=0 then exit() trace("died :p",2) end
 		plr.hp2 = plr.hp
 		if plr.godmode then plr.hp=100 end
+	 --finish lift
+		if plr.x//96==maps[save.lvl].lift[2][1] and plr.y//128==maps[save.lvl].lift[2][2] and plr.z//96==maps[save.lvl].lift[2][3] then stt=max(stt,121)end
+		if stt>150 then open="load lvl" end
 	 --text
 		local text="Level "..save.lvl
 		local text_size=print(text,240,0)
@@ -2746,7 +2751,7 @@ function TIC()
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 			},
 			{
-				save.ct+(tstamp()-st_t)
+				stt
 			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
