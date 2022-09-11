@@ -1019,7 +1019,10 @@ function unitic.draw()
 		}
 
 		--we discard those polygons that will not be visible
-		local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
+		local tri_face
+		if unitic.poly.f[i].f~=0 and unitic.poly.f[i].f~=3 then
+			tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
+		end
 
 		if unitic.poly.f[i].f~=0
 		and not (tri_face and unitic.poly.f[i].f==1)
@@ -2164,7 +2167,8 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 	--init
 	draw.map={}
 	draw.world={v={},f={},sp={}}
-	draw.p={nil,nil}
+	draw.p[1]=nil
+	draw.p[2]=nil
 	draw.pr={}
 	draw.pr_g={}
 	draw.lg={}
@@ -2344,8 +2348,8 @@ function TIC()
 				st.d_r=true
 				st.r_both=true
 			elseif is.t1>180 then
-				print("Rendering of one portal selected",30,36,0)
-				print("Rendering of one portal selected",30,35,7)
+				print("Rendering of one portal is chosen",30,36,0)
+				print("Rendering of one portal is chosen",30,35,7)
 				st.d_r=true
 				st.r_both=false
 			else
@@ -2425,7 +2429,7 @@ function TIC()
 			print("Your record: "..bt,1,85,11)
 			print("Start game",4+(1-ms.t1)*20,105,7)
 			print("Back",4+(1-ms.t2)*20,125,7)
-			if my>102 and my<112 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" ctp=0 save.lvl2=2 end else ms.t1=min(1,ms.t1+0.05) end
+			if my>102 and my<112 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" music(3) ctp=0 save.lvl2=2 end else ms.t1=min(1,ms.t1+0.05) end
 			if my>122 and my<132 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
 
 		elseif open=="main|authors" then
@@ -2620,7 +2624,7 @@ function TIC()
 			plr.ty=0
 		end
 
-		music(maps[save.lvl2][save.lvl].music)
+		if save.lvl2~=2 then music(maps[save.lvl2][save.lvl].music) end
 
 		mx,my=0,0
 		poke(0x7FC3F,1,1)
@@ -2650,7 +2654,18 @@ function TIC()
 			print("Settings"     ,4+(1-p.t3)*20, 85,7)
 			print("Exit"         ,4+(1-p.t4)*20,125,7)
 			--buttons
-			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="game" sfx(17) poke(0x7FC3F,1,1) music(maps[save.lvl].music)end else p.t1=min(p.t1+0.05,1) end
+			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1
+				if clp1 then
+					open="game"
+					sfx(17)
+					poke(0x7FC3F,1,1)
+					if save.lvl2~=2 then music(maps[save.lvl].music) else music(3) end
+					lctp=ctp or 0
+					ctp=0
+					st_t=tstamp()
+				end 
+			else p.t1=min(p.t1+0.05,1) end
+
 			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                                                  end else p.t2=min(p.t2+0.05,1) end
 			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx(16) clp1=false                         end else p.t3=min(p.t3+0.05,1) end
 			if my>122 and my<133 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx(16) end                                      else p.t4=min(p.t4+0.05,1) end
@@ -2659,7 +2674,7 @@ function TIC()
 			print("Your current game will not be saved",4,55,7)
 			print("Accept",4+(1-p.t1)*20,85,7)
 			print("Back"  ,4+(1-p.t2)*20,105,7)
-			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(-1) end else p.t1=min(p.t1+0.05,1) end
+			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(0,1) end else p.t1=min(p.t1+0.05,1) end
 			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx(17)                               end else p.t2=min(p.t2+0.05,1) end
 		end
 
@@ -2803,7 +2818,7 @@ function TIC()
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
 
-		vbank(1) do
+		vbank(1)
 			for i=1,#debug_text[plr.dt] do
 				local text_size=print(debug_text[plr.dt][i], 240,0)
 				rect(0,7*(i-1),text_size+2,8,2)
@@ -2814,7 +2829,7 @@ function TIC()
 			print("HP: "..plr.hp,1,130,7)
 
 			if plr.noclip then print("Noclip", 104, 85, 7) end
-		vbank(0) end
+		vbank(0)
 	end
 	--------------------------
 	-- settings menu ---------
@@ -2846,7 +2861,7 @@ function TIC()
 
 		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
 		--buttons
-		if my>22  and my<33  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(18) music(2) st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
+		if my>22  and my<33  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(18) if open=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
 		if my>32  and my<43  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(18) st.sfx   =not st.sfx           end else ms.t2=min(1,ms.t2+0.05) end
 		if my>42  and my<53  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then sfx(18) st.r_p   =not st.r_p           end else ms.t3=min(1,ms.t3+0.05) end
 		if my>52  and my<63  then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p =not st.h_q_p         end else ms.t4=min(1,ms.t4+0.05) end
@@ -2920,7 +2935,7 @@ function TIC()
 	end
 	-------------------------------------------
 	--settings
-	if not st.sfx then sfx(-1) sfx(-1,0,1) end
+	if not st.sfx then sfx(-1,1,0) sfx(-1,1,1) sfx(-1,1,2) sfx(-1,1,3) end
 	if not st.music then music(-1) end
 	vbank(1)
 	--cursor id
@@ -3716,7 +3731,7 @@ end
 -- 040:9008e79008e79008f70000009008e79008e79008f70000009008e79008e79008e79008e79008f7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 041:9008d79008d79008c70000009008d79008d79008c7000000c008d7c008d7c008d7c008d7c008c7000000000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 042:9008d59008d59008c50000009008d59008d59008c5000000c008d5c008d5c008d5c008d5c008c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
--- 043:9028c5902cc59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c59008c59028c59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c5
+-- 043:9008c5902cc59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c59008c59028c59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c5
 -- 044:9428d79428c74008d94008c9c008d7c008c7e008d7e008c7b008d7b008c7c008d7c008c79008d79008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c75008d95008c9b008d7b008c7e008d7e008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c7b008d7b008c7c008d7c008c79008d79008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c75008d95008c9b008d7b008c7e008d7e008c78008d78008c7
 -- 045:9028c3902cc39008c39008c39008c39008c39008c39008c34008c54008c54008c54008c5b008c3b008c3c008c3c008c35008c35008c35008c35008c35008c35008c35008c35008c37008c37008c37008c37008c38008c38008c38008c38008c39008c39028c39008c39008c39008c39008c39008c39008c34008c54008c54008c54008c5b008c3b008c3c008c3c008c35008c35008c35008c35008c35008c35008c35008c35008c37008c37008c37008c37008c38008c38008c38008c38008c3
 -- 046:9428d59008c54008d74008c7c008d5c008c5e008d5e008c5b008d5b008c5c008d5c008c59008d59008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c55008d75008c7b008d5b008c5e008d5e008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c5b008d5b008c5c008d5c008c59008d59008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c55008d75008c7b008d5b008c5e008d5e008c58008d58008c5
@@ -3728,9 +3743,9 @@ end
 
 -- <TRACKS>
 -- 000:0001800001c00001010000000000000000000000000000000000000000000000000000000000000000000000000000002e0000
--- 001:6d58566d5856ad5856ad5856000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- 001:795856795856796856796856000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 002:0c6c57b97c57b97c570c7020048c571a8c570c8c57329c57b596e986aaea000000000000000000000000000000000000000060
--- 003:c20000c6b000cab000c6bf20c2c000c2c1300000000002fc000000000000000000000000000000000000000000000000e10021
+-- 003:00000b000d2b000e2b0cbd2b00003b04c03b0000000002fc000000000000000000000000000000000000000000000000e10021
 -- 007:5000006c1000842000ac2c00dc1000ec1f000540002d4000455000000000000000000000000000000000000000000000ae0060
 -- </TRACKS>
 
