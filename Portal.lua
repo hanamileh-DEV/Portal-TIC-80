@@ -2366,7 +2366,7 @@ function TIC()
 	--------------------------
 	-- main screen -----------
 	--------------------------
-	if open=="main" or open=="main|newgame" or open=="main|authors" or open=="main|settings" then
+	if open=="main" or open=="main|newgame" or open=="main|authors" or open=="main|settings" or open=="main|skilltest" then
 		ms.t=ms.t+1
 		--camera
 		vbank(0)
@@ -2398,7 +2398,8 @@ function TIC()
 
 			if my>52  and my<63  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" sfx(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
 
-			if my>72  and my<83  then cid=1 ms.t3=max(ms.t3-0.05,0.5) else ms.t3=min(1,ms.t3+0.05) end
+			if my>72  and my<83  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then open="main|skilltest" end else ms.t3=min(1,ms.t3+0.05) end
+
 			if my>92  and my<103 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
 			if my>102 and my<113 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then open="main|authors" sfx(16) ms.t1=1 end else ms.t5=min(1,ms.t5+0.05) end
 			if my>122 and my<133 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then exit() end else ms.t6=min(1,ms.t6+0.05) end
@@ -2413,6 +2414,20 @@ function TIC()
 			print("Cancel",4+(1-ms.t2)*20,105,7)
 			if my>82  and my<93  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end else ms.t1=min(1,ms.t1+0.05) end
 			if my>102 and my<113 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
+		elseif open=="main|skilltest" then
+			print("Set of skilltest levels",1,35,7)
+			print("Take these levels",1,55,13)
+			print("as quickly as possible",1,65,13)
+			local bt=""
+			if save.bt//60<10 then bt=bt.."0"..save.bt//60 ..":" else bt=bt..save.bt//60 ..":" end
+			if save.bt% 60<10 then bt=bt.."0"..save.bt%60 else bt=bt..save.bt%60 end
+
+			print("Your record: "..bt,1,85,11)
+			print("Start game",4+(1-ms.t1)*20,105,7)
+			print("Back",4+(1-ms.t2)*20,125,7)
+			if my>102 and my<112 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" ctp=0 save.lvl2=2 end else ms.t1=min(1,ms.t1+0.05) end
+			if my>122 and my<132 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
+
 		elseif open=="main|authors" then
 			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
 			print("Author of the engine: HanamileH"         ,1,55,7)
@@ -2611,6 +2626,8 @@ function TIC()
 		poke(0x7FC3F,1,1)
 		open="game"
 		stt=0
+		lctp=ctp or 0
+		ctp=0  --current time passing
 		st_t=tstamp() --The start time of this level
 	end
 	--------------------------
@@ -2724,7 +2741,6 @@ function TIC()
 		fps_.t3=time()
 	 --render
 		unitic.render()
-		--fps_.t4=time()
 	 --portal gun
 		pcall(portal_gun)
 	 --sounds
@@ -2750,7 +2766,17 @@ function TIC()
 			print(text:sub(1,(59-stt)//4),120-text_size/2,91,1)
 			print(text:sub(1,(59-stt)//4),120-text_size/2,90,7)
 		end
+		
+		local text=""
+		if ctp//60<10 then text=text.."0"..ctp//60 ..":" else text=text..ctp//60 ..":" end
+		if ctp% 60<10 then text=text.."0"..ctp%60 else text=text..ctp%60 end
+
+		local text_size=print(text,240,0,true)
+
+		print(text,120-text_size/2,91+7,1,true)
+		print(text,120-text_size/2,90+7,7,true)
 	 --
+		ctp=F(lctp+(tstamp()-st_t))
 		pmem(4,save.ct+(tstamp()-st_t))
 	 --pause
 		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" music(3,7,0) poke(0x7FC3F,0,1) end
@@ -2773,9 +2799,6 @@ function TIC()
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
 				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			},
-			{
-				stt
 			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
@@ -2834,7 +2857,7 @@ function TIC()
 		if my>102 and my<113 and open=="main|settings" then cid=1 ms.t8=max(ms.t8-0.05,0.5) if clp1 then sfx(16) music(3,7,0)open="calibration" end else ms.t8=min(1,ms.t8+0.05) end
 
 		if my>122 and my<133 then cid=1 ms.t9=max(ms.t9-0.05,0.5)
-			if clp1 then sfx(17) 
+			if clp1 then sfx(17)
 				if open=="main|settings" then open="main" else open="pause" end
 				ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 ms.t7=1 ms.t8=1 ms.t9=1 end
 		else ms.t9=min(1,ms.t9+0.05) end
@@ -2964,6 +2987,15 @@ function BDR(scn_y) scn_y=scn_y-4
 		end
 		if scn_y==83 then darkpal(ms.t1) end
 		if scn_y==103 then darkpal(ms.t2) end
+	end
+
+	if open=="main|skilltest" then
+		if scn_y==0 or scn_y==113 or scn_y==133 then
+			respal()
+			darkpal(0.2)
+		end
+		if scn_y==103 then darkpal(ms.t1) end
+		if scn_y==123 then darkpal(ms.t2) end
 	end
 
 	if open=="main|authors" then
