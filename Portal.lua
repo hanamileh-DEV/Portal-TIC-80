@@ -4,7 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
-local version="DEV 0.2.0"
+local version="DEV 0.2.1"
 
 --[[
 license:
@@ -49,6 +49,7 @@ sfx   =true,
 save={ --saving the game
 i=pmem(0)~=0, --How for the first time the player went into the game
 lvl=pmem(0),
+lvl2=0, --ID set of levels
 st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
 bt=pmem(2), --the best time to pass skilltests
 d=pmem(3), --the number of player deaths (in the main game)
@@ -670,9 +671,15 @@ local draw={
 local fps_={t1=0,t2=0,t3=0,t4=0,t5=0,t6=0,t7=0,t8=0,t9=0}
 
 --maps
-local maps={}
+local maps={[0]={},[1]={},[2]={}}
 
-maps[0]={ --main gameroom
+--[[
+	0 set of levels - system levels
+	1 set of levels - levels of the main game
+	2 set of levels - Levels for skilltest
+]]
+
+maps[0][2]={ --main gameroom
 	w={ --table for walls
 	--{X, Y, Z, angle, face, type}
 	},
@@ -687,7 +694,7 @@ maps[0]={ --main gameroom
 	music=0 --Music ID for this level
 }
 
-maps[-1]={ --world from the main menu
+maps[0][1]={ --world from the main menu
 w={
 	{2,0,2,1,3,4},
 	{4,0,2,1,1,5},
@@ -731,46 +738,44 @@ lift={nil,nil},
 music=-1,
 }
 
-local st_maps={} --a set of skilltest levels
-
 for x=0,10 do
 	for y=0,2 do
-		maps[0].w[#maps[0].w+1]={x,y,0 ,3,1,R(1,2)}
-		maps[0].w[#maps[0].w+1]={x,y,11,3,2,R(1,2)}
-		maps[0].w[#maps[0].w+1]={0 ,y,x,1,2,R(1,2)}
-		maps[0].w[#maps[0].w+1]={11,y,x,1,1,R(1,2)}
+		maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,R(1,2)}
+		maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,R(1,2)}
+		maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,R(1,2)}
+		maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,R(1,2)}
 	end
 
 	for z=0,10 do
-		maps[0].w[#maps[0].w+1]={x,0,z,2,2,1}
-		if R()>0.5 then maps[0].w[#maps[0].w+1]={x,2,z,2,3,R(1,5)} end
+		maps[0][2].w[#maps[0][2].w+1]={x,0,z,2,2,1}
+		if R()>0.5 then maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,R(1,5)} end
 	end
 end
 
-maps[0].w[#maps[0].w+1]={0,0,1,1,2,9}
+maps[0][2].w[#maps[0][2].w+1]={0,0,1,1,2,9}
 
-maps[0].w[#maps[0].w+1]={2,0,0,3,1,8}
-maps[0].w[#maps[0].w+1]={3,0,11,3,2,9}
-maps[0].w[#maps[0].w+1]={0,1,2,1,2,16}
-maps[0].w[#maps[0].w+1]={0,1,3,1,2,17}
-maps[0].w[#maps[0].w+1]={0,0,6,3,3,12}
-maps[0].w[#maps[0].w+1]={1,0,6,3,3,11}
-maps[0].w[#maps[0].w+1]={2,0,5,1,1,2}
-maps[0].w[#maps[0].w+1]={3,0,5,1,2,2}
-maps[0].w[#maps[0].w+1]={2,0,6,3,1,2}
-maps[0].w[#maps[0].w+1]={2,0,5,3,2,2}
-maps[0].w[#maps[0].w+1]={2,1,5,2,2,2}
-maps[0].w[#maps[0].w+1]={3,0,6,3,3,14}
-maps[0].w[#maps[0].w+1]={4,0,6,3,3,13}
-maps[0].w[#maps[0].w+1]={5,0,6,3,3,1}
-maps[0].w[#maps[0].w+1]={6,0,6,3,3,15}
-maps[0].w[#maps[0].w+1]={7,0,6,3,3,3}
-maps[0].w[#maps[0].w+1]={8,0,6,3,3,3}
-maps[0].w[#maps[0].w+1]={9,0,6,3,3,4}
-maps[0].w[#maps[0].w+1]={10,0,6,3,3,7}
-maps[0].w[#maps[0].w+1]={6,0,5,2,3,8}
-maps[0].w[#maps[0].w+1]={6,0,6,2,3,8}
-maps[0].w[#maps[0].w+1]={3,0,5,2,3,8}
+maps[0][2].w[#maps[0][2].w+1]={2,0,0,3,1,8}
+maps[0][2].w[#maps[0][2].w+1]={3,0,11,3,2,9}
+maps[0][2].w[#maps[0][2].w+1]={0,1,2,1,2,16}
+maps[0][2].w[#maps[0][2].w+1]={0,1,3,1,2,17}
+maps[0][2].w[#maps[0][2].w+1]={0,0,6,3,3,12}
+maps[0][2].w[#maps[0][2].w+1]={1,0,6,3,3,11}
+maps[0][2].w[#maps[0][2].w+1]={2,0,5,1,1,2}
+maps[0][2].w[#maps[0][2].w+1]={3,0,5,1,2,2}
+maps[0][2].w[#maps[0][2].w+1]={2,0,6,3,1,2}
+maps[0][2].w[#maps[0][2].w+1]={2,0,5,3,2,2}
+maps[0][2].w[#maps[0][2].w+1]={2,1,5,2,2,2}
+maps[0][2].w[#maps[0][2].w+1]={3,0,6,3,3,14}
+maps[0][2].w[#maps[0][2].w+1]={4,0,6,3,3,13}
+maps[0][2].w[#maps[0][2].w+1]={5,0,6,3,3,1}
+maps[0][2].w[#maps[0][2].w+1]={6,0,6,3,3,15}
+maps[0][2].w[#maps[0][2].w+1]={7,0,6,3,3,3}
+maps[0][2].w[#maps[0][2].w+1]={8,0,6,3,3,3}
+maps[0][2].w[#maps[0][2].w+1]={9,0,6,3,3,4}
+maps[0][2].w[#maps[0][2].w+1]={10,0,6,3,3,7}
+maps[0][2].w[#maps[0][2].w+1]={6,0,5,2,3,8}
+maps[0][2].w[#maps[0][2].w+1]={6,0,6,2,3,8}
+maps[0][2].w[#maps[0][2].w+1]={3,0,5,2,3,8}
 
 --song text
 local s_t={
@@ -2155,7 +2160,7 @@ function update_world()
 	end
 end
 
-local function load_world(world_id) --Loads the world from ROM memory (from the 'Maps' table)
+local function load_world(set_id,world_id) --Loads the world from ROM memory (from the 'Maps' table)
 	--init
 	draw.map={}
 	draw.world={v={},f={},sp={}}
@@ -2192,34 +2197,36 @@ local function load_world(world_id) --Loads the world from ROM memory (from the 
 	end
 
 	--foolproof
-	if maps[world_id]==nil then
-		error("Unknown ID in the world | "..world_id)
+	if maps[set_id]==nil then
+		error("Unknown ID set of levels: "..set_id)
+	elseif maps[set_id][world_id]==nil then
+		error("Unknown ID of the world: "..set_id.." "..world_id)
 	end
 	----
-	for i=1,#maps[world_id].w do
-		addwall(maps[world_id].w[i][1],maps[world_id].w[i][2],maps[world_id].w[i][3],maps[world_id].w[i][4],maps[world_id].w[i][5],maps[world_id].w[i][6])
+	for i=1,#maps[set_id][world_id].w do
+		addwall(maps[set_id][world_id].w[i][1],maps[set_id][world_id].w[i][2],maps[set_id][world_id].w[i][3],maps[set_id][world_id].w[i][4],maps[set_id][world_id].w[i][5],maps[set_id][world_id].w[i][6])
 	end
-	for i=1,#maps[world_id].o do
-		addobj(maps[world_id].o[i][1],maps[world_id].o[i][2],maps[world_id].o[i][3],maps[world_id].o[i][4],maps[world_id].o[i][5])
+	for i=1,#maps[set_id][world_id].o do
+		addobj(maps[set_id][world_id].o[i][1],maps[set_id][world_id].o[i][2],maps[set_id][world_id].o[i][3],maps[set_id][world_id].o[i][4],maps[set_id][world_id].o[i][5])
 	end
-	for i=1,#maps[world_id].lg do
-		draw.lg[i]=maps[world_id].lg[i]
+	for i=1,#maps[set_id][world_id].lg do
+		draw.lg[i]=maps[set_id][world_id].lg[i]
 	end
 
-	if maps[world_id].p then
-		draw.p=maps[world_id].p
+	if maps[set_id][world_id].p then
+		draw.p=maps[set_id][world_id].p
 	end
 	--lift
 	for i=1,2 do
-		if maps[world_id].lift[i] then
-			local x0, y0, z0=maps[world_id].lift[i][1], maps[world_id].lift[i][2], maps[world_id].lift[i][3]
+		if maps[set_id][world_id].lift[i] then
+			local x0, y0, z0=maps[set_id][world_id].lift[i][1], maps[set_id][world_id].lift[i][2], maps[set_id][world_id].lift[i][3]
 			addwall(x0,y0  ,z0,2,2,1)
 			addwall(x0,y0+1,z0,2,1,1)
 
-			if     maps[world_id].lift[i][4]==0 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,3,19)addwall(x0,y0,z0+1,3,2,18)
-			elseif maps[world_id].lift[i][4]==1 then addwall(x0,y0,z0,1,3,19)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
-			elseif maps[world_id].lift[i][4]==2 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,3,19)
-			elseif maps[world_id].lift[i][4]==3 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,3,19)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
+			if     maps[set_id][world_id].lift[i][4]==0 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,3,19)addwall(x0,y0,z0+1,3,2,18)
+			elseif maps[set_id][world_id].lift[i][4]==1 then addwall(x0,y0,z0,1,3,19)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
+			elseif maps[set_id][world_id].lift[i][4]==2 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,3,19)
+			elseif maps[set_id][world_id].lift[i][4]==3 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,3,19)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
 			else error()
 			end
 		end
@@ -2265,7 +2272,6 @@ local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
 local is={t=0,t1=0,t2=0} --init setting
-load_world(-1)
 
 local open="logo" sync(1,1,false)
 function TIC()
@@ -2297,7 +2303,7 @@ function TIC()
 		elseif l_.t<90 then darkpal((90-l_.t)/30) end
 		if l_.t>=90 or (keyp() and l_.t>10) then
 			sync(1,0,false)
-			load_world(-1)
+			load_world(0,1)
 			if save.st&2^31==0 then open="init setting" else open="main" music(2) end
 		end
 	end
@@ -2388,9 +2394,9 @@ function TIC()
 			print("version "..version,238-text_size,130,7)
 			vbank(0)
 			--buttons
- 			if my>42  and my<53  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" end else ms.t1=min(1,ms.t1+0.05) end
+ 			if my>42  and my<53  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl2=1 end else ms.t1=min(1,ms.t1+0.05) end
 
-			if my>52  and my<63  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" music() else open="main|newgame" sfx(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
+			if my>52  and my<63  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" sfx(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
 
 			if my>72  and my<83  then cid=1 ms.t3=max(ms.t3-0.05,0.5) else ms.t3=min(1,ms.t3+0.05) end
 			if my>92  and my<103 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
@@ -2578,18 +2584,19 @@ function TIC()
 		pmem(4,save.ct)
 
 		if save.lvl==0 then save.lvl=1 end
-		save.lvl=0 --debug
+		save.lvl2=0
+		save.lvl=2 --debug
 
 		pmem(0,save.lvl)
-		load_world(save.lvl)
+		load_world(save.lvl2,save.lvl)
 		plr.hp=100
 		plr.hp2=100
-		if maps[save.lvl].lift[1] then
-			plr.x=maps[save.lvl].lift[1][1]*96+48
-			plr.y=maps[save.lvl].lift[1][2]*128+64
-			plr.z=maps[save.lvl].lift[1][3]*96+48
+		if maps[save.lvl2][save.lvl].lift[1] then
+			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96+48
+			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
+			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96+48
 			plr.tx=0
-			plr.ty=pi2*maps[save.lvl].lift[1][4]
+			plr.ty=pi2*maps[save.lvl2][save.lvl].lift[1][4]
 		else
 			plr.x=32
 			plr.y=64
@@ -2598,7 +2605,7 @@ function TIC()
 			plr.ty=0
 		end
 
-		music(maps[save.lvl].music)
+		music(maps[save.lvl2][save.lvl].music)
 
 		mx,my=0,0
 		poke(0x7FC3F,1,1)
@@ -2731,7 +2738,7 @@ function TIC()
 		plr.hp2 = plr.hp
 		if plr.godmode then plr.hp=100 end
 	 --finish lift
-		if plr.x//96==maps[save.lvl].lift[2][1] and plr.y//128==maps[save.lvl].lift[2][2] and plr.z//96==maps[save.lvl].lift[2][3] then stt=max(stt,121)end
+		if plr.x//96==maps[save.lvl2][save.lvl].lift[2][1] and plr.y//128==maps[save.lvl2][save.lvl].lift[2][2] and plr.z//96==maps[save.lvl2][save.lvl].lift[2][3] then stt=max(stt,121)end
 		if stt>150 then open="load lvl" end
 	 --text
 		local text="Level "..save.lvl
