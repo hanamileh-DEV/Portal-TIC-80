@@ -1128,7 +1128,7 @@ function unitic.player_collision()
 		elseif draw.map[1][x0][y0][z0][2]==7 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.cd2=10 end
 		elseif draw.map[1][x0][y0][z0][2]==15 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=1 end
+			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=0 sfx(2,"C-3",-1,1) end
 		end
 
 		if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
@@ -1136,7 +1136,7 @@ function unitic.player_collision()
 			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then coly = true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then colz = true end
 		elseif draw.map[2][x0][y0][z0][2]==5 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=1 sfx(2,"C-3",-1,1) end
+			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=0 sfx(2,"C-3",-1,1) end
 		elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.vy=12 sfx(0,"C-6",-1,1) end
 		end
@@ -1166,7 +1166,7 @@ function unitic.player_collision()
 		elseif draw.map[3][x0][y0][z0][2]==7 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.cd2=10 end
 		elseif draw.map[3][x0][y0][z0][2]==15 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=1 sfx(2,"C-3",-1,1) end
+			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx(2,"C-3",-1,1) end
 		end
 	end end end
 	--collision with objects
@@ -2829,8 +2829,8 @@ function TIC()
 
 		local text_size=print(text,240,0,true)
 
-		print(text,120-text_size/2,91+7,1,true)
-		print(text,120-text_size/2,90+7,7,true)
+		print(text,120-text_size/2,131,1,true)
+		print(text,120-text_size/2,130,7,true)
 	 --
 		ctp=F(lctp+(tstamp()-st_t))
 		pmem(4,save.ct+(tstamp()-st_t))
