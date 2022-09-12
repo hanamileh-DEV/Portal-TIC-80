@@ -69,7 +69,7 @@ end
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0}
+local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0}
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -2669,6 +2669,7 @@ function TIC()
 
 		mx,my=0,0
 		poke(0x7FC3F,1,1)
+		plr.d=false
 		open="game"
 		stt=0
 		lctp=ctp or 0
@@ -2739,7 +2740,7 @@ function TIC()
 		plr.cd3=max(plr.cd3-1,0)
 	 --W A S D
 		lx, ly, lz = plr.x, plr.y, plr.z
-		if plr.cd3==0 or R()>0.05 then
+		if (plr.cd3==0 or R()>0.05) and not plr.d then
 			if key(23) then plr.z = plr.z - math.cos(plr.ty) * speed plr.x = plr.x - math.sin(plr.ty) * speed end
 			if key(19) then plr.z = plr.z + math.cos(plr.ty) * speed plr.x = plr.x + math.sin(plr.ty) * speed end
 			if key(1) then plr.z = plr.z - math.cos(plr.ty - pi2) * speed plr.x = plr.x - math.sin(plr.ty - pi2) * speed end
@@ -2749,12 +2750,13 @@ function TIC()
 		if plr.cd3==0 and key(64) then speed = 8 else speed = 4 end
 		if plr.noclip then speed=12 end
 		if keyp(57) or keyp(22) then plr.noclip = not plr.noclip end
+		if keyp(2) then plr.godmode = not plr.godmode end
 	--jump
-		if plr.noclip then
+		if plr.noclip and not plr.d then
 			if key(48) then plr.y = plr.y + 8 end
 			if key(63) then plr.y = plr.y - 8 end
 			plr.vy=0
-		else
+		elseif not plr.d then
 			if plr.xy then plr.vy=-1
 				if keyp(48) then plr.vy = 8 end
 			end
@@ -2789,7 +2791,7 @@ function TIC()
 		plr.tx = max(min(plr.tx, pi2), -pi2)
 	 --update + collision
 		fps_.t2=time()
-		unitic.player_collision()
+		if not plr.d then unitic.player_collision() end
 		unitic.portal_collision()
 		unitic.cube_update()
 		unitic.button_update()
@@ -2810,8 +2812,13 @@ function TIC()
 		plr.hp2 = plr.hp
 		if plr.godmode then plr.hp=100 end
 	 --finish lift
-		if plr.x//96==maps[save.lvl2][save.lvl].lift[2][1] and plr.y//128==maps[save.lvl2][save.lvl].lift[2][2] and plr.z//96==maps[save.lvl2][save.lvl].lift[2][3] then stt=max(stt,121)end
-		if stt>150 then open="load lvl" end
+		if not plr.d and plr.x//96==maps[save.lvl2][save.lvl].lift[2][1] and plr.y//128==maps[save.lvl2][save.lvl].lift[2][2] and plr.z//96==maps[save.lvl2][save.lvl].lift[2][3] then stt=max(stt,121)end
+		if stt>150 then open="load lvl" if plr.d then save.lvl=save.lvl-1 end end
+	 --death
+	 	if plr.hp<=0 then
+			plr.d=true
+			stt=max(stt,121)
+		end
 	 --text
 		local text="Level "..save.lvl
 		local text_size=print(text,240,0)
@@ -2867,7 +2874,7 @@ function TIC()
 				print(debug_text[plr.dt][i], 1, 1+7*(i-1), 7)
 			end
 
-			print("HP: "..plr.hp,1,130,7)
+			if plr.godmode then print("Godmode" ,1,130,7) else print("HP: "..plr.hp,1,130,7) end
 
 			if plr.noclip then print("Noclip", 104, 85, 7) end
 		vbank(0)
