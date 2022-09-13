@@ -639,6 +639,42 @@ local model={
 			{29,27,26,uv={{122,138},{122,136},{120,136},-1},f=2},
 		}
 	},
+	{ --Floor button (16)
+		v={
+			 {-32.4,4  ,-32.4},
+			 {-36.9,0  ,-36.9},
+			 {-32.4,4  ,32.4},
+			 {-36.9,0  ,36.9},
+			 {32.4,4  ,-32.4},
+			 {36.9,0  ,-36.9},
+			 {32.4,4  ,32.4},
+			 {36.9,0  ,36.9},
+			 {-33.3,5  ,-5.4},
+			 {-36.9,2  ,-5.4},
+			 {-33.3,5  ,5.4},
+			 {-36.9,2  ,5.4},
+			 {33.3,5  ,-5.4},
+			 {36.9,2  ,-5.4},
+			 {33.3,5  ,5.4},
+			 {36.9,2  ,5.4},
+		},
+		f={ 
+			 {2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},
+			 {4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},
+			 {8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},
+			 {6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},
+			 {7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},
+			 {2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},
+			 {4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},
+			 {8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},
+			 {6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},
+			 {7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},
+			 {10,11,9 ,uv={{16,248},{22,247},{16,247},-1},f=1},
+			 {16,13,15,uv={{16,248},{22,247},{16,247},-1},f=1},
+			 {10,12,11,uv={{16,248},{22,248},{22,247},-1},f=1},
+			 {16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1},
+		}
+	}
 }
 
 local s = { --sounds
@@ -656,6 +692,7 @@ local draw={
 		lb={}, --light bridges
 		b={}, --buttons
 		t={}, --turrets
+		fb={}, --floor button
 	},
 	world={v={},f={},sp={}}, --main world
 	world_bp={f={}}, --the world for the blue portal
@@ -685,8 +722,9 @@ maps[0][2]={ --main gameroom
 	},
 	o={ --table for objects
 	 --{X, Y, Z, type, [additional parameters]}
-	 {800,0,900,13},
+	 {2.5*96,0,2.5*96,16},
 	 {800,600,900,2},
+
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={{0,0,1,1,2}}, --light bridge generators
@@ -990,6 +1028,7 @@ function unitic.update(draw_portal,p_id)
 		i2=i2+1 unitic.obj[i2]=draw.objects.b[i]
 	end
 	for i=1,#draw.objects.t do i2=i2+1 unitic.obj[i2]=draw.objects.t[i] end
+	for i=1,#draw.objects.fb do i2=i2+1 unitic.obj[i2]=draw.objects.fb[i] end
 	--objects (2)--
 	local i2=#unitic.poly.f
 
@@ -1407,7 +1446,7 @@ function unitic.cube_update() --all physics related to cubes
 			local y2=min((cy+25)//128,world_size[2]-1)
 			local z2=min((cz+25)//96,world_size[3]-1)
 
-			local function update_pos_vel(sx, sy, sz)
+			local function update_pos_vel(sx, sy, sz) -- Do we need it?
 					cx, cy, cz = cx + sx, cy + sy, cz + sz
 					if sx ~= 0 then draw.objects.c[i].vx = 0 end
 					if sy ~= 0 then draw.objects.c[i].vy = 0 end
@@ -1509,6 +1548,13 @@ function unitic.cube_update() --all physics related to cubes
 				local z0=draw.objects.b[i2].z
 				collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
 			end
+			
+			for i2=1,#draw.objects.fb do
+				local x0=draw.objects.fb[i2].x
+				local y0=draw.objects.fb[i2].y
+				local z0=draw.objects.fb[i2].z
+				collide(x0 - 37, y0, z0 - 37, x0 + 37, y0 + 7, z0 + 37)
+			end
 
 			--
 			draw.objects.c[i].x = cx
@@ -1517,7 +1563,7 @@ function unitic.cube_update() --all physics related to cubes
 
 			if bf then
 				--particles
-				for i2=1,20 do
+				for i2=1,80 do
 					addp(cx-24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
 					addp(cx+24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
 					addp(cx+R(-24,24),cy-24       ,cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
@@ -1908,11 +1954,13 @@ function unitic.render() --------
 	end
 
 	--cross
-	pix(120,68,4)
-	if true then pix(120,68,7) end
-	if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
-	if draw.p[1] then spr(496, 117, 65, 1) end
-	if draw.p[2] then spr(497, 117, 65, 1) end
+	if not plr.holding then
+		pix(120,68,4)
+		if true then pix(120,68,7) end
+		if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
+		if draw.p[1] then spr(496, 117, 65, 1) end
+		if draw.p[2] then spr(497, 117, 65, 1) end
+	end
 	fps_.t9=time()
 end
 
@@ -2069,6 +2117,13 @@ function addobj(x, y, z, type,t1) --objects
 		x=x,y=y,z=z,
 		cd=0,
 		draw=true,model=model[type]}
+	elseif type==16 then --floor button
+		draw.objects.fb[#draw.objects.t+1]=
+		{type=type,
+		x=x,y=y,z=z,
+		cd=0,
+		draw=true,model=model[type]}
+
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
 
@@ -2282,7 +2337,8 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 		cd={}, --cube dispensers
 		lb={}, --light bridges
 		b={}, --buttons
-		t={} --turrets
+		t={}, --turrets
+		fb={} --floor button
 	}
 
 	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
@@ -2353,9 +2409,9 @@ end
 
 function updpal(r,g,b)
 	for i=0,47,3 do
-		poke(0x03FC0+i,peek(0x03FC0+i)*r) --RED
-		poke(0x03FC1+i,peek(0x03FC1+i)*b) --BLUE
-		poke(0x03FC2+i,peek(0x03FC2+i)*g) --GREEN
+		poke(0x03FC0+i,peek(0x03FC0+i)*r) --RLUE
+		poke(0x03FC1+i,peek(0x03FC1+i)*b) --BREEN
+		poke(0x03FC2+i,peek(0x03FC2+i)*g) --GED
 	end
 end
 
@@ -2852,7 +2908,7 @@ function TIC()
 		fps_.t2=time()
 		if not plr.d then unitic.player_collision() end
 		unitic.portal_collision()
-		unitic.cube_update()
+		pcall(unitic.cube_update) --Damn bugs due to leaving the room
 		unitic.button_update()
 		unitic.turret_update()
 		fps_.t3=time()
@@ -3575,9 +3631,6 @@ end
 -- 121:7777777676666665766766657666656576766665766656657666666565555555
 -- 122:122212221222122212221222122212221232123212221222122ba222111aa111
 -- 123:1777777616666665166766651666656516766665166656651666666515555555
--- 124:7777777676666555766557777657777576577558757758887577588865758888
--- 125:5555555576eeee67755555575888988588889888888898888888988888889888
--- 126:7777777655566665777556655777756585577565888577558885775588885755
 -- 127:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 128:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 129:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
@@ -3591,9 +3644,6 @@ end
 -- 137:7777777676666665766766657666656576766665766656657666666565555555
 -- 138:1222222212223222123222321222222212211222712112217611111565555555
 -- 139:1777777616666665166766651666656516766665766656657666666565555555
--- 140:5775888857588888575888885759999957588888575888885758888857758888
--- 141:8899998889888898988888899888888998888889988888898988889888999988
--- 142:8888577588888575888885758888857599999575888885758888857588885775
 -- 143:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 144:fffffffffffffffffffffffffffffffcffffffccfffffcccffffccccffffcccc
 -- 145:fffffffffffffffffccccccfcccccccccccccccccccccccccccccccccccccccc
@@ -3604,9 +3654,6 @@ end
 -- 150:aaaaaaaaa0000000a0000000a0000000a0000000a0000000a0000000a0000000
 -- 151:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 152:aaaaaa00000000d0000000d0000000d0000000d0000000d0000000d0000000d0
--- 156:7575888875775888757758887657755876577775766557777666655565555555
--- 157:88898888888988888889888888898888588988857555555776eeee6755555555
--- 158:8888575688857755888577558557756557777565777556655556666565555555
 -- 159:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 160:ffffccccfffcccccfffcccccfffcccccffccccccffccccccffccccccffcccccc
 -- 161:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -3656,8 +3703,8 @@ end
 -- 207:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 208:ffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbf
 -- 209:ffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbf
--- 210:aaaaaaaa00000000000000000000000000000000000000000000000000000000
--- 211:aaaaaaaa00000000000000000000000000000000000000000000000000000000
+-- 210:9999999998888889988888899888888998888889988889999888898899999988
+-- 211:9999999088888890888888908888889088888890998888908988889089999990
 -- 212:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 213:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 214:aaaaaaaa00000000000000000000000000000000000000000000000000000000
@@ -3672,8 +3719,8 @@ end
 -- 223:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 224:fcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffff
 -- 225:fcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffff
--- 226:000000000000000000000000000000000000000000000000dddddddd00000000
--- 227:00000000000000000000000000000000000000000000000000000000a0000000
+-- 226:988889889888899998888889988888899888888998888889999999997bbbb707
+-- 227:89888890998888908888889088888890888888908888889099999996eeee7006
 -- 233:44444444555544445666544a5666544a5666544a5666544a5555444444444444
 -- 234:aabbbbaaabbbbbbabbbaabbbbba44abbbba44abbbbbaabbbabbbbbbaaabbbbaa
 -- 235:4444444444445555a4456665a4456665a4456665a44566654444555544444444
