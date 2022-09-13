@@ -1383,11 +1383,16 @@ function unitic.cube_update() --all physics related to cubes
 					local mdist=min(20, dist)
 					cx,cy,cz=cx+dx*(mdist/dist),cy+dy*(mdist/dist),cz+dz*(mdist/dist)
 				end
+				draw.objects.c[i].vx = dx
+				draw.objects.c[i].vy = dy
+				draw.objects.c[i].vz = dz
 			else
 				cx=cx+draw.objects.c[i].vx
 				cy=cy+draw.objects.c[i].vy
 				cz=cz+draw.objects.c[i].vz
+				draw.objects.c[i].vx=draw.objects.c[i].vx*0.9
 				draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
+				draw.objects.c[i].vz=draw.objects.c[i].vz*0.9
 			end
 
 			local inbp = false --is the cube in the blue portal
@@ -2034,7 +2039,7 @@ function addobj(x, y, z, type,t1) --objects
 		draw.objects.c[#draw.objects.c+1]=
 		{type=type, --type
 		x=x,y=y,z=z, --object coordinates
-		vy=0, --velocity
+		vx=0, vy=0, vz=0, --velocity
 		draw=true, --whether to display the model
 		model=model[type]}
 	elseif type==3 then --cube dispenser
@@ -2787,11 +2792,7 @@ function TIC()
 	--------------------------
 	if open=="game" then
 		if keyp(21) then draw.objects.c = {{type=1, x=500,y=200,z=96, vx=0, vy=0, vz=0, draw=true, model=model[1]},{type=1, x=500,y=200,z=96, vx=0, vy=0, vz=0, draw=true, model=model[2]}} end
-		if draw.objects.c[1] then
-			if btn(0) then draw.objects.c[1].vx = 5 elseif btn(1) then draw.objects.c[1].vx = -5 else draw.objects.c[1].vx = 0 end
-			if btn(2) then draw.objects.c[1].vz = 5 elseif btn(3) then draw.objects.c[1].vz = -5 else draw.objects.c[1].vz = 0 end
-		end
-		
+
 		if stt~=120 then stt=stt+1 end
 		fps_.t1=time()
 		plr.cd2=max(plr.cd2-1,0)
