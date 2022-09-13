@@ -1019,6 +1019,9 @@ function unitic.update(draw_portal,p_id)
 	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	
+	local f3={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{23,248},{29,247},{23,247},-1},f=1},{16,13,15,uv={{23,248},{29,247},{23,247},-1},f=1},{10,12,11,uv={{23,248},{29,248},{29,247},-1},f=1},{16,14,13,uv={{23,248},{29,248},{29,247},-1},f=1}}
+	local f4={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{16,248},{22,247},{16,247},-1},f=1},{16,13,15,uv={{16,248},{22,247},{16,247},-1},f=1},{10,12,11,uv={{16,248},{22,248},{22,247},-1},f=1},{16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1}}
+
 	local i2=0
 	for i=1,#draw.objects.c  do i2=i2+1 unitic.obj[i2]=draw.objects.c [i] end
 	for i=1,#draw.objects.cd do i2=i2+1 unitic.obj[i2]=draw.objects.cd[i] end
@@ -1028,7 +1031,10 @@ function unitic.update(draw_portal,p_id)
 		i2=i2+1 unitic.obj[i2]=draw.objects.b[i]
 	end
 	for i=1,#draw.objects.t do i2=i2+1 unitic.obj[i2]=draw.objects.t[i] end
-	for i=1,#draw.objects.fb do i2=i2+1 unitic.obj[i2]=draw.objects.fb[i] end
+	for i=1,#draw.objects.fb do 
+		if draw.objects.fb[i].s and draw.objects.fb[i].tick then draw.objects.fb[i].model.f=f3 elseif draw.objects.fb[i].tick then draw.objects.fb[i].model.f=f4 end
+		i2=i2+1 unitic.obj[i2]=draw.objects.fb[i] 
+	end
 	--objects (2)--
 	local i2=#unitic.poly.f
 
@@ -1548,7 +1554,7 @@ function unitic.cube_update() --all physics related to cubes
 				local z0=draw.objects.b[i2].z
 				collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
 			end
-			
+
 			for i2=1,#draw.objects.fb do
 				local x0=draw.objects.fb[i2].x
 				local y0=draw.objects.fb[i2].y
@@ -2009,9 +2015,7 @@ function unitic.turret_update()
 end
 
 function unitic.button_update()
-	--local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
-	--local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
-	for i=1,#draw.objects.b do
+	for i=1,#draw.objects.b do --Pressing buttons
 		draw.objects.b[i].tick=false
 		if draw.objects.b[i].t~=-1 and draw.objects.b[i].s then
 			draw.objects.b[i].t1=draw.objects.b[i].t1+1
@@ -2030,13 +2034,40 @@ function unitic.button_update()
 		local ang=math.atan(draw.objects.b[i].x-plr.x,draw.objects.b[i].z-plr.z)-plr.ty
 
 		if keyp(5) and dist<128 and not rc and ang<-2.5 and ang>-3.8 then
-			sfx(16)
+			s.t1=15 sfx(16)
 			draw.objects.b[i].tick=true
 			if draw.objects.b[i].t==-1 then
-				draw.objects.b[i].s=not draw.objects.b[i].s if not draw.objects.b[i].s then sfx(17)end
+				draw.objects.b[i].s=not draw.objects.b[i].s if not draw.objects.b[i].s then s.t1=15 sfx(17)end
 			else
 				draw.objects.b[i].s=true draw.objects.b[i].t1=0
 			end
+		end
+	end
+
+
+	for i=1,#draw.objects.fb do --floor buttons
+		x0=draw.objects.fb[i].x
+		y0=draw.objects.fb[i].y
+		z0=draw.objects.fb[i].z
+
+		local last_s=draw.objects.fb[i].s
+
+		draw.objects.fb[i].tick=false
+		--Checking the collision of the upper scriptbox with cubes (perhaps not the best method, but still fast)
+		local activate=false
+		for i=1,#draw.objects.c do
+			local x1=draw.objects.c[i].x
+			local y1=draw.objects.c[i].y
+			local z1=draw.objects.c[i].z
+			if coll(x1-24,y1-24,z1-24,z1+24,y1+24,z1+24, x0-37, y0+7, z0-37, x0+37, y0+8, z0+37) then activate=true end
+		end
+		--collision with the player
+			if coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x, plr.y + 16, plr.z + 16, x0-37, y0+7, z0-37, x0+37, y0+8, z0+37) then activate=true end
+		--
+		draw.objects.fb[i].s=activate
+		if activate~=last_s then
+			draw.objects.fb[i].tick=true
+			if activate then s.t1=15 sfx(16) else s.t1=15 sfx(17) end
 		end
 	end
 end
@@ -2121,8 +2152,9 @@ function addobj(x, y, z, type,t1) --objects
 		draw.objects.fb[#draw.objects.t+1]=
 		{type=type,
 		x=x,y=y,z=z,
-		cd=0,
-		draw=true,model=model[type]}
+		tick=false,
+		s=false,
+		draw=true,model={v=model[type].v,f=model[type].f}}
 
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
@@ -2926,6 +2958,17 @@ function TIC()
 		if plr.y<-400 then plr.hp=max(plr.hp-2,0) end
 		plr.hp2 = plr.hp
 		if plr.godmode then plr.hp=100 end
+	 --Level scripts
+		if save.lvl==2 then
+			if draw.objects.fb[1].tick then
+				if draw.objects.fb[1].s then
+					draw.lg[1]=nil
+				else
+					draw.lg[1]={0,0,1,1,2}
+				end
+				update_world()
+			end
+		end
 	 --finish lift
 		if not plr.d and plr.x//96==maps[save.lvl2][save.lvl].lift[2][1] and plr.y//128==maps[save.lvl2][save.lvl].lift[2][2] and plr.z//96==maps[save.lvl2][save.lvl].lift[2][3] then stt=max(stt,121)end
 		if stt>150 then open="load lvl" if plr.d then save.lvl=save.lvl-1 end end
@@ -3703,8 +3746,8 @@ end
 -- 207:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 208:ffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbf
 -- 209:ffffffffaaaaaaaafcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbf
--- 210:9999999998888889988888899888888998888889988889999888898899999988
--- 211:9999999088888890888888908888889088888890998888908988889089999990
+-- 210:2222222229999999298888892988888929888889298889992988898829999988
+-- 211:2222222099999920888889208888892088888920998889208988892089999920
 -- 212:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 213:aaaaaaaa00000000000000000000000000000000000000000000000000000000
 -- 214:aaaaaaaa00000000000000000000000000000000000000000000000000000000
@@ -3719,8 +3762,8 @@ end
 -- 223:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
 -- 224:fcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffff
 -- 225:fcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffff
--- 226:988889889888899998888889988888899888888998888889999999997bbbb707
--- 227:89888890998888908888889088888890888888908888889099999996eeee7006
+-- 226:298889882988899929888889298888892988888929999999222222227bbbb707
+-- 227:89888920998889208888892088888920888889209999992022222226eeee7006
 -- 233:44444444555544445666544a5666544a5666544a5666544a5555444444444444
 -- 234:aabbbbaaabbbbbbabbbaabbbbba44abbbba44abbbbbaabbbabbbbbbaaabbbbaa
 -- 235:4444444444445555a4456665a4456665a4456665a44566654444555544444444
@@ -3826,7 +3869,7 @@ end
 
 -- <SFX>
 -- 000:07000700171017202720273037403740475047605760577067806780779077a087a087b097c097c0a7d0b7e0b7e0c7f0d7f0d7f0e7f0f7f0f7f0f7f0590000000000
--- 001:af00bff0cf00df00ef00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00100000000000
+-- 001:6f007ff08f009f00af00cf00df00ef00ef00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00100000000000
 -- 002:000010102020303030404050406050706080609060a070b070c080d080e090f090f0a0f0a0f0b0f0c0f0c0f0d0f0e0f0f0f0f0f0f0f0f0f0f0f0f000280000000000
 -- 003:63b0734083d093b0a350b370c3a0d350e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f30030b000000000
 -- 004:048024e044f054d0649074809450a430b430c410c400c400c400c400d400e400e400f400f400f400f400f400f400f400f400f400f400f400f400f400200000000000
