@@ -1333,6 +1333,17 @@ function unitic.player_collision()
 			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true end
 			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
 		end
+		if draw.objects.c[i].inp then
+			local x0=draw.objects.c[i].x1
+			local y0=draw.objects.c[i].y1
+			local z0=draw.objects.c[i].z1
+			if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then --protection so that the player cannot get stuck in the cube
+				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
+				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true end
+				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
+			end
+
+		end
 	end
 
 	for i=1,#draw.objects.cd do
@@ -1565,6 +1576,12 @@ function unitic.cube_update() --all physics related to cubes
 					local y0=draw.objects.c[i2].y
 					local z0=draw.objects.c[i2].z
 					collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
+					if draw.objects.c[i2].inp then
+						local x0=draw.objects.c[i].x1
+						local y0=draw.objects.c[i].y1
+						local z0=draw.objects.c[i].z1
+						collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
+					end
 				end
 			end
 
