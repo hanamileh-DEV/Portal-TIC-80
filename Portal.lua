@@ -69,7 +69,7 @@ end
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0}
+local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false}
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -876,6 +876,88 @@ local function coll_shift(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, axis)
 	end
 end
 
+local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk along a segment, checking whether it collides with the walls
+	-- convert to tile space
+	x1, y1, z1, x2, y2, z2 = x1 / 96, y1 / 128, z1 / 96, x2 / 96, y2 / 128, z2 / 96
+	-- DDA, loosely based on https://lodev.org/cgtutor/raycasting.html
+	-- segment direction
+	local dirx, diry, dirz = x2-x1, y2-y1, z2-z1
+	-- length of one step along axes (only relative)
+	-- n/0 = inf, which is fine for this algorithm
+	local lx, ly, lz = abs(1 / dirx), abs(1 / diry), abs(1 / dirz)
+	-- full tile step, matching direction with the segment
+	local sx, sy, sz
+	-- offset, for handling negative facing
+	local ox, oy, oz
+	-- current tile (offset if facing positive)
+	local x, y, z = F(x1), F(y1), F(z1)
+	-- distance to next tile in each axis
+	local tx, ty, tz = (x1 - x) * lx, (y1 - y) * ly, (z1 - z) * lz
+	if dirx < 0 then
+		sx, ox = -1, 1
+	else
+		sx, ox = 1, 0
+		tx = lx - tx
+	end
+	if diry < 0 then
+		sy, oy = -1, 1
+	else
+		sy, oy = 1, 0
+		ty = ly - ty
+	end
+	if dirz < 0 then
+		sz, oz = -1, 1
+	else
+		sz, oz = 1, 0
+		tz = lz - tz
+	end
+	while true do
+		if tx < ty and tx < tz then
+			x, tx = x + sx, tx + lx
+			if (x + ox) * sx > x2 * sx or (x + ox) < 0 or (x + ox) > world_size[1] - 1 then
+				return
+			elseif hitwalls[draw.map[1][x + ox][y][z][2]] then
+				if precise then
+					local ratio = (x + ox - x1) / dirx
+					return (x + ox) * 96, (y1 + diry * ratio) * 128, (z1 + dirz * ratio) * 96, 1
+				else
+					return x + ox, y, z, 1
+				end
+			elseif x < 0 then
+				return
+			end
+		elseif ty < tz then
+			y, ty = y + sy, ty + ly
+			if (y + oy) * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
+				return
+			elseif hitfloors[draw.map[2][x][y + oy][z][2]] then
+				if precise then
+					local ratio = (y + oy - y1) / diry
+					return (x1 + dirx * ratio) * 96, (y + oy) * 128, (z1 + dirz * ratio) * 96, 1
+				else
+					return x, y + oy, z, 2
+				end
+			elseif y < 0 then
+				return
+			end
+		else
+			z, tz = z + sz, tz + lz
+			if (z + oz) * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
+				return
+			elseif hitwalls[draw.map[3][x][y][z + oz][2]] then
+				if precise then
+					local ratio = (z + oz - z1) / dirz
+					return (x1 + dirx * ratio) * 96, (y1 + diry * ratio) * 128, (z + oz) * 96, 1
+				else
+					return x, y, z + oz, 3
+				end
+			elseif z < 0 then
+				return
+			end
+		end
+	end
+end
+
 function unitic.update(draw_portal,p_id)
 	--writing all polygons in unitic.poly
 	unitic.poly = { v = {}, f = {}, sp = {} }
@@ -1233,22 +1315,80 @@ function unitic.player_collision()
 	end
 end
 
+local function cube_interact(cube)
+	if plr.holding and not cube.held then return false end
+
+	local rc=raycast(
+		plr.x,plr.y,plr.z,
+		cube.x,cube.y,cube.z,
+		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
+		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+
+	local txsin = math.sin(plr.tx)
+	local txcos = math.cos(plr.tx)
+	local tysin = math.sin(-plr.ty)
+	local tycos = math.cos(-plr.ty)
+
+	local vx = tysin * txcos
+	local vy = -txsin
+	local vz = -tycos * txcos
+
+	local dx = cube.x-plr.x
+	local dy = cube.y-plr.y
+	local dz = cube.z-plr.z
+
+	local dist = (dx^2 + dy^2 + dz^2)^0.5
+	local dot = dx * vx + dy * vy + dz * vz
+
+	local cosang = dot / dist
+
+	if cube.held then
+		return keyp(5) or dist > 300 or rc
+	else
+		return keyp(5) and dist < 150 and not rc and cosang > 0.95
+	end
+end
+
 function unitic.cube_update() --all physics related to cubes
+	local holding = plr.holding
 	local i=0 if #draw.objects.c~=0 then
 		repeat
 			i=i+1
+
+			if cube_interact(draw.objects.c[i]) then
+				draw.objects.c[i].held = not draw.objects.c[i].held
+				holding = not plr.holding
+			end
+
 			local clx=draw.objects.c[i].x
 			local cly=draw.objects.c[i].y
 			local clz=draw.objects.c[i].z
-			--changing the position of the cube here
-			draw.objects.c[i].x=draw.objects.c[i].x+draw.objects.c[i].vx
-			draw.objects.c[i].y=draw.objects.c[i].y+draw.objects.c[i].vy
-			draw.objects.c[i].z=draw.objects.c[i].z+draw.objects.c[i].vz
-			draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
-			--
+
 			local cx=draw.objects.c[i].x
 			local cy=draw.objects.c[i].y
 			local cz=draw.objects.c[i].z
+
+			if draw.objects.c[i].held then
+				local hold_dist = 100
+				local txsin = math.sin(plr.tx)
+				local txcos = math.cos(plr.tx)
+				local tysin = math.sin(-plr.ty)
+				local tycos = math.cos(-plr.ty)
+				local tx = plr.x + hold_dist * tysin * txcos
+				local ty = plr.y + hold_dist * -txsin
+				local tz = plr.z + hold_dist * -tycos * txcos
+				local dx,dy,dz=tx-cx,ty-cy,tz-cz
+				local dist = math.sqrt(dx^2 + dy^2 + dz^2)
+				if dist ~= 0 then
+					local mdist=min(20, dist)
+					cx,cy,cz=cx+dx*(mdist/dist),cy+dy*(mdist/dist),cz+dz*(mdist/dist)
+				end
+			else
+				cx=cx+draw.objects.c[i].vx
+				cy=cy+draw.objects.c[i].vy
+				cz=cz+draw.objects.c[i].vz
+				draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
+			end
 
 			local inbp = false --is the cube in the blue portal
 			local inop = false --is the cube in the orange portal
@@ -1386,6 +1526,7 @@ function unitic.cube_update() --all physics related to cubes
 			end
 		until i>=#draw.objects.c
 	end
+	plr.holding = holding
 end
 
 local function portalcenter(i)
@@ -1768,88 +1909,6 @@ function unitic.render() --------
 	if draw.p[1] then spr(496, 117, 65, 1) end
 	if draw.p[2] then spr(497, 117, 65, 1) end
 	fps_.t9=time()
-end
-
-local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk along a segment, checking whether it collides with the walls
-	-- convert to tile space
-	x1, y1, z1, x2, y2, z2 = x1 / 96, y1 / 128, z1 / 96, x2 / 96, y2 / 128, z2 / 96
-	-- DDA, loosely based on https://lodev.org/cgtutor/raycasting.html
-	-- segment direction
-	local dirx, diry, dirz = x2-x1, y2-y1, z2-z1
-	-- length of one step along axes (only relative)
-	-- n/0 = inf, which is fine for this algorithm
-	local lx, ly, lz = abs(1 / dirx), abs(1 / diry), abs(1 / dirz)
-	-- full tile step, matching direction with the segment
-	local sx, sy, sz
-	-- offset, for handling negative facing
-	local ox, oy, oz
-	-- current tile (offset if facing positive)
-	local x, y, z = F(x1), F(y1), F(z1)
-	-- distance to next tile in each axis
-	local tx, ty, tz = (x1 - x) * lx, (y1 - y) * ly, (z1 - z) * lz
-	if dirx < 0 then
-		sx, ox = -1, 1
-	else
-		sx, ox = 1, 0
-		tx = lx - tx
-	end
-	if diry < 0 then
-		sy, oy = -1, 1
-	else
-		sy, oy = 1, 0
-		ty = ly - ty
-	end
-	if dirz < 0 then
-		sz, oz = -1, 1
-	else
-		sz, oz = 1, 0
-		tz = lz - tz
-	end
-	while true do
-		if tx < ty and tx < tz then
-			x, tx = x + sx, tx + lx
-			if (x + ox) * sx > x2 * sx or (x + ox) < 0 or (x + ox) > world_size[1] - 1 then
-				return
-			elseif hitwalls[draw.map[1][x + ox][y][z][2]] then
-				if precise then
-					local ratio = (x + ox - x1) / dirx
-					return (x + ox) * 96, (y1 + diry * ratio) * 128, (z1 + dirz * ratio) * 96, 1
-				else
-					return x + ox, y, z, 1
-				end
-			elseif x < 0 then
-				return
-			end
-		elseif ty < tz then
-			y, ty = y + sy, ty + ly
-			if (y + oy) * sy > y2 * sy or (y + oy) < 0 or (y + oy) > world_size[2] - 1 then
-				return
-			elseif hitfloors[draw.map[2][x][y + oy][z][2]] then
-				if precise then
-					local ratio = (y + oy - y1) / diry
-					return (x1 + dirx * ratio) * 96, (y + oy) * 128, (z1 + dirz * ratio) * 96, 1
-				else
-					return x, y + oy, z, 2
-				end
-			elseif y < 0 then
-				return
-			end
-		else
-			z, tz = z + sz, tz + lz
-			if (z + oz) * sz > z2 * sz or (z + oz) < 0 or (z + oz) > world_size[3] - 1 then
-				return
-			elseif hitwalls[draw.map[3][x][y][z + oz][2]] then
-				if precise then
-					local ratio = (z + oz - z1) / dirz
-					return (x1 + dirx * ratio) * 96, (y1 + diry * ratio) * 128, (z + oz) * 96, 1
-				else
-					return x, y, z + oz, 3
-				end
-			elseif z < 0 then
-				return
-			end
-		end
-	end
 end
 
 function unitic.turret_update()
@@ -2727,8 +2786,7 @@ function TIC()
 	-- game ------------------
 	--------------------------
 	if open=="game" then
-		--debug
-		if keyp(21) then draw.objects.c = {{type=1, x=500,y=200,z=96, vx=0, vy=0, draw=true, model=model[1]}} end
+		if keyp(21) then draw.objects.c = {{type=1, x=500,y=200,z=96, vx=0, vy=0, vz=0, draw=true, model=model[1]},{type=1, x=500,y=200,z=96, vx=0, vy=0, vz=0, draw=true, model=model[2]}} end
 		if draw.objects.c[1] then
 			if btn(0) then draw.objects.c[1].vx = 5 elseif btn(1) then draw.objects.c[1].vx = -5 else draw.objects.c[1].vx = 0 end
 			if btn(2) then draw.objects.c[1].vz = 5 elseif btn(3) then draw.objects.c[1].vz = -5 else draw.objects.c[1].vz = 0 end
