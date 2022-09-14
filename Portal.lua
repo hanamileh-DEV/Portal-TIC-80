@@ -4,7 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
-local version="DEV 0.2.1"
+local version="DEV 0.2.2"
 
 --[[
 license:
@@ -1478,8 +1478,6 @@ function unitic.cube_update() --all physics related to cubes
 				draw.objects.c[i].vz=draw.objects.c[i].vz*0.9
 			end
 
-			local inbp = false --is the cube in the blue portal
-			local inop = false --is the cube in the orange portal
 			local bf   = false --is the cube in the blue field
 
 			local x1=max((cx-25)//96,0) -- +-24
@@ -1490,12 +1488,12 @@ function unitic.cube_update() --all physics related to cubes
 			local y2=min((cy+25)//128,world_size[2]-1)
 			local z2=min((cz+25)//96,world_size[3]-1)
 
-			local function update_pos_vel(sx, sy, sz) -- Do we need it?
-					cx, cy, cz = cx + sx, cy + sy, cz + sz
-					if sx ~= 0 then draw.objects.c[i].vx = 0 end
-					if sy ~= 0 then draw.objects.c[i].vy = 0 end
-					if sz ~= 0 then draw.objects.c[i].vz = 0 end
-			end
+			-- local function update_pos_vel(sx, sy, sz) -- Do we need it?
+			-- 		cx, cy, cz = cx + sx, cy + sy, cz + sz
+			-- 		if sx ~= 0 then draw.objects.c[i].vx = 0 end
+			-- 		if sy ~= 0 then draw.objects.c[i].vy = 0 end
+			-- 		if sz ~= 0 then draw.objects.c[i].vz = 0 end
+			-- end
 
 			local function collide(x3, y3, z3, x4, y4, z4)
 				-- try moving the current amount in each axis, partially cancelling if needed
@@ -1526,9 +1524,6 @@ function unitic.cube_update() --all physics related to cubes
 					if not draw.p[1] or not draw.p[2] then
 						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 					else
-						if draw.map[1][x0][y0][z0][2]==5 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then inbp=true end
-						if draw.map[1][x0][y0][z0][2]==6 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then inop=true end
-
 						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
 						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 						collide(x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
@@ -1549,9 +1544,6 @@ function unitic.cube_update() --all physics related to cubes
 					if not draw.p[1] or not draw.p[2] then
 						collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 					else
-						if draw.map[3][x0][y0][z0][2]==5 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96) then inbp=true end
-						if draw.map[3][x0][y0][z0][2]==6 and coll( clx - 24, cly - 24, clz - 24,  clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96) then inop=true end
-
 						collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
 						collide(x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 						collide(x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
@@ -1576,7 +1568,7 @@ function unitic.cube_update() --all physics related to cubes
 					local y0=draw.objects.c[i2].y
 					local z0=draw.objects.c[i2].z
 					collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
-					if draw.objects.c[i2].inp then
+					if draw.objects.c[i2].inp and draw.p[1] and draw.p[2] then
 						local x0=draw.objects.c[i].x1
 						local y0=draw.objects.c[i].y1
 						local z0=draw.objects.c[i].z1
@@ -1610,6 +1602,7 @@ function unitic.cube_update() --all physics related to cubes
 			draw.objects.c[i].y = cy
 			draw.objects.c[i].z = cz
 			
+			local inbp,inop = false, false
 			--collision with portals
 			if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then inbp=true end
 			if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then inbp=true end
@@ -1623,8 +1616,8 @@ function unitic.cube_update() --all physics related to cubes
 			
 			draw.objects.c[i].inp=inbp or inop
 
-			if inbp or inop then
-				--teleporting
+			if draw.objects.c[i].inp then
+				--We make a portal copy
 				local x1, y1, z1 = portalcenter(1)
 				local x2, y2, z2 = portalcenter(2)
 
@@ -1667,7 +1660,7 @@ function unitic.cube_update() --all physics related to cubes
 			end
 			--
 
-			if bf or cy<-200 then
+			if bf or cy<-20 then
 				sfx(2)
 				--particles
 				for i2=1,80 do
@@ -3967,10 +3960,11 @@ end
 -- 002:000010102020303030404050406050706080609060a070b070c080d080e090f090f0a0f0a0f0b0f0c0f0c0f0d0f0e0f0f0f0f0f0f0f0f0f0f0f0f000280000000000
 -- 003:63b0734083d093b0a350b370c3a0d350e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f30030b000000000
 -- 004:048024e044f054d0649074809450a430b430c410c400c400c400c400d400e400e400f400f400f400f400f400f400f400f400f400f400f400f400f400200000000000
+-- 005:340044006410742084309450a460a470a480b490c4a0c490d480f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400f400214000000000
 -- 016:030003000300b300c300d300039003900390b390c390d390f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300305000000000
 -- 017:030003000300b300c300d300039003900390b390c390d39003e003e003e0b3e0c3e0d3e0f3e0f300f300f300f300f300f300f300f300f300f300f300482000000000
 -- 018:010001100110f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100402000000000
--- 019:0200b200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200f200502000000000
+-- 019:930053008300a300d300d300e300e300e300e300e300e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300600000000000
 -- 059:020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200300000000000
 -- 060:0100110011002100210031003100410041005100510061006100710071008100810091009100a100a100b100b100c100c100d100d100e100e100f100302000000000
 -- 061:010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100302000000000
