@@ -1124,6 +1124,8 @@ function unitic.update(draw_portal,p_id)
 		local y0 = b1 * txcos - c2 * txsin
 		local z0 = b1 * txsin + c2 * txcos
 
+		local dist=(x0^2+y0^2+z0^2)^0.5
+
 		local draw_p=false
 		if z0<0 then draw_p=true end
 
@@ -1134,7 +1136,7 @@ function unitic.update(draw_portal,p_id)
 		local x1 = x0 * z1 + 120
 		local y1 = y0 * z1 + 68
 
-		unitic.p[ind]={x1, y1, -z0, draw_p, draw.pr[ind].c}
+		unitic.p[ind]={x1, y1, -z0, draw_p, draw.pr[ind].c, dist}
 	end
 end
 
@@ -1211,21 +1213,26 @@ function unitic.draw()
 				local color = unitic.p[i][5]
 				local color1= color % 4
 				local color2= color //4
+				local size = 1/unitic.p[i][6]*192
 
 				local z0 = unitic.p[i][3]
 
 				ttri(
-					p2d.x  ,p2d.y,
-					p2d.x  ,p2d.y+1,
-					p2d.x+2,p2d.y,
-					--uv
-					24 + color1*2 ,248 + color2*2 ,
-					24 + color1*2 ,249 + color2*2 ,
-					25 + color1*2 ,248 + color2*2 ,
-
-					0,-1,
-					z0,z0,z0
-				)
+					p2d.x-size,p2d.y-size,
+					p2d.x-size,p2d.y+size,
+					p2d.x+size,p2d.y+size,
+					24 + color1*2,248 + color2*2,
+					24 + color1*2,249 + color2*2,
+					25 + color1*2,248 + color2*2,
+					0,-1,z0,z0,z0)
+				ttri(
+					p2d.x+size,p2d.y-size,
+					p2d.x-size,p2d.y-size,
+					p2d.x+size,p2d.y+size,
+					24 + color1*2,248 + color2*2,
+					24 + color1*2,249 + color2*2,
+					25 + color1*2,248 + color2*2,
+					0,-1,z0,z0,z0)
 			end
 		end
 	end
@@ -1787,10 +1794,10 @@ function unitic.render() --------
 		local vx=draw.pr_g[i][4]
 		local vz=draw.pr_g[i][5]
 		for i=0,15 do
-			if vx~=0 then
-				addp(x,y,z+i*96/16,-vx*R(1,4),R(-2,2),R(-2,2),R(2,10),R(10,11))
-			else
-				addp(x+i*96/16,y,z,R(-2,2),R(-2,2),-vz*R(1,4),R(2,10),R(10,11))
+			if     vx==-1 then addp(x+96,y,z+i*6, R(1,4),R(-2,2), R(-2,2),R(2,10),R(10,11))
+			elseif vx==1  then addp(x   ,y,z+i*6,-R(1,4),R(-2,2), R(-2,2),R(2,10),R(10,11))
+			elseif vz==-1 then addp(x+i*6,y,z+96, R(-2,2),R(-2,2), R(1,4),R(2,10),R(10,11))
+			elseif vz==1  then addp(x+i*6,y,z   , R(-2,2),R(-2,2),-R(1,4),R(2,10),R(10,11))
 			end
 		end
 	end
