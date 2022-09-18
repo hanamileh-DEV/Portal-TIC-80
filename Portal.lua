@@ -814,7 +814,21 @@ maps[0][2].w[#maps[0][2].w+1]={10,0,6,3,3,7}
 maps[0][2].w[#maps[0][2].w+1]={6,0,5,2,3,8}
 maps[0][2].w[#maps[0][2].w+1]={6,0,6,2,3,8}
 maps[0][2].w[#maps[0][2].w+1]={3,0,5,2,3,8}
-
+--Text for levels
+local l_t={
+{"Welcome to the Aperture Science",
+"Text for tests",
+"Hello, world",
+"ABC\nDEFG 123"},
+{"The second group of text"}
+}
+l_t2={
+	draw=true, --Should the text be thrown out
+	pause=false, --as not surprising, this is a pause
+	id=1, --The number of the desired array of the text
+	i=1,
+	t=0
+}
 --song text
 local s_t={
 	"This is one of the",
@@ -1023,19 +1037,39 @@ function unitic.update(draw_portal,p_id)
 	local f4={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{16,248},{22,247},{16,247},-1},f=1},{16,13,15,uv={{16,248},{22,247},{16,247},-1},f=1},{10,12,11,uv={{16,248},{22,248},{22,247},-1},f=1},{16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1}}
 
 	local i2=0
-	for i=1,#draw.objects.c  do
-		i2=i2+1 unitic.obj[i2]=draw.objects.c [i]
-		if draw.objects.c[i].inp then
+	for i=1,#draw.objects.c  do i2=i2+1
+		unitic.obj[i2]=draw.objects.c[i]
+		if draw.objects.c[i].inp and draw.p[1] and draw.p[2] then
 			i2=i2+1 unitic.obj[i2]={
 				type = draw.objects.c[i].type,
 				draw = draw.objects.c[i].draw,
-				model= draw.objects.c[i].model,
+				model= {v={},f={}},
 
 				x = draw.objects.c[i].x1,
 				y = draw.objects.c[i].y1,
 				z = draw.objects.c[i].z1,
-			
 			}
+			for i3=1,#model[unitic.obj[i2].type].v do
+				unitic.obj[i2].model.v[i3][1]=model[1].v[i3][1]
+				unitic.obj[i2].model.v[i3][2]=model[1].v[i3][2]
+				unitic.obj[i2].model.v[i3][3]=model[1].v[i3][3]
+			end
+			for i3=1,#model[unitic.obj[i2].type].f do
+				draw.objects.c[#draw.objects.c].model.f[i]={
+					model[unitic.obj[i2].type].f[i][1],
+					model[unitic.obj[i2].type].f[i][2],
+					model[unitic.obj[i2].type].f[i][3],
+					uv={
+						{model[unitic.obj[i2].type].f[i].uv[1][1],model[unitic.obj[i2].type].f[i].uv[1][2]},
+						{model[unitic.obj[i2].type].f[i].uv[2][1],model[unitic.obj[i2].type].f[i].uv[2][2]},
+						{model[unitic.obj[i2].type].f[i].uv[3][1],model[unitic.obj[i2].type].f[i].uv[3][2]},-1
+					},
+					f=model[unitic.obj[i2].type].f[i].f}
+			end
+
+
+		else
+
 		end
 	end
 
@@ -2214,7 +2248,22 @@ function addobj(x, y, z, type,t1) --objects
 		inp=false, --whether the cube is located in the portal
 		vx=0, vy=0, vz=0, --velocity
 		draw=true, --whether to display the model
-		model=model[type]}
+		model={v={},f={}}}
+		for i=1,#model[type].v do
+			draw.objects.c[#draw.objects.c].model.v[i]={model[type].v[i][1],model[type].v[i][2],model[type].v[i][3]}
+		end
+		for i=1,#model[type].f do
+			draw.objects.c[#draw.objects.c].model.f[i]={
+				model[type].f[i][1],
+				model[type].f[i][2],
+				model[type].f[i][3],
+				uv={
+					{model[type].f[i].uv[1][1],model[type].f[i].uv[1][2]},
+					{model[type].f[i].uv[2][1],model[type].f[i].uv[2][2]},
+					{model[type].f[i].uv[3][1],model[type].f[i].uv[3][2]},-1
+				},
+				f=model[type].f[i].f}
+		end
 	elseif type==3 then --cube dispenser
 		draw.objects.cd[#draw.objects.cd+1]=
 		{type=type,
@@ -3081,7 +3130,6 @@ function TIC()
 			print(text:sub(1,(59-stt)//4),120-text_size/2,91,1)
 			print(text:sub(1,(59-stt)//4),120-text_size/2,90,7)
 		end
-		
 		local text=""
 		if ctp//60<10 then text=text.."0"..ctp//60 ..":" else text=text..ctp//60 ..":" end
 		if ctp% 60<10 then text=text.."0"..ctp%60 else text=text..ctp%60 end
@@ -3090,6 +3138,19 @@ function TIC()
 
 		print(text,120-text_size/2,131,1,true)
 		print(text,120-text_size/2,130,7,true)
+	 --
+		if l_t2.draw then
+			local text=l_t[l_t2.id][l_t2.i]
+			local text_size=print(text,240,0,true)
+			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if l_t2.t%1==0 then sfx(19)end end
+			print(text:sub(1,F(l_t2.t)),120-text_size/2,115,1)
+			print(text:sub(1,F(l_t2.t)),120-text_size/2,114,7)
+			if l_t2.t>#text+10 then
+				l_t2.t=0 
+				l_t2.i=l_t2.i+1
+				if l_t2.i>#l_t[l_t2.id] then l_t2.draw=false end
+			end
+		end
 	 --
 		ctp=F(lctp+(tstamp()-st_t))
 		pmem(4,save.ct+(tstamp()-st_t))
