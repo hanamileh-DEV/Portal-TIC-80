@@ -1645,63 +1645,64 @@ function unitic.cube_update() --all physics related to cubes
 			
 			local inbp,inop = false, false
 			--collision with portals
-			if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then inbp=true end
-			if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then inbp=true end
-			if draw.p[1][4]==1 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then inbp=true end
-			if draw.p[1][4]==3 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then inbp=true end
-						
-			if draw.p[2][4]==1 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then inop=true end
-			if draw.p[2][4]==3 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then inop=true end
-			if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then inop=true end
-			if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then inop=true end
-			
-			draw.objects.c[i].inp=inbp or inop
-
-			if draw.objects.c[i].inp then
-				--We make a portal copy
-				local x1, y1, z1 = portalcenter(1)
-				local x2, y2, z2 = portalcenter(2)
-
-				-- calculate portal offsets
-				local relx1 = cx - 96 * x1
-				local rely1 = cy - 128 * y1
-				local relz1 = cz - 96 * z1
-				local relx2 = cx - 96 * x2
-				local rely2 = cy - 128 * y2
-				local relz2 = cz - 96 * z2
+			if draw.p[1] and draw.p[2] then
+				if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then inbp=true end
+				if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then inbp=true end
+				if draw.p[1][4]==1 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then inbp=true end
+				if draw.p[1][4]==3 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then inbp=true end
+							
+				if draw.p[2][4]==1 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then inop=true end
+				if draw.p[2][4]==3 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then inop=true end
+				if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then inop=true end
+				if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then inop=true end
 				
-				-- calculate portal rotation
-				local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-				local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-				local rotd1 = (2 + rot2 - rot1) % 4
-				local rotd2 = (2 + rot1 - rot2) % 4
+				draw.objects.c[i].inp=inbp or inop
 
-				if     rotd1 == 0 then
-				elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
-				elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
-				elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
-				end
+				if draw.objects.c[i].inp then
+					--We make a portal copy
+					local x1, y1, z1 = portalcenter(1)
+					local x2, y2, z2 = portalcenter(2)
 
-				if     rotd2 == 0 then
-				elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
-				elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
-				elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
-				end
+					-- calculate portal offsets
+					local relx1 = cx - 96 * x1
+					local rely1 = cy - 128 * y1
+					local relz1 = cz - 96 * z1
+					local relx2 = cx - 96 * x2
+					local rely2 = cy - 128 * y2
+					local relz2 = cz - 96 * z2
+					
+					-- calculate portal rotation
+					local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+					local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+					local rotd1 = (2 + rot2 - rot1) % 4
+					local rotd2 = (2 + rot1 - rot2) % 4
 
-				if inbp and inop==false then
-					draw.objects.c[i].x1 = 96*x2 + relx1
-					draw.objects.c[i].y1 = 128*y2 + rely1
-					draw.objects.c[i].z1 = 96*z2 + relz1
+					if     rotd1 == 0 then
+					elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
+					elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
+					elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
+					end
 
-				elseif inop and inbp==false then
-					draw.objects.c[i].x1 = 96*x1 + relx2
-					draw.objects.c[i].y1 = 128*y1 + rely2
-					draw.objects.c[i].z1 = 96*z1 + relz2
+					if     rotd2 == 0 then
+					elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
+					elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
+					elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
+					end
+
+					if inbp and inop==false then
+						draw.objects.c[i].x1 = 96*x2 + relx1
+						draw.objects.c[i].y1 = 128*y2 + rely1
+						draw.objects.c[i].z1 = 96*z2 + relz1
+
+					elseif inop and inbp==false then
+						draw.objects.c[i].x1 = 96*x1 + relx2
+						draw.objects.c[i].y1 = 128*y1 + rely2
+						draw.objects.c[i].z1 = 96*z1 + relz2
+					end
 				end
 			end
 			--
-
-			if bf or cy<-20 then
+			if bf or draw.objects.c[i].y<-20 then
 				sfx(2)
 				--particles
 				for i2=1,80 do
@@ -2965,6 +2966,7 @@ function TIC()
 		mx,my=0,0
 		poke(0x7FC3F,1,1)
 		plr.d=false
+		plr.holding=false
 		open="game"
 		stt=0
 		lctp=ctp or 0
@@ -3083,7 +3085,7 @@ function TIC()
 		fps_.t2=time()
 		if not plr.d then unitic.player_collision() end
 		unitic.portal_collision()
-		pcall(unitic.cube_update) --Damn bugs due to leaving the room
+		unitic.cube_update() --Damn bugs due to leaving the room
 		unitic.button_update()
 		unitic.turret_update()
 		fps_.t3=time()
