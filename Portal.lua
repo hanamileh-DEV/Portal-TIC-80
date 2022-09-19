@@ -2193,7 +2193,7 @@ function unitic.button_update()
 			local x1=draw.objects.c[i].x
 			local y1=draw.objects.c[i].y
 			local z1=draw.objects.c[i].z
-			if coll(x1-24,y1-24,z1-24,z1+24,y1+24,z1+24, x0-37, y0+7, z0-37, x0+37, y0+8, z0+37) then activate=true end
+			if coll(x1-24,y1-24,z1-24,x1+24,y1+24,z1+24, x0-37, y0+7, z0-37, x0+37, y0+8, z0+37) then activate=true end
 		end
 		--collision with the player
 			if coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x, plr.y + 16, plr.z + 16, x0-37, y0+7, z0-37, x0+37, y0+8, z0+37) then activate=true end
