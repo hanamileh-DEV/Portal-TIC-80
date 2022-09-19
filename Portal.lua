@@ -963,6 +963,13 @@ local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk 
 		sz, oz = 1, 0
 		tz = lz - tz
 	end
+
+	if x + ox < 0 or x + ox > world_size[1] - 1 or
+		y + oy < 0 or y + oy > world_size[2] - 1 or
+		z + oz < 0 or z + oz > world_size[3] - 1 then
+		return
+	end
+
 	while true do
 		if tx < ty and tx < tz then
 			x, tx = x + sx, tx + lx
@@ -3092,7 +3099,7 @@ function TIC()
 	 --render
 		unitic.render()
 	 --portal gun
-		pcall(portal_gun)
+		portal_gun()
 	 --sounds
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) and s.t1==0 then sfx(1) if key(64) then s.t1=15 else s.t1=20 end end
