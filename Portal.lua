@@ -69,7 +69,7 @@ end
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false}
+local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false, pg_lvl = 3 --[[portal gun level]]}
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -707,6 +707,7 @@ local draw={
 
 local fps_={t1=0,t2=0,t3=0,t4=0,t5=0,t6=0,t7=0,t8=0,t9=0}
 
+local p_g={x=0,y=0,c=1,t1=0,t2=0}
 --maps
 local maps={[0]={},[1]={},[2]={}}
 
@@ -724,6 +725,7 @@ maps[0][2]={ --main gameroom
 	 --{X, Y, Z, type, [additional parameters]}
 	 {2.5*96,0,2.5*96,16},
 	 {800,24,900,2},
+	 {800,0,900,15},
 
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
@@ -818,8 +820,7 @@ maps[0][2].w[#maps[0][2].w+1]={3,0,5,2,3,8}
 local l_t={
 {"Welcome to the Aperture Science",
 "Text for tests",
-"Hello, world",
-"ABC\nDEFG 123"},
+"Hello, world"},
 {"The second group of text"}
 }
 l_t2={
@@ -899,14 +900,6 @@ end
 --collision
 
 local function coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) --collision of two cubes
-	-- x1,x2=min(x1,x2),max(x1,x2)
-	-- y1,y2=min(y1,y2),max(y1,y2)
-	-- z1,z2=min(z1,z2),max(z1,z2)
-
-	-- x3,x4=min(x3,x4),max(x3,x4)
-	-- y3,y4=min(y3,y4),max(y3,y4)
-	-- z3,z4=min(z3,z4),max(z3,z4)
-
 	return (x1 < x4 and x2 > x3 and y1 < y4 and y2 > y3 and z1 < z4 and z2 > z3)
 end
 
@@ -1792,6 +1785,71 @@ function unitic.portal_collision()
 	end
 end
 
+function unitic.draw_portalgun()
+	rect(174+p_g.x,109+p_g.y,10,38,5)
+	circ(185+p_g.x,105+p_g.y,11,3)
+	circ(189+p_g.x,108+p_g.y,13,4)
+	circ(191+p_g.x,110+p_g.y,13,3)
+	tri(178+p_g.x,114+p_g.y,194+p_g.x,129+p_g.y,187+p_g.x,132+p_g.y,3)
+	tri(178+p_g.x,114+p_g.y,178+p_g.x,112+p_g.y,187+p_g.x,132+p_g.y,3)
+	tri(178+p_g.x,114+p_g.y,185+p_g.x,138+p_g.y,187+p_g.x,132+p_g.y,2)
+	tri(178+p_g.x,114+p_g.y,185+p_g.x,138+p_g.y,181+p_g.x,138+p_g.y,2)
+	circ(195+p_g.x,115+p_g.y,12,2)
+	circ(195+p_g.x,115+p_g.y,8,12)
+	tri(202+p_g.x,102+p_g.y,209+p_g.x,111+p_g.y,206+p_g.x,111+p_g.y,3)
+	tri(187+p_g.x,99 +p_g.y,182+p_g.x,103+p_g.y,185+p_g.x,106+p_g.y,4)
+	tri(187+p_g.x,99 +p_g.y,189+p_g.x,103+p_g.y,185+p_g.x,106+p_g.y,4)
+	tri(180+p_g.x,107+p_g.y,179+p_g.x,111+p_g.y,183+p_g.x,109+p_g.y,4)
+	tri(182+p_g.x,113+p_g.y,179+p_g.x,111+p_g.y,183+p_g.x,109+p_g.y,4)
+	tri(193+p_g.x,99 +p_g.y,199+p_g.x,101+p_g.y,199+p_g.x,103+p_g.y,4)
+	tri(193+p_g.x,99 +p_g.y,194+p_g.x,102+p_g.y,199+p_g.x,103+p_g.y,4)
+	rect(193+p_g.x,99 +p_g.y,3,2,4)
+	pix(197+p_g.x,100+p_g.y,4)
+	line(202+p_g.x,94 +p_g.y,208+p_g.x,83 +p_g.y,1)
+	line(203+p_g.x,94 +p_g.y,209+p_g.x,83 +p_g.y,1)
+	line(208+p_g.x,83 +p_g.y,211+p_g.x,86 +p_g.y,1)
+	line(209+p_g.x,83 +p_g.y,212+p_g.x,86 +p_g.y,1)
+	line(211+p_g.x,86 +p_g.y,213+p_g.x,105+p_g.y,1)
+	line(212+p_g.x,86 +p_g.y,214+p_g.x,105+p_g.y,1)
+	line(213+p_g.x,105+p_g.y,220+p_g.x,113+p_g.y,1)
+	line(214+p_g.x,105+p_g.y,221+p_g.x,113+p_g.y,1)
+	tri(204+p_g.x,96 +p_g.y,199+p_g.x,92 +p_g.y,200+p_g.x,100+p_g.y,2)
+	trib(204+p_g.x,96 +p_g.y,199+p_g.x,92 +p_g.y,200+p_g.x,100+p_g.y,2)
+	tri(224+p_g.x,109+p_g.y,220+p_g.x,113+p_g.y,232+p_g.x,119+p_g.y,4)
+	tri(224+p_g.x,109+p_g.y,229+p_g.x,112+p_g.y,232+p_g.x,119+p_g.y,4)
+	tri(186+p_g.x,136+p_g.y,241+p_g.x,121+p_g.y,218+p_g.x,112+p_g.y,7)
+	tri(186+p_g.x,136+p_g.y,241+p_g.x,121+p_g.y,240+p_g.x,136+p_g.y,7)
+	tri(186+p_g.x,136+p_g.y,218+p_g.x,112+p_g.y,212+p_g.x,111+p_g.y,7)
+	tri(186+p_g.x,136+p_g.y,212+p_g.x,111+p_g.y,201+p_g.x,112+p_g.y,7)
+	tri(186+p_g.x,136+p_g.y,201+p_g.x,112+p_g.y,197+p_g.x,114+p_g.y,7)
+	tri(186+p_g.x,136+p_g.y,197+p_g.x,114+p_g.y,191+p_g.x,120+p_g.y,7)
+	tri(186+p_g.x,136+p_g.y,191+p_g.x,120+p_g.y,187+p_g.x,127+p_g.y,7)
+	tri(174+p_g.x,109+p_g.y,171+p_g.x,123+p_g.y,173+p_g.x,136+p_g.y,7)
+	tri(174+p_g.x,109+p_g.y,177+p_g.x,136+p_g.y,173+p_g.x,136+p_g.y,7)
+	line(207+p_g.x,111+p_g.y,214+p_g.x,114+p_g.y,2)
+	line(214+p_g.x,114+p_g.y,217+p_g.x,117+p_g.y,2)
+	line(207+p_g.x,111+p_g.y,213+p_g.x,114+p_g.y,2)
+	line(213+p_g.x,114+p_g.y,216+p_g.x,117+p_g.y,2)
+	line(223+p_g.x,123+p_g.y,239+p_g.x,135+p_g.y,2)
+	line(222+p_g.x,123+p_g.y,238+p_g.x,135+p_g.y,2)
+	line(152+p_g.x,125+p_g.y,158+p_g.x,129+p_g.y,3)
+	line(152+p_g.x,126+p_g.y,157+p_g.x,129+p_g.y,3)
+	trib(156+p_g.x,118+p_g.y,149+p_g.x,125+p_g.y,151+p_g.x,127+p_g.y,3)
+	tri(156+p_g.x,118+p_g.y,149+p_g.x,125+p_g.y,151+p_g.x,127+p_g.y,3)
+	tri(171+p_g.x,124+p_g.y,156+p_g.x,131+p_g.y,157+p_g.x,133+p_g.y,2)
+	tri(171+p_g.x,124+p_g.y,170+p_g.x,129+p_g.y,157+p_g.x,133+p_g.y,2)
+	tri(204+p_g.x,81 +p_g.y,202+p_g.x,83 +p_g.y,195+p_g.x,75 +p_g.y,3)
+	trib(204+p_g.x,81 +p_g.y,202+p_g.x,83 +p_g.y,195+p_g.x,75 +p_g.y,3)
+	tri(202+p_g.x,79 +p_g.y,198+p_g.x,98 +p_g.y,200+p_g.x,100+p_g.y,2)
+	trib(202+p_g.x,79 +p_g.y,198+p_g.x,98 +p_g.y,200+p_g.x,100+p_g.y,2)
+	tri(202+p_g.x,79 +p_g.y,203+p_g.x,80 +p_g.y,200+p_g.x,100+p_g.y,2)
+	trib(202+p_g.x,79 +p_g.y,203+p_g.x,80 +p_g.y,200+p_g.x,100+p_g.y,2)
+	trib(196+p_g.x,72 +p_g.y,198+p_g.x,75 +p_g.y,191+p_g.x,80 +p_g.y,3)
+	tri(196+p_g.x,72 +p_g.y,198+p_g.x,75 +p_g.y,191+p_g.x,80 +p_g.y,3)
+	elli(217+p_g.x,120+p_g.y,6,3,4)
+	elli(217+p_g.x,121+p_g.y,5,2,9+p_g.c*2)
+end
+
 function unitic.render() --------
 	--dynamic textures
 	if st.d_t then
@@ -1954,89 +2012,89 @@ function unitic.render() --------
 				fps_.t5=time()
 
 				if st.r_both and draw.p[1] and draw.p[2] then
-					vbank(1) do
-						cls(0)
-						local p_verts = dist and draw.p_verts[1] or draw.p_verts[2]
-						local portal = {draw.world.v[p_verts[1][1]], draw.world.v[p_verts[1][2]], draw.world.v[p_verts[1][3]], draw.world.v[p_verts[2][2]]}
+				vbank(1) do
+					cls(0)
+					local p_verts = dist and draw.p_verts[1] or draw.p_verts[2]
+					local portal = {draw.world.v[p_verts[1][1]], draw.world.v[p_verts[1][2]], draw.world.v[p_verts[1][3]], draw.world.v[p_verts[2][2]]}
 
-						local txsin = math.sin(plr.tx)
-						local txcos = math.cos(plr.tx)
-						local tysin = math.sin(-plr.ty)
-						local tycos = math.cos(-plr.ty)
-						for ind = 1, 4 do
-							local a1 = portal[ind][1] - plr.x
-							local b1 = portal[ind][2] - plr.y
-							local c1 = portal[ind][3] - plr.z
+					local txsin = math.sin(plr.tx)
+					local txcos = math.cos(plr.tx)
+					local tysin = math.sin(-plr.ty)
+					local tycos = math.cos(-plr.ty)
+					for ind = 1, 4 do
+						local a1 = portal[ind][1] - plr.x
+						local b1 = portal[ind][2] - plr.y
+						local c1 = portal[ind][3] - plr.z
 
-							local c2 = c1 * tycos - a1 * tysin
+						local c2 = c1 * tycos - a1 * tysin
 
-							local a3 = c1 * tysin + a1 * tycos
-							local b3 = b1 * txcos - c2 * txsin
-							local c3 = b1 * txsin + c2 * txcos
-							local c4 = c3
-							if c4>-0.001 then c4=-0.001 end
-							local z0 = unitic.fov / c4
+						local a3 = c1 * tysin + a1 * tycos
+						local b3 = b1 * txcos - c2 * txsin
+						local c3 = b1 * txsin + c2 * txcos
+						local c4 = c3
+						if c4>-0.001 then c4=-0.001 end
+						local z0 = unitic.fov / c4
 
-							local x0 = a3 * z0 + 120
-							local y0 = b3 * z0 + 68
+						local x0 = a3 * z0 + 120
+						local y0 = b3 * z0 + 68
 
-							portal[ind] = {x0, y0, -c4, c3 > 0}
-						end
-						local mz1, mz2, mz3, mz4 = portal[1][3], portal[2][3], portal[3][3], portal[4][3]
-						local minz = min(mz1, mz2, mz3, mz4)
-						if minz > 1e-10 then
-							local div = minz/1e-10
-							mz1,mz2,mz3,mz4=mz1/div,mz2/div,mz3/div,mz4/div
-						end
-						if not (portal[1][4] and portal[2][4] and portal[3][4] and portal[4][4]) then
-							ttri(
-								portal[1][1],portal[1][2],
-								portal[2][1],portal[2][2],
-								portal[3][1],portal[3][2],
-								24,232,
-								0,232,
-								24,200,
-								0,15,
-								mz1,
-								mz2,
-								mz3
-							)
-							ttri(
-								portal[2][1],portal[2][2],
-								portal[4][1],portal[4][2],
-								portal[3][1],portal[3][2],
-								0,232,
-								0,200,
-								24,200,
-								0,15,
-								mz2,
-								mz4,
-								mz3
-							)
-						end
-					end vbank(0)
-					if dist then
-						cam.x = 96*x1 + relx2
-						cam.y = 128*y1 + rely2
-						cam.z = 96*z1 + relz2
-						cam.ty = plr.ty + math.pi * rotd2 / 2
-						cam.tx = plr.tx
-						unitic.update(true,2) unitic.draw() --orange portal
-					else
-						cam.x = 96*x2 + relx1
-						cam.y = 128*y2 + rely1
-						cam.z = 96*z2 + relz1
-						cam.ty = plr.ty + math.pi * rotd1 / 2
-						cam.tx = plr.tx
-						unitic.update(true,1) unitic.draw() --blue portal
+						portal[ind] = {x0, y0, -c4, c3 > 0}
 					end
+					local mz1, mz2, mz3, mz4 = portal[1][3], portal[2][3], portal[3][3], portal[4][3]
+					local minz = min(mz1, mz2, mz3, mz4)
+					if minz > 1e-10 then
+						local div = minz/1e-10
+						mz1,mz2,mz3,mz4=mz1/div,mz2/div,mz3/div,mz4/div
+					end
+					if not (portal[1][4] and portal[2][4] and portal[3][4] and portal[4][4]) then
+						ttri(
+							portal[1][1],portal[1][2],
+							portal[2][1],portal[2][2],
+							portal[3][1],portal[3][2],
+							24,232,
+							0,232,
+							24,200,
+							0,15,
+							mz1,
+							mz2,
+							mz3
+						)
+						ttri(
+							portal[2][1],portal[2][2],
+							portal[4][1],portal[4][2],
+							portal[3][1],portal[3][2],
+							0,232,
+							0,200,
+							24,200,
+							0,15,
+							mz2,
+							mz4,
+							mz3
+						)
+					end
+				end vbank(0)
+				if dist then
+					cam.x = 96*x1 + relx2
+					cam.y = 128*y1 + rely2
+					cam.z = 96*z1 + relz2
+					cam.ty = plr.ty + math.pi * rotd2 / 2
+					cam.tx = plr.tx
+					unitic.update(true,2) unitic.draw() --orange portal
+				else
+					cam.x = 96*x2 + relx1
+					cam.y = 128*y2 + rely1
+					cam.z = 96*z2 + relz1
+					cam.ty = plr.ty + math.pi * rotd1 / 2
+					cam.tx = plr.tx
+					unitic.update(true,1) unitic.draw() --blue portal
 				end
-				memcpy(0x8000,0x0,240*136/2)
-				fps_.t6=time()
-				
-			else
-				memcpy(0x0,0x8000,240*136/2)
 			end
+			memcpy(0x8000,0x0,240*136/2)
+			fps_.t6=time()
+			
+		else
+			memcpy(0x0,0x8000,240*136/2)
+		end
 	end
 
 	vbank(1)
@@ -2214,6 +2272,8 @@ local function portal_gun()
 	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
 	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+	if clp1 then p_g.c=1 p_g.t2=1 end
+	if clp2 then p_g.c=2 p_g.t2=1 end
 
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 then
@@ -2240,6 +2300,12 @@ local function portal_gun()
 		if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 		if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) draw.p[2]=nil update_world() end
 	end
+	p_g.t2=max(p_g.t2-0.1,0)
+
+	p_g.x=    math.sin(p_g.t1/10) *5+p_g.t2^0.5*10
+	p_g.y=abs(math.cos(p_g.t1/10))*5+p_g.t2^0.5*7
+
+	if p_g.t1>0 then p_g.x=p_g.x+5 p_g.y=p_g.y+5 end
 end
 
 --map
@@ -2583,7 +2649,7 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 	update_world()
 end
 --palette
-local pal="0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6fad67918ffbe3cff00ff"
+local pal="0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6faff8d18ffbe3cff00ff"
 function respal()
 	for i=1,#pal,2 do
 		poke(0x3FC0+i//6*3+i//2%3,tonumber(pal:sub(i,i+1),16))
@@ -2622,6 +2688,7 @@ local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
 local is={t=0,t1=0,t2=0} --init setting
 
 local open="logo" sync(1,1,false)
+
 function TIC()
 	--fps counter
 	t1 = time()
@@ -3092,17 +3159,18 @@ function TIC()
 		fps_.t2=time()
 		if not plr.d then unitic.player_collision() end
 		unitic.portal_collision()
-		unitic.cube_update() --Damn bugs due to leaving the room
+		unitic.cube_update()
 		unitic.button_update()
 		unitic.turret_update()
 		fps_.t3=time()
 	 --render
 		unitic.render()
+		if plr.pg_lvl>0 then unitic.draw_portalgun() end
 	 --portal gun
 		portal_gun()
 	 --sounds
 		s.t1=max(s.t1-1,0)
-		if (key(23) or key(19) or key(1) or key(4)) and s.t1==0 then sfx(1) if key(64) then s.t1=15 else s.t1=20 end end
+		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1 if s.t1==0 then sfx(1) if key(64) then s.t1=15 else s.t1=20 end end end
 		if plr.cd2==8 then sfx(3,"B-4",-1,1) end
 	 --hp
 		if plr.hp2 == plr.hp then plr.cd=plr.cd+1 else plr.cd=0 end
@@ -3151,11 +3219,12 @@ function TIC()
 		if l_t2.draw then
 			local text=l_t[l_t2.id][l_t2.i]
 			local text_size=print(text,240,0,true)
-			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if l_t2.t%1==0 then sfx(19)end end
+			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if keyp(26,20,2) then l_t2.t=l_t2.t+0.5 end if (l_t2.t%1==0 or l_t2.t%1~=0 and keyp(26,20,2)) and l_t2.t//1<#text then sfx(19)end end
+			rect(120-text_size/2-1,113,text_size+2,8,2)
 			print(text:sub(1,F(l_t2.t)),120-text_size/2,115,1)
 			print(text:sub(1,F(l_t2.t)),120-text_size/2,114,7)
 			if l_t2.t>#text+10 then
-				l_t2.t=0 
+				l_t2.t=0
 				l_t2.i=l_t2.i+1
 				if l_t2.i>#l_t[l_t2.id] then l_t2.draw=false end
 			end
@@ -4041,7 +4110,7 @@ end
 -- 016:030003000300b300c300d300039003900390b390c390d390f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300305000000000
 -- 017:030003000300b300c300d300039003900390b390c390d39003e003e003e0b3e0c3e0d3e0f3e0f300f300f300f300f300f300f300f300f300f300f300482000000000
 -- 018:010001100110f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100402000000000
--- 019:930053008300a300d300d300e300e300e300e300e300e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300600000000000
+-- 019:930053008300a300d300d300e300e300e300e300e300e300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300f300400000000000
 -- 059:020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200300000000000
 -- 060:0100110011002100210031003100410041005100510061006100710071008100810091009100a100a100b100b100c100c100d100d100e100e100f100302000000000
 -- 061:010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100302000000000
@@ -4251,7 +4320,7 @@ end
 -- </SCREEN>
 
 -- <PALETTE>
--- 000:0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6fad67918ffbe3cff00ff
+-- 000:0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6faff8d18ffbe3cff00ff
 -- </PALETTE>
 
 -- <PALETTE1>
