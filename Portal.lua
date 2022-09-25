@@ -724,7 +724,7 @@ maps[0][2]={ --main gameroom
 	o={ --table for objects
 	 --{X, Y, Z, type, [additional parameters]}
 	 {2.5*96,0,2.5*96,16},
-	 {800,24,900,2},
+	 {800,100,900,2},
 	 {800,0,900,15},
 
 	},
@@ -1630,6 +1630,13 @@ function unitic.cube_update() --all physics related to cubes
 				local y0=draw.objects.b[i2].y
 				local z0=draw.objects.b[i2].z
 				collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
+			end
+
+			for i2=1,#draw.objects.t do
+				local x0=draw.objects.t[i2].x
+				local y0=draw.objects.t[i2].y
+				local z0=draw.objects.t[i2].z
+				collide(x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12)
 			end
 
 			for i2=1,#draw.objects.fb do
