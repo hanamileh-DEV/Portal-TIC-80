@@ -4,7 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
-local version="DEV 0.2.2"
+local version="DEV 0.2.3"
 
 --[[
 license:
@@ -70,6 +70,9 @@ end
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
 local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false, pg_lvl = 3 --[[portal gun level]]}
+
+
+plr.godmode=true
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -675,82 +678,310 @@ local model={
 			 {16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1},
 		}
 	},
-	{ --lift +X (17)
-		v={
-			 {95,128,-95},
-			 {95,0,0},
-			 {95,0,-95},
-			 {0,0,-96},
-			 {96,0,96},
-			 {0,0,96},
-			 {-96,0,-96},
-			 {0,0,0},
-			 {-96,0,96},
-			 {-95,0,0},
-			 {-96,128,96},
-			 {-96,0,47},
-			 {-192,128,48},
-			 {-192,128,-48},
-			 {-192,0,-48},
-			 {-192,0,47},
-			 {95,127,0},
-			 {96,128,96},
-			 {0,127,-96},
-			 {0,127,0},
-			 {0,128,96},
-			 {-95,127,0},
-			 {-96,127,-96},
-			 {-96,128,-48},
-			 {-96,0,-48},
-			 {-63,128,-96},
-			 {-63,0,-96},
-			 {-48,128,96},
-			 {-48,0,96},
-			 {-96,128,47},
-		},
-		f={
-			 {19,3,4,uv={{48,0},{24,32},{48,32},-1},f=2},
-			 {18,6,5,uv={{48,0},{24,32},{48,32},-1},f=2},
-			 {23,4,7,uv={{48,0},{24,32},{48,32},-1},f=2},
-			 {21,9,6,uv={{48,0},{24,32},{48,32},-1},f=2},
-			 {24,27,25,uv={{37,0},{24,32},{37,32},-1},f=2},
-			 {28,12,29,uv={{48,0},{35,32},{48,32},-1},f=2},
-			 {19,1,3,uv={{48,0},{24,0},{24,32},-1},f=2},
-			 {18,21,6,uv={{48,0},{24,0},{24,32},-1},f=2},
-			 {23,19,4,uv={{48,0},{24,0},{24,32},-1},f=2},
-			 {21,11,9,uv={{48,0},{24,0},{24,32},-1},f=2},
-			 {24,26,27,uv={{37,0},{24,0},{24,32},-1},f=2},
-			 {28,30,12,uv={{48,0},{35,0},{35,32},-1},f=2},
-			 {8,3,2,uv={{120,120},{96,96},{96,120},-1},f=2},
-			 {6,2,5,uv={{120,120},{96,96},{96,120},-1},f=2},
-			 {10,4,8,uv={{120,120},{96,96},{96,120},-1},f=2},
-			 {9,8,6,uv={{120,120},{96,96},{96,120},-1},f=2},
-			 {16,25,12,uv={{120,120},{96,96},{96,120},-1},f=2},
-			 {30,16,12,uv={{72,96},{48,128},{72,128},-1},f=2},
-			 {17,21,18,uv={{96,120},{120,96},{96,96},-1},f=2},
-			 {1,20,17,uv={{96,120},{120,96},{96,96},-1},f=2},
-			 {22,21,20,uv={{120,120},{96,96},{96,120},-1},f=2},
-			 {19,22,20,uv={{96,120},{120,96},{96,96},-1},f=2},
-			 {14,30,24,uv={{120,120},{96,96},{96,120},-1},f=2},
-			 {8,4,3,uv={{120,120},{120,96},{96,96},-1},f=2},
-			 {6,8,2,uv={{120,120},{120,96},{96,96},-1},f=2},
-			 {10,7,4,uv={{120,120},{120,96},{96,96},-1},f=2},
-			 {9,10,8,uv={{120,120},{120,96},{96,96},-1},f=2},
-			 {16,15,25,uv={{120,120},{120,96},{96,96},-1},f=2},
-			 {30,13,16,uv={{72,96},{48,96},{48,128},-1},f=2},
-			 {17,20,21,uv={{96,120},{120,120},{120,96},-1},f=2},
-			 {1,19,20,uv={{96,120},{120,120},{120,96},-1},f=2},
-			 {22,11,21,uv={{120,120},{120,96},{96,96},-1},f=2},
-			 {19,23,22,uv={{96,120},{120,120},{120,96},-1},f=2},
-			 {14,13,30,uv={{120,120},{120,96},{96,96},-1},f=2},
-			 {16,14,15,uv={{72,128},{48,96},{48,128},-1},f=2},
-			 {14,25,15,uv={{72,96},{48,128},{72,128},-1},f=2},
-			 {30,25,12,uv={{96,96},{72,128},{96,128},-1},f=2},
-			 {16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
-			 {14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
-			 {30,24,25,uv={{96,96},{72,96},{72,128},-1},f=2},
-		}
-		}
+	{ --lift -X (17)
+	v={
+			{96   ,128 ,-96 },
+			{96   ,0   ,0   },
+			{96   ,0   ,-96 },
+			{0    ,0   ,-96 },
+			{96   ,0   ,96  },
+			{0    ,0   ,96  },
+			{-96  ,0   ,-96 },
+			{0    ,0   ,0   },
+			{-96  ,0   ,96  },
+			{-96  ,0   ,0   },
+			{-96  ,128 ,96  },
+			{-96  ,0   ,47  },
+			{-192 ,128 ,48  },
+			{-192 ,128 ,-48 },
+			{-192 ,0   ,-48 },
+			{-192 ,0   ,48  },
+			{96   ,128 ,0   },
+			{96   ,128 ,96  },
+			{0    ,128 ,-96 },
+			{0    ,128 ,0   },
+			{0    ,128 ,96  },
+			{-96  ,128 ,0   },
+			{-96  ,128 ,-96 },
+			{-96  ,128 ,-48 },
+			{-96  ,0   ,-48 },
+			{-66  ,128 ,-96 },
+			{-66  ,0   ,-96 },
+			{-48  ,128 ,96  },
+			{-48  ,0   ,96  },
+			{-96  ,128 ,48  },
+	},
+	f={
+		{19,3,4,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{18,6,5,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{23,4,7,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{21,9,6,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{24,27,25,uv={{48,0},{35,32},{48,32},-1},f=2},
+		{28,12,29,uv={{40,0},{24,32},{40,32},-1},f=2},
+		{19,1,3,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{18,21,6,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{23,19,4,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{21,11,9,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{24,26,27,uv={{48,0},{35,0},{35,32},-1},f=2},
+		{28,30,12,uv={{40,0},{24,0},{24,32},-1},f=2},
+		{8,3,2,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{6,2,5,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{10,4,8,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{9,8,6,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{16,25,12,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{30,16,12,uv={{72,96},{48,128},{72,128},-1},f=2},
+		{17,21,18,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{1,20,17,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{22,21,20,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{19,22,20,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{14,30,24,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{8,4,3,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{6,8,2,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{10,7,4,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{9,10,8,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{16,15,25,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{30,13,16,uv={{72,96},{48,96},{48,128},-1},f=2},
+		{17,20,21,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{1,19,20,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{22,11,21,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{19,23,22,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{14,13,30,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{16,14,15,uv={{72,128},{48,96},{48,128},-1},f=2},
+		{14,25,15,uv={{72,96},{48,128},{72,128},-1},f=2},
+		{30,25,12,uv={{96,96},{72,128},{96,128},-1},f=3},
+		{16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
+		{14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
+		{30,24,25,uv={{96,96},{72,96},{72,128},-1},f=3},
+	}
+	},
+	{ --lift +X (18)
+	v={
+			{-96,128 ,96},
+			{-96,0   ,0},
+			{-96,0   ,96},
+			{0,0   ,96},
+			{-96,0   ,-96},
+			{0,0   ,-96},
+			{96,0   ,96},
+			{0,0   ,0},
+			{96,0   ,-96},
+			{96,0   ,0},
+			{96,128 ,-96},
+			{96,0   ,-47},
+			{192,128 ,-48},
+			{192,128 ,48},
+			{192,0   ,48},
+			{192,0   ,-48},
+			{-96,128 ,0},
+			{-96,128 ,-96},
+			{0,128 ,96},
+			{0,128 ,0},
+			{0,128 ,-96},
+			{96,128 ,0},
+			{96,128 ,96},
+			{96,128 ,48},
+			{96,0   ,48},
+			{66,128 ,96},
+			{66,0   ,96},
+			{48,128 ,-96},
+			{48,0   ,-96},
+			{96,128 ,-48},
+	},
+	f={
+		{19,3,4,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{18,6,5,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{23,4,7,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{21,9,6,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{24,27,25,uv={{48,0},{35,32},{48,32},-1},f=2},
+		{28,12,29,uv={{40,0},{24,32},{40,32},-1},f=2},
+		{19,1,3,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{18,21,6,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{23,19,4,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{21,11,9,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{24,26,27,uv={{48,0},{35,0},{35,32},-1},f=2},
+		{28,30,12,uv={{40,0},{24,0},{24,32},-1},f=2},
+		{8,3,2,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{6,2,5,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{10,4,8,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{9,8,6,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{16,25,12,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{30,16,12,uv={{72,96},{48,128},{72,128},-1},f=2},
+		{17,21,18,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{1,20,17,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{22,21,20,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{19,22,20,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{14,30,24,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{8,4,3,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{6,8,2,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{10,7,4,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{9,10,8,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{16,15,25,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{30,13,16,uv={{72,96},{48,96},{48,128},-1},f=2},
+		{17,20,21,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{1,19,20,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{22,11,21,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{19,23,22,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{14,13,30,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{16,14,15,uv={{72,128},{48,96},{48,128},-1},f=2},
+		{14,25,15,uv={{72,96},{48,128},{72,128},-1},f=2},
+		{30,25,12,uv={{96,96},{72,128},{96,128},-1},f=3},
+		{16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
+		{14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
+		{30,24,25,uv={{96,96},{72,96},{72,128},-1},f=3},
+	}
+	},
+	{ --lift -Z (19)
+	v={
+			{-96 ,128 ,-96},
+			{0   ,0   ,-96},
+			{-96 ,0   ,-96},
+			{-96 ,0   ,0},
+			{96  ,0   ,-96},
+			{96  ,0   ,0},
+			{-96 ,0   ,96},
+			{0   ,0   ,0},
+			{96  ,0   ,96},
+			{0   ,0   ,96},
+			{96  ,128 ,96},
+			{47  ,0   ,96},
+			{48  ,128 ,192},
+			{-48 ,128 ,192},
+			{-48 ,0   ,192},
+			{48  ,0   ,192},
+			{0   ,128 ,-96},
+			{96  ,128 ,-96},
+			{-96 ,128 ,0},
+			{0   ,128 ,0},
+			{96  ,128 ,0},
+			{0   ,128 ,96},
+			{-96 ,128 ,96},
+			{-48 ,128 ,96},
+			{-48 ,0   ,96},
+			{-96 ,128 ,66},
+			{-96 ,0   ,66},
+			{96  ,128 ,48},
+			{96  ,0   ,48},
+			{48  ,128 ,96},
+	},
+	f={
+		{19,3,4,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{18,6,5,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{23,4,7,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{21,9,6,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{24,27,25,uv={{48,0},{35,32},{48,32},-1},f=2},
+		{28,12,29,uv={{40,0},{24,32},{40,32},-1},f=2},
+		{19,1,3,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{18,21,6,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{23,19,4,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{21,11,9,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{24,26,27,uv={{48,0},{35,0},{35,32},-1},f=2},
+		{28,30,12,uv={{40,0},{24,0},{24,32},-1},f=2},
+		{8,3,2,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{6,2,5,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{10,4,8,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{9,8,6,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{16,25,12,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{30,16,12,uv={{72,96},{48,128},{72,128},-1},f=2},
+		{17,21,18,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{1,20,17,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{22,21,20,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{19,22,20,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{14,30,24,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{8,4,3,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{6,8,2,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{10,7,4,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{9,10,8,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{16,15,25,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{30,13,16,uv={{72,96},{48,96},{48,128},-1},f=2},
+		{17,20,21,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{1,19,20,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{22,11,21,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{19,23,22,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{14,13,30,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{16,14,15,uv={{72,128},{48,96},{48,128},-1},f=2},
+		{14,25,15,uv={{72,96},{48,128},{72,128},-1},f=2},
+		{30,25,12,uv={{96,96},{72,128},{96,128},-1},f=3},
+		{16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
+		{14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
+		{30,24,25,uv={{96,96},{72,96},{72,128},-1},f=3},
+	}
+	},
+	{ --lift +Z (20)
+	v={
+			{96,128 ,96  },
+			{0,0   ,96  },
+			{96,0   ,96  },
+			{96,0   ,0   },
+			{-96,0   ,96  },
+			{-96,0   ,0   },
+			{96,0   ,-96 },
+			{0,0   ,0   },
+			{-96,0   ,-96 },
+			{0,0   ,-96 },
+			{-96,128 ,-96 },
+			{-47,0   ,-96 },
+			{-48,128 ,-192},
+			{48,128 ,-192},
+			{48,0   ,-192},
+			{-48,0   ,-192},
+			{0,128 ,96  },
+			{-96,128 ,96  },
+			{96,128 ,0   },
+			{0,128 ,0   },
+			{-96,128 ,0   },
+			{0,128 ,-96 },
+			{96,128 ,-96 },
+			{48,128 ,-96 },
+			{48,0   ,-96 },
+			{96,128 ,-66 },
+			{96,0   ,-66 },
+			{-96,128 ,-48 },
+			{-96,0   ,-48 },
+			{-48,128 ,-96 },
+	},
+	f={
+		{19,3,4,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{18,6,5,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{23,4,7,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{21,9,6,uv={{48,0},{24,32},{48,32},-1},f=2},
+		{24,27,25,uv={{48,0},{35,32},{48,32},-1},f=2},
+		{28,12,29,uv={{40,0},{24,32},{40,32},-1},f=2},
+		{19,1,3,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{18,21,6,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{23,19,4,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{21,11,9,uv={{48,0},{24,0},{24,32},-1},f=2},
+		{24,26,27,uv={{48,0},{35,0},{35,32},-1},f=2},
+		{28,30,12,uv={{40,0},{24,0},{24,32},-1},f=2},
+		{8,3,2,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{6,2,5,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{10,4,8,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{9,8,6,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{16,25,12,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{30,16,12,uv={{72,96},{48,128},{72,128},-1},f=2},
+		{17,21,18,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{1,20,17,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{22,21,20,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{19,22,20,uv={{96,120},{120,96},{96,96},-1},f=2},
+		{14,30,24,uv={{120,120},{96,96},{96,120},-1},f=2},
+		{8,4,3,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{6,8,2,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{10,7,4,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{9,10,8,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{16,15,25,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{30,13,16,uv={{72,96},{48,96},{48,128},-1},f=2},
+		{17,20,21,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{1,19,20,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{22,11,21,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{19,23,22,uv={{96,120},{120,120},{120,96},-1},f=2},
+		{14,13,30,uv={{120,120},{120,96},{96,96},-1},f=2},
+		{16,14,15,uv={{72,128},{48,96},{48,128},-1},f=2},
+		{14,25,15,uv={{72,96},{48,128},{72,128},-1},f=2},
+		{30,25,12,uv={{96,96},{72,128},{96,128},-1},f=3},
+		{16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
+		{14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
+		{30,24,25,uv={{96,96},{72,96},{72,128},-1},f=3},
+	}
+	},
 }
 
 local s = { --sounds
@@ -769,6 +1000,7 @@ local draw={
 		b={}, --buttons
 		t={}, --turrets
 		fb={}, --floor button
+		l={}, --lifts
 	},
 	world={v={},f={},sp={}}, --main world
 	world_bp={f={}}, --the world for the blue portal
@@ -806,7 +1038,21 @@ maps[0][2]={ --main gameroom
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={{0,0,1,1,2}}, --light bridge generators
-	lift={{0,0,0,2},{0,0,10,0}}, --Initial and final elevator (X Y Z angle) [0 -X, 1 -Z 2 +X, 3 +Z]
+	lift={{5,4,5,2}}, --Initial and final elevator (X Y Z angle) [0 -X, 1 -Z 2 +X, 3 +Z]
+	music=0 --Music ID for this level
+}
+
+maps[0][3]={ --main gameroom (2)
+	w={ --table for walls
+	--{X, Y, Z, angle, face, type}
+	{0,0,0,2,3,1}
+	},
+	o={ --table for objects
+	 --{X, Y, Z, type, [additional parameters]}
+	},
+	p={}, --table for portals (leave empty if the portals are not needed)
+	lg={}, --light bridge generators
+	lift={{1,1,1,0}}, --Initial and final elevator (X Y Z angle) [0 -X, 1 -Z 2 +X, 3 +Z]
 	music=0 --Music ID for this level
 }
 
@@ -892,6 +1138,8 @@ maps[0][2].w[#maps[0][2].w+1]={10,0,6,3,3,7}
 maps[0][2].w[#maps[0][2].w+1]={6,0,5,2,3,8}
 maps[0][2].w[#maps[0][2].w+1]={6,0,6,2,3,8}
 maps[0][2].w[#maps[0][2].w+1]={3,0,5,2,3,8}
+maps[0][2].w[#maps[0][2].w+1]={0,0,10,1,3,11}
+maps[0][2].w[#maps[0][2].w+1]={0,0,9,1,3,12}
 --Text for levels
 local l_t={
 {"Welcome to the Aperture Science",
@@ -1152,14 +1400,15 @@ function unitic.update(draw_portal,p_id)
 
 	for i=1,#draw.objects.cd do i2=i2+1 unitic.obj[i2]=draw.objects.cd[i] end
 	for i=1,#draw.objects.lb do i2=i2+1 unitic.obj[i2]=draw.objects.lb[i] end
+	for i=1,#draw.objects.l  do i2=i2+1 unitic.obj[i2]=draw.objects.l [i] end
 	for i=1,#draw.objects.b  do
 		if draw.objects.b[i].s and draw.objects.b[i].tick then draw.objects.b[i].model.f=f2 elseif draw.objects.b[i].tick then draw.objects.b[i].model.f=f1 end
 		i2=i2+1 unitic.obj[i2]=draw.objects.b[i]
 	end
 	for i=1,#draw.objects.t do i2=i2+1 unitic.obj[i2]=draw.objects.t[i] end
-	for i=1,#draw.objects.fb do 
+	for i=1,#draw.objects.fb do
 		if draw.objects.fb[i].s and draw.objects.fb[i].tick then draw.objects.fb[i].model.f=f3 elseif draw.objects.fb[i].tick then draw.objects.fb[i].model.f=f4 end
-		i2=i2+1 unitic.obj[i2]=draw.objects.fb[i] 
+		i2=i2+1 unitic.obj[i2]=draw.objects.fb[i]
 	end
 	--objects (2)--
 	local i2=#unitic.poly.f
@@ -1360,10 +1609,21 @@ local function portalcenter(i)
 end
 
 local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true}
+
+
 function unitic.player_collision()
+	
 	local colx = false
 	local coly = false
 	local colz = false
+
+	local function plr_collide(x1,y1,z1,x2,y2,z2)
+		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then
+			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then colx = true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x1,y1,z1, x2,y2,z2) then coly = true end
+			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x1,y1,z1, x2,y2,z2) then colz = true end
+		end
+	end
 
 	local x1=max((plr.x-17)//96,0)
 	local y1=max((plr.y-65)//128,0)
@@ -1375,14 +1635,10 @@ function unitic.player_collision()
 
 	for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
 		if wall_coll[draw.map[1][x0][y0][z0][2]] then
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
+			plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 		elseif draw.map[1][x0][y0][z0][2]==5 or draw.map[1][x0][y0][z0][2]==6 then
 			if not draw.p[1] or not draw.p[2] then
-				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
-				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
-				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
+				plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 			else
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
 				or coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
@@ -1403,9 +1659,7 @@ function unitic.player_collision()
 		end
 
 		if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then coly = true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then colz = true end
+			plr_collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
 		elseif draw.map[2][x0][y0][z0][2]==5 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=0 sfx(2,"C-3",-1,1) end
 		elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
@@ -1413,14 +1667,10 @@ function unitic.player_collision()
 		end
 
 		if wall_coll[draw.map[3][x0][y0][z0][2]] then
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
+			plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 		elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
 			if not draw.p[1] or not draw.p[2] then
-				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
-				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
-				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
+				plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 			else
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
 				or coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
@@ -1445,21 +1695,12 @@ function unitic.player_collision()
 		local x0=draw.objects.c[i].x
 		local y0=draw.objects.c[i].y
 		local z0=draw.objects.c[i].z
-		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then --protection so that the player cannot get stuck in the cube
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
-		end
+		plr_collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
 		if draw.objects.c[i].inp then
 			local x0=draw.objects.c[i].x1
 			local y0=draw.objects.c[i].y1
 			local z0=draw.objects.c[i].z1
-			if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then --protection so that the player cannot get stuck in the cube
-				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
-				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true end
-				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
-			end
-
+			plr_collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
 		end
 	end
 
@@ -1467,52 +1708,87 @@ function unitic.player_collision()
 		local x0=draw.objects.cd[i].x
 		local y0=draw.objects.cd[i].y
 		local z0=draw.objects.cd[i].z
-		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then coly = true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24) then colz = true end
-		end
+		plr_collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
 	end
 
 	for i=1,#draw.objects.lb do
 		local x0=draw.objects.lb[i].x
 		local y0=draw.objects.lb[i].y
 		local z0=draw.objects.lb[i].z
-		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then coly = true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48) then colz = true end
-		end
+		plr_collide(x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48)
 	end
 
 	for i=1,#draw.objects.b do
 		local x0=draw.objects.b[i].x
 		local y0=draw.objects.b[i].y
 		local z0=draw.objects.b[i].z
-		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then coly = true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6) then colz = true end
-		end
+		plr_collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
 	end
 
 	for i=1,#draw.objects.t do
 		local x0=draw.objects.t[i].x
 		local y0=draw.objects.t[i].y
 		local z0=draw.objects.t[i].z
-		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16,       x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12) then
-			if  coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12) then colx = true end
-			if  coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12) then coly = true end
-			if  coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12) then colz = true end
+		plr_collide(x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12)
+	end
+
+	for i=1,#draw.objects.l do
+		local x0=draw.objects.l[i].x
+		local y0=draw.objects.l[i].y
+		local z0=draw.objects.l[i].z
+		local type=draw.objects.l[i].type-17
+
+		plr_collide(x0-96,y0    ,z0-96, z0+96,y0    ,z0+96)
+		plr_collide(x0-96,y0+128,z0-96, z0+96,y0+128,z0+96)
+
+		if type==0 then
+			plr_collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
+			plr_collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
+			plr_collide(x0-96 ,y0    ,z0-96,x0-96 ,y0+128,z0-48)
+			plr_collide(x0-96 ,y0    ,z0+48,x0-96 ,y0+128,z0+96)
+			plr_collide(x0-192,y0    ,z0-48,x0-96 ,y0    ,z0+48)
+			plr_collide(x0-192,y0+128,z0-48,x0-96 ,y0+128,z0+48)
+			plr_collide(x0-192,y0    ,z0-48,x0-192,y0+128,z0+48)
+			plr_collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
+			plr_collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
+		elseif type==1 then
+			plr_collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
+			plr_collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
+			plr_collide(x0-96,y0    ,z0+96 ,x0-48,y0+128,z0+96 )
+			plr_collide(x0+48,y0    ,z0+96 ,x0+96,y0+128,z0+96 )
+			plr_collide(x0-48,y0    ,z0+96 ,x0+48,y0    ,z0+192)
+			plr_collide(x0-48,y0+128,z0+96 ,x0+48,y0+128,z0+192)
+			plr_collide(x0-48,y0    ,z0+192,x0+48,y0+128,z0+192)
+			plr_collide(x0-48,y0    ,z0+96 ,x0-48,y0+128,z0+192)
+			plr_collide(x0+48,y0    ,z0+96 ,x0+48,y0+128,z0+192)
+		elseif type==2 then
+			plr_collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
+			plr_collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
+			plr_collide(x0-96 ,y0    ,z0+96,x0-96 ,y0+128,z0+48)
+			plr_collide(x0-96 ,y0    ,z0-48,x0-96 ,y0+128,z0-96)
+			plr_collide(x0-192,y0    ,z0+48,x0-96 ,y0    ,z0-48)
+			plr_collide(x0-192,y0+128,z0+48,x0-96 ,y0+128,z0-48)
+			plr_collide(x0-192,y0    ,z0+48,x0-192,y0+128,z0-48)
+			plr_collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
+			plr_collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
+		elseif type==3 then
+			plr_collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
+			plr_collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
+			plr_collide(x0-96,y0    ,z0-96 ,x0-48,y0+128,z0-96 )
+			plr_collide(x0+48,y0    ,z0-96 ,x0+96,y0+128,z0-96 )
+			plr_collide(x0-48,y0    ,z0-192,x0+48,y0    ,z0-96 )
+			plr_collide(x0-48,y0+128,z0-192,x0+48,y0+128,z0-96 )
+			plr_collide(x0-48,y0    ,z0-192,x0+48,y0+128,z0-192)
+			plr_collide(x0-48,y0    ,z0-192,x0-48,y0+128,z0-96 )
+			plr_collide(x0+48,y0    ,z0-192,x0+48,y0+128,z0-96 )
 		end
 	end
 
-	if not plr.noclip then
-		if colx then plr.x = lx end
-		if coly then plr.y = ly end
-		if colz then plr.z = lz end
-		plr.xy=coly
-	end
+	if plr.noclip then return end
+	if colx then plr.x = lx end
+	if coly then plr.y = ly end
+	if colz then plr.z = lz end
+	plr.xy=coly
 end
 
 local function cube_interact(cube)
@@ -2453,6 +2729,11 @@ function addobj(x, y, z, type,t1) --objects
 		tick=false,
 		s=false,
 		draw=true,model={v=model[type].v,f=model[type].f}}
+	elseif type==17 or type==18 or type==19 or type==20 then --lifts
+		draw.objects.l[#draw.objects.l+1]=
+		{type=type,
+		x=x,y=y,z=z,
+		draw=true,model=model[type]}
 
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
@@ -2668,7 +2949,8 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 		lb={}, --light bridges
 		b={}, --buttons
 		t={}, --turrets
-		fb={} --floor button
+		fb={}, --floor button
+		l={} --lifts
 	}
 
 	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
@@ -2714,16 +2996,9 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 	--lift
 	for i=1,2 do
 		if maps[set_id][world_id].lift[i] then
-			local x0, y0, z0=maps[set_id][world_id].lift[i][1], maps[set_id][world_id].lift[i][2], maps[set_id][world_id].lift[i][3]
-			addwall(x0,y0  ,z0,2,2,1)
-			addwall(x0,y0+1,z0,2,1,1)
-
-			if     maps[set_id][world_id].lift[i][4]==0 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,3,19)addwall(x0,y0,z0+1,3,2,18)
-			elseif maps[set_id][world_id].lift[i][4]==1 then addwall(x0,y0,z0,1,3,19)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
-			elseif maps[set_id][world_id].lift[i][4]==2 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,1,18)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,3,19)
-			elseif maps[set_id][world_id].lift[i][4]==3 then addwall(x0,y0,z0,1,2,18)addwall(x0+1,y0,z0,1,3,19)addwall(x0,y0,z0,3,1,18)addwall(x0,y0,z0+1,3,2,18)
-			else error()
-			end
+			local x0, y0, z0, angle=maps[set_id][world_id].lift[i][1], maps[set_id][world_id].lift[i][2], maps[set_id][world_id].lift[i][3], maps[set_id][world_id].lift[i][4]
+			if angle>4 or angle<0 then error() end
+			addobj(x0*96,y0*128,z0*96,angle+17)
 		end
 	end
 	----
@@ -3248,7 +3523,7 @@ function TIC()
 		unitic.render()
 		if plr.pg_lvl>0 then unitic.draw_portalgun() end
 	 --portal gun
-		portal_gun()
+		pcall(portal_gun)
 	 --sounds
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1 if s.t1==0 then sfx(1) if key(64) then s.t1=15 else s.t1=20 end end end
@@ -3271,8 +3546,10 @@ function TIC()
 			end
 		end
 	 --finish lift
+	 --[[
 		if not plr.d and plr.x//96==maps[save.lvl2][save.lvl].lift[2][1] and plr.y//128==maps[save.lvl2][save.lvl].lift[2][2] and plr.z//96==maps[save.lvl2][save.lvl].lift[2][3] then stt=max(stt,121)end
 		if stt>150 then open="load lvl" if plr.d then save.lvl=save.lvl-1 end end
+		]]
 	 --death
 	 	if plr.hp<=0 then
 			plr.d=true
@@ -3758,60 +4035,57 @@ end
 -- 195:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 196:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 197:55555555ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4
--- 198:1b1333331b1322221b1322221b1322221b1322221b1322221b1322221b132222
--- 199:3333333322222222222222222222222222222222222222222222222222222222
--- 200:333331b1222231b1222231b1222231b1222231b1222231b1222231b1222231b1
--- 201:1b1111111b1111111333333313ffffff13ffffff13ffffff13ffffff13ffffff
--- 202:111111111111111133333333ffffffffffffffffffffffffffffffffffffffff
--- 203:111111b1111111b133333331ffffff31ffffff31ffffff31ffffff31ffffff31
--- 204:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
--- 205:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
--- 206:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 198:2b2444442b2433332b2433332b2433332b2433332b2433332b2433332b243333
+-- 199:4444444433333333333333333333333333333333333333333333333333333333
+-- 200:444442b2333342b2333342b2333342b2333342b2333342b2333342b2333342b2
+-- 201:2b2222222b2222222333333323ffffff23ffffff23ffffff23ffffff23ffffff
+-- 202:222222222222222233333333ffffffffffffffffffffffffffffffffffffffff
+-- 203:222222b2222222b233333332ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 204:4444444343333332433433324333323243433332433323324333333232222222
+-- 205:4444444343333332433433324333323243433332433323324333333232222222
+-- 206:4444444343333332433433324333323243433332433323324333333232222222
 -- 208:5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa
 -- 209:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 210:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 211:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 212:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 213:bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4
--- 214:1b1322221b1322221b1322221b1322221b1322221b1322221b1322221b132222
--- 215:2222222222222222222222222222222222222222222222222222222222222222
--- 216:222231b1222231b1222231b1222231b1222231b1222231b1222231b1222231b1
--- 217:13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff
+-- 214:2b2433332b2433332b2433332b2433332b2433332b2433332b2433332b243333
+-- 215:3333333333333333333333333333333333333333333333333333333333333333
+-- 216:333342b2333342b2333342b2333342b2333342b2333342b2333342b2333342b2
+-- 217:23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff
 -- 218:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 219:ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31
--- 220:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
--- 221:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
--- 222:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 219:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 220:4444444343333332433433324333323243433332433323324333333232222222
+-- 221:4444444343333332433433324333323243433332433323324333333232222222
+-- 222:4444444343333332433433324333323243433332433323324333333232222222
 -- 224:5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb
 -- 225:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 226:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 227:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 228:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 229:ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb4
--- 230:1b1322221b1322221b1322221b1333331b11111122222222222222221b111111
--- 231:2222222222222222222222223333333311111111222222222222222211111111
--- 232:222231b1222231b1222231b1333331b1111111b12222222222222222111111b1
--- 233:13ffffff13ffffff13ffffff13ffffff13ffffff23ffffff23ffffff13ffffff
+-- 230:2b2433332b2433332b2433332b2444442b22222233333333333333332b222222
+-- 231:3333333333333333333333334444444422222222333333333333333322222222
+-- 232:333342b2333342b2333342b2444442b2222222b23333333333333333222222b2
+-- 233:23ffffff23ffffff23ffffff23ffffff23ffffff33ffffff33ffffff23ffffff
 -- 234:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 235:ffffff31ffffff31ffffff31ffffff31ffffff31ffffff32ffffff32ffffff31
--- 236:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
--- 237:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
--- 238:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 235:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 236:4444444343333332433433324333323243433332433323324333333232222222
+-- 237:4444444343333332433433324333323243433332433323324333333232222222
+-- 238:4444444343333332433433324333323243433332433323324333333232222222
 -- 240:5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5555555554444444
 -- 241:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb5555555544444444
 -- 242:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb5555555544444444
 -- 243:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb4444444444444444
 -- 244:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb4444444444444444
 -- 245:aaaaaaa4ccccccc4bbbbbbb4aaaaaaa4ccccccc4bbbbbbb44444444444444444
--- 246:1b1111111b1111111b1111111b1111111b1111111b1111111b1111111b111111
--- 247:1111111111111111111111111111111111111111111111111111111111111111
--- 248:111111b1111111b1111111b1111111b1111111b1111111b1111111b1111111b1
--- 249:13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff13ffffff
+-- 246:2b2222222b2222222b2222222b2222222b2222222b2222222b2222222b222222
+-- 247:2222222222222222222222222222222222222222222222222222222222222222
+-- 248:222222b2222222b2222222b2222222b2222222b2222222b2222222b2222222b2
+-- 249:23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff
 -- 250:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 251:ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31ffffff31
--- 252:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
--- 253:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
--- 254:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
+-- 251:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
 -- </TILES>
 
 -- <TILES1>
