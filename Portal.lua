@@ -1550,14 +1550,13 @@ local function cube_interact(cube)
 end
 
 function unitic.cube_update() --all physics related to cubes
-	local holding = plr.holding
 	local i=0 if #draw.objects.c~=0 then
 		repeat
 			i=i+1
 
 			if cube_interact(draw.objects.c[i]) then
 				draw.objects.c[i].held = not draw.objects.c[i].held
-				holding = not plr.holding
+				plr.holding = not plr.holding
 			end
 
 			local clx=draw.objects.c[i].x
@@ -1803,7 +1802,6 @@ function unitic.cube_update() --all physics related to cubes
 			--
 		until i>=#draw.objects.c
 	end
-	plr.holding = holding
 end
 
 
