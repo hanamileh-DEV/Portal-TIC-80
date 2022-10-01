@@ -1283,9 +1283,9 @@ local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk 
 		tz = lz - tz
 	end
 
-	if x + ox < 0 or x + ox > world_size[1] - 1 or
-		y + oy < 0 or y + oy > world_size[2] - 1 or
-		z + oz < 0 or z + oz > world_size[3] - 1 then
+	if x + ox <= 0 or x + ox >= world_size[1] - 1 or
+		y + oy <= 0 or y + oy >= world_size[2] - 1 or
+		z + oz <= 0 or z + oz >= world_size[3] - 1 then
 		return
 	end
 
