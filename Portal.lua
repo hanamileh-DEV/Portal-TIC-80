@@ -1038,7 +1038,7 @@ maps[0][2]={ --main gameroom
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={{0,0,1,1,2}}, --light bridge generators
-	lift={{5,4,5,2}}, --Initial and final elevator (X Y Z angle) [0 -X, 1 -Z 2 +X, 3 +Z]
+	lift={{1,0,-1,3},{-1,0,10,0}}, --Initial and final elevator (X Y Z angle)
 	music=0 --Music ID for this level
 }
 
@@ -1140,6 +1140,8 @@ maps[0][2].w[#maps[0][2].w+1]={6,0,6,2,3,8}
 maps[0][2].w[#maps[0][2].w+1]={3,0,5,2,3,8}
 maps[0][2].w[#maps[0][2].w+1]={0,0,10,1,3,11}
 maps[0][2].w[#maps[0][2].w+1]={0,0,9,1,3,12}
+maps[0][2].w[#maps[0][2].w+1]={0,0,0,3,3,12}
+maps[0][2].w[#maps[0][2].w+1]={1,0,0,3,3,11}
 --Text for levels
 local l_t={
 {"Welcome to the Aperture Science",
@@ -1612,7 +1614,6 @@ local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true
 
 
 function unitic.player_collision()
-	
 	local colx = false
 	local coly = false
 	local colz = false
@@ -1737,9 +1738,9 @@ function unitic.player_collision()
 		local y0=draw.objects.l[i].y
 		local z0=draw.objects.l[i].z
 		local type=draw.objects.l[i].type-17
-
-		plr_collide(x0-96,y0    ,z0-96, z0+96,y0    ,z0+96)
-		plr_collide(x0-96,y0+128,z0-96, z0+96,y0+128,z0+96)
+		
+		plr_collide(x0-96,y0    ,z0-96, x0+96,y0    ,z0+96)
+		plr_collide(x0-96,y0+128,z0-96, x0+96,y0+128,z0+96)
 
 		if type==0 then
 			plr_collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
@@ -1752,6 +1753,16 @@ function unitic.player_collision()
 			plr_collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
 			plr_collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
 		elseif type==1 then
+			plr_collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
+			plr_collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
+			plr_collide(x0+96 ,y0    ,z0-96,x0+96 ,y0+128,z0-48)
+			plr_collide(x0+96 ,y0    ,z0+48,x0+96 ,y0+128,z0+96)
+			plr_collide(x0+96 ,y0    ,z0-48,x0+192,y0    ,z0+48)
+			plr_collide(x0+96 ,y0+128,z0-48,x0+192,y0+128,z0+48)
+			plr_collide(x0+192,y0    ,z0-48,x0+192,y0+128,z0+48)
+			plr_collide(x0+96 ,y0    ,z0-48,x0+192,y0+128,z0-48)
+			plr_collide(x0+96 ,y0    ,z0+48,x0+192,y0+128,z0+48)
+		elseif type==2 then
 			plr_collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
 			plr_collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
 			plr_collide(x0-96,y0    ,z0+96 ,x0-48,y0+128,z0+96 )
@@ -1761,16 +1772,6 @@ function unitic.player_collision()
 			plr_collide(x0-48,y0    ,z0+192,x0+48,y0+128,z0+192)
 			plr_collide(x0-48,y0    ,z0+96 ,x0-48,y0+128,z0+192)
 			plr_collide(x0+48,y0    ,z0+96 ,x0+48,y0+128,z0+192)
-		elseif type==2 then
-			plr_collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
-			plr_collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
-			plr_collide(x0-96 ,y0    ,z0+96,x0-96 ,y0+128,z0+48)
-			plr_collide(x0-96 ,y0    ,z0-48,x0-96 ,y0+128,z0-96)
-			plr_collide(x0-192,y0    ,z0+48,x0-96 ,y0    ,z0-48)
-			plr_collide(x0-192,y0+128,z0+48,x0-96 ,y0+128,z0-48)
-			plr_collide(x0-192,y0    ,z0+48,x0-192,y0+128,z0-48)
-			plr_collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
-			plr_collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
 		elseif type==3 then
 			plr_collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
 			plr_collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
@@ -2143,6 +2144,7 @@ function unitic.portal_collision()
 end
 
 function unitic.draw_portalgun()
+	p_g.x,p_g.y=F(p_g.x),F(p_g.y)
 	rect(174+p_g.x,109+p_g.y,10,38,5)
 	circ(185+p_g.x,105+p_g.y,11,3)
 	circ(189+p_g.x,108+p_g.y,13,4)
@@ -3377,12 +3379,30 @@ function TIC()
 		load_world(save.lvl2,save.lvl)
 		plr.hp=100
 		plr.hp2=100
-		if maps[save.lvl2][save.lvl].lift[1] then
-			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96+48
+		if maps[save.lvl2][save.lvl].lift[1][4]==0 then
+			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96-144
 			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96+48
+			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96
 			plr.tx=0
-			plr.ty=pi2*maps[save.lvl2][save.lvl].lift[1][4]
+			plr.ty=-pi2
+		elseif maps[save.lvl2][save.lvl].lift[1][4]==1 then
+			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96+144
+			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
+			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96
+			plr.tx=0
+			plr.ty=pi2
+		elseif maps[save.lvl2][save.lvl].lift[1][4]==2 then
+			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96
+			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
+			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96+144
+			plr.tx=0
+			plr.ty=0
+		elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then
+			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96
+			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
+			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96-144
+			plr.tx=0
+			plr.ty=math.pi
 		else
 			plr.x=32
 			plr.y=64
