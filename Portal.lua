@@ -1187,7 +1187,9 @@ local s_t={
 
 local s_t2={1,1} --some data to display the text above
 --
-
+local function sfx_(...)
+if st.sfx then sfx(...) end
+end
 local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
 end
@@ -1656,15 +1658,15 @@ function unitic.player_collision()
 		elseif draw.map[1][x0][y0][z0][2]==7 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.cd2=10 end
 		elseif draw.map[1][x0][y0][z0][2]==15 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=0 sfx(2,"C-3",-1,1) end
+			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end
 		end
 
 		if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
 			plr_collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
 		elseif draw.map[2][x0][y0][z0][2]==5 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=0 sfx(2,"C-3",-1,1) end
+			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end
 		elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.vy=12 sfx(0,"C-6",-1,1) end
+			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.vy=12 sfx_(0,"C-6",-1,1) end
 		end
 
 		if wall_coll[draw.map[3][x0][y0][z0][2]] then
@@ -1688,7 +1690,7 @@ function unitic.player_collision()
 		elseif draw.map[3][x0][y0][z0][2]==7 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.cd2=10 end
 		elseif draw.map[3][x0][y0][z0][2]==15 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx(2,"C-3",-1,1) end
+			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx_(2,"C-3",-1,1) end
 		end
 	end end end
 	--collision with objects
@@ -1928,7 +1930,7 @@ function unitic.cube_update() --all physics related to cubes
 				if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
 					collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
 				elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
-					if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx(0,"C-6",-1,1) end
+					if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx_(0,"C-6",-1,1) end
 				end
 
 				if wall_coll[draw.map[3][x0][y0][z0][2]] then
@@ -1998,6 +2000,58 @@ function unitic.cube_update() --all physics related to cubes
 				collide(x0 - 37, y0, z0 - 37, x0 + 37, y0 + 7, z0 + 37)
 			end
 
+			for i2=1,#draw.objects.l do
+				local x0=draw.objects.l[i2].x
+				local y0=draw.objects.l[i2].y
+				local z0=draw.objects.l[i2].z
+				local type=draw.objects.l[i2].type-17
+				
+				collide(x0-96,y0    ,z0-96, x0+96,y0    ,z0+96)
+				collide(x0-96,y0+128,z0-96, x0+96,y0+128,z0+96)
+
+				if type==0 then
+					collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
+					collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
+					collide(x0-96 ,y0    ,z0-96,x0-96 ,y0+128,z0-48)
+					collide(x0-96 ,y0    ,z0+48,x0-96 ,y0+128,z0+96)
+					collide(x0-192,y0    ,z0-48,x0-96 ,y0    ,z0+48)
+					collide(x0-192,y0+128,z0-48,x0-96 ,y0+128,z0+48)
+					collide(x0-192,y0    ,z0-48,x0-192,y0+128,z0+48)
+					collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
+					collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
+				elseif type==1 then
+					collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
+					collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
+					collide(x0+96 ,y0    ,z0-96,x0+96 ,y0+128,z0-48)
+					collide(x0+96 ,y0    ,z0+48,x0+96 ,y0+128,z0+96)
+					collide(x0+96 ,y0    ,z0-48,x0+192,y0    ,z0+48)
+					collide(x0+96 ,y0+128,z0-48,x0+192,y0+128,z0+48)
+					collide(x0+192,y0    ,z0-48,x0+192,y0+128,z0+48)
+					collide(x0+96 ,y0    ,z0-48,x0+192,y0+128,z0-48)
+					collide(x0+96 ,y0    ,z0+48,x0+192,y0+128,z0+48)
+				elseif type==2 then
+					collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
+					collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
+					collide(x0-96,y0    ,z0+96 ,x0-48,y0+128,z0+96 )
+					collide(x0+48,y0    ,z0+96 ,x0+96,y0+128,z0+96 )
+					collide(x0-48,y0    ,z0+96 ,x0+48,y0    ,z0+192)
+					collide(x0-48,y0+128,z0+96 ,x0+48,y0+128,z0+192)
+					collide(x0-48,y0    ,z0+192,x0+48,y0+128,z0+192)
+					collide(x0-48,y0    ,z0+96 ,x0-48,y0+128,z0+192)
+					collide(x0+48,y0    ,z0+96 ,x0+48,y0+128,z0+192)
+				elseif type==3 then
+					collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
+					collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
+					collide(x0-96,y0    ,z0-96 ,x0-48,y0+128,z0-96 )
+					collide(x0+48,y0    ,z0-96 ,x0+96,y0+128,z0-96 )
+					collide(x0-48,y0    ,z0-192,x0+48,y0    ,z0-96 )
+					collide(x0-48,y0+128,z0-192,x0+48,y0+128,z0-96 )
+					collide(x0-48,y0    ,z0-192,x0+48,y0+128,z0-192)
+					collide(x0-48,y0    ,z0-192,x0-48,y0+128,z0-96 )
+					collide(x0+48,y0    ,z0-192,x0+48,y0+128,z0-96 )
+				end
+			end
+
 			draw.objects.c[i].x = cx
 			draw.objects.c[i].y = cy
 			draw.objects.c[i].z = cz
@@ -2062,7 +2116,7 @@ function unitic.cube_update() --all physics related to cubes
 			end
 			--
 			if bf or draw.objects.c[i].y<-20 then
-				sfx(2)
+				sfx_(2)
 				--particles
 				for i2=1,80 do
 					addp(cx-24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
@@ -2080,7 +2134,6 @@ function unitic.cube_update() --all physics related to cubes
 		until i>=#draw.objects.c
 	end
 end
-
 
 function unitic.portal_collision()
 	if not draw.p[1] or not draw.p[2] then return end
@@ -2539,7 +2592,7 @@ function unitic.turret_update()
 			if not x then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
 				if draw.objects.t[i].cd>40 then
 					plr.hp=plr.hp-R(1,2)
-					if plr.cd3<2 then plr.cd3=5 sfx(4,"C-3",-1,1) end
+					if plr.cd3<2 then plr.cd3=5 sfx_(4,"C-3",-1,1) end
 					if draw.objects.t[i].type==14 or draw.objects.t[i].type==15 then
 						for _=1,2 do
 							addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
@@ -2571,7 +2624,7 @@ function unitic.button_update()
 		if draw.objects.b[i].t~=-1 and draw.objects.b[i].s then
 			draw.objects.b[i].t1=draw.objects.b[i].t1+1
 			if draw.objects.b[i].t~=math.huge and draw.objects.b[i].t1>=draw.objects.b[i].t then
-				if draw.objects.b[i].t~=0 then sfx(17) end draw.objects.b[i].s=false draw.objects.b[i].t1=0 draw.objects.b[i].tick=true
+				if draw.objects.b[i].t~=0 then sfx_(17) end draw.objects.b[i].s=false draw.objects.b[i].t1=0 draw.objects.b[i].tick=true
 			end
 		end
 
@@ -2585,10 +2638,10 @@ function unitic.button_update()
 		local ang=math.atan(draw.objects.b[i].x-plr.x,draw.objects.b[i].z-plr.z)-plr.ty
 
 		if keyp(5) and dist<128 and not rc and ang<-2.5 and ang>-3.8 then
-			s.t1=15 sfx(16)
+			s.t1=15 sfx_(16)
 			draw.objects.b[i].tick=true
 			if draw.objects.b[i].t==-1 then
-				draw.objects.b[i].s=not draw.objects.b[i].s if not draw.objects.b[i].s then s.t1=15 sfx(17)end
+				draw.objects.b[i].s=not draw.objects.b[i].s if not draw.objects.b[i].s then s.t1=15 sfx_(17)end
 			else
 				draw.objects.b[i].s=true draw.objects.b[i].t1=0
 			end
@@ -2618,7 +2671,7 @@ function unitic.button_update()
 		draw.objects.fb[i].s=activate
 		if activate~=last_s then
 			draw.objects.fb[i].tick=true
-			if activate then s.t1=15 sfx(16) else s.t1=15 sfx(17) end
+			if activate then s.t1=15 sfx_(16) else s.t1=15 sfx_(17) end
 		end
 	end
 end
@@ -3169,12 +3222,12 @@ function TIC()
 			--buttons
  			if my>42  and my<53  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl2=1 end else ms.t1=min(1,ms.t1+0.05) end
 
-			if my>52  and my<63  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" sfx(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
+			if my>52  and my<63  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" sfx_(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
 
 			if my>72  and my<83  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then open="main|skilltest" end else ms.t3=min(1,ms.t3+0.05) end
 
-			if my>92  and my<103 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
-			if my>102 and my<113 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then open="main|authors" sfx(16) ms.t1=1 end else ms.t5=min(1,ms.t5+0.05) end
+			if my>92  and my<103 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx_(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
+			if my>102 and my<113 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then open="main|authors" sfx_(16) ms.t1=1 end else ms.t5=min(1,ms.t5+0.05) end
 			if my>122 and my<133 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then exit() end else ms.t6=min(1,ms.t6+0.05) end
 
 		elseif open=="main|newgame" then
@@ -3186,7 +3239,7 @@ function TIC()
 			print("Accept",4+(1-ms.t1)*20,85,7)
 			print("Cancel",4+(1-ms.t2)*20,105,7)
 			if my>82  and my<93  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end else ms.t1=min(1,ms.t1+0.05) end
-			if my>102 and my<113 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
+			if my>102 and my<113 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx_(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
 		elseif open=="main|skilltest" then
 			print("Set of skilltest levels",1,35,7)
 			print("Take these levels",1,55,13)
@@ -3199,7 +3252,7 @@ function TIC()
 			print("Start game",4+(1-ms.t1)*20,105,7)
 			print("Back",4+(1-ms.t2)*20,125,7)
 			if my>102 and my<112 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" music(3) ctp=0 save.lvl2=2 end else ms.t1=min(1,ms.t1+0.05) end
-			if my>122 and my<132 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
+			if my>122 and my<132 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx_(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
 
 		elseif open=="main|authors" then
 			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
@@ -3208,7 +3261,7 @@ function TIC()
 			print("Level designers: [Random dude]"          ,1,85,7)
 			print("Testers:            [Random dude]"       ,1,95,7)
 			print("Back",4+(1-ms.t1)*20,115,7)
-			if my>112 and my<123 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t1=min(1,ms.t1+0.05) end
+			if my>112 and my<123 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx_(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t1=min(1,ms.t1+0.05) end
 		end
 	end
 	--------------------------
@@ -3218,7 +3271,7 @@ function TIC()
 		if sts.t2>0 then sts.t2=sts.t2-1 end
 		cls(1)
 
-		if clp1 then sfx(16) end
+		if clp1 then sfx_(16) end
 		--
 		if sts.t==1 then
 			print("Enter the current time.",51,3,7)
@@ -3446,7 +3499,7 @@ function TIC()
 			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1
 				if clp1 then
 					open="game"
-					sfx(17)
+					sfx_(17)
 					poke(0x7FC3F,1,1)
 					if save.lvl2~=2 then music(maps[save.lvl].music) else music(3) end
 					lctp=ctp or 0
@@ -3456,15 +3509,15 @@ function TIC()
 			else p.t1=min(p.t1+0.05,1) end
 
 			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                                                  end else p.t2=min(p.t2+0.05,1) end
-			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx(16) clp1=false                         end else p.t3=min(p.t3+0.05,1) end
-			if my>122 and my<133 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx(16) end                                      else p.t4=min(p.t4+0.05,1) end
+			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx_(16) clp1=false                         end else p.t3=min(p.t3+0.05,1) end
+			if my>122 and my<133 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx_(16) end                                      else p.t4=min(p.t4+0.05,1) end
 		elseif open=="pause|accept" then
 			print("Do you really want to leave the game?",4,45,7)
 			print("Your current game will not be saved",4,55,7)
 			print("Accept",4+(1-p.t1)*20,85,7)
 			print("Back"  ,4+(1-p.t2)*20,105,7)
 			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(0,1) end else p.t1=min(p.t1+0.05,1) end
-			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx(17)                               end else p.t2=min(p.t2+0.05,1) end
+			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)                               end else p.t2=min(p.t2+0.05,1) end
 		end
 
 		--Resume button
@@ -3546,8 +3599,8 @@ function TIC()
 		pcall(portal_gun)
 	 --sounds
 		s.t1=max(s.t1-1,0)
-		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1 if s.t1==0 then sfx(1) if key(64) then s.t1=15 else s.t1=20 end end end
-		if plr.cd2==8 then sfx(3,"B-4",-1,1) end
+		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1 if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
+		if plr.cd2==8 then sfx_(3,"B-4",-1,1) end
 	 --hp
 		if plr.hp2 == plr.hp then plr.cd=plr.cd+1 else plr.cd=0 end
 		if plr.cd>120 then plr.hp=min(plr.hp+1,100) end
@@ -3597,7 +3650,7 @@ function TIC()
 		if l_t2.draw then
 			local text=l_t[l_t2.id][l_t2.i]
 			local text_size=print(text,240,0,true)
-			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if keyp(26,20,2) then l_t2.t=l_t2.t+0.5 end if (l_t2.t%1==0 or l_t2.t%1~=0 and keyp(26,20,2)) and l_t2.t//1<#text then sfx(19)end end
+			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if keyp(26,20,2) then l_t2.t=l_t2.t+0.5 end if (l_t2.t%1==0 or l_t2.t%1~=0 and keyp(26,20,2)) and l_t2.t//1<#text then sfx_(19)end end
 			rect(120-text_size/2-1,113,text_size+2,8,2)
 			print(text:sub(1,F(l_t2.t)),120-text_size/2,115,1)
 			print(text:sub(1,F(l_t2.t)),120-text_size/2,114,7)
@@ -3678,18 +3731,18 @@ function TIC()
 
 		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
 		--buttons
-		if my>22  and my<33  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx(18) if open=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
-		if my>32  and my<43  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx(18) st.sfx   =not st.sfx           end else ms.t2=min(1,ms.t2+0.05) end
-		if my>42  and my<53  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then sfx(18) st.r_p   =not st.r_p           end else ms.t3=min(1,ms.t3+0.05) end
-		if my>52  and my<63  then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then sfx(18) st.h_q_p =not st.h_q_p         end else ms.t4=min(1,ms.t4+0.05) end
-		if my>62  and my<73  then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then sfx(18) st.r_both=not st.r_both        end else ms.t5=min(1,ms.t5+0.05) end
-		if my>72  and my<83  then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then sfx(18) st.p     =not st.p             end else ms.t6=min(1,ms.t6+0.05) end
-		if my>82  and my<93  then cid=1 ms.t7=max(ms.t7-0.05,0.5) if clp1 then sfx(18) st.d_t   =not st.d_t           end else ms.t7=min(1,ms.t7+0.05) end
+		if my>22  and my<33  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx_(18) if open=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
+		if my>32  and my<43  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx_(18) st.sfx   =not st.sfx           end else ms.t2=min(1,ms.t2+0.05) end
+		if my>42  and my<53  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then sfx_(18) st.r_p   =not st.r_p           end else ms.t3=min(1,ms.t3+0.05) end
+		if my>52  and my<63  then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then sfx_(18) st.h_q_p =not st.h_q_p         end else ms.t4=min(1,ms.t4+0.05) end
+		if my>62  and my<73  then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then sfx_(18) st.r_both=not st.r_both        end else ms.t5=min(1,ms.t5+0.05) end
+		if my>72  and my<83  then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then sfx_(18) st.p     =not st.p             end else ms.t6=min(1,ms.t6+0.05) end
+		if my>82  and my<93  then cid=1 ms.t7=max(ms.t7-0.05,0.5) if clp1 then sfx_(18) st.d_t   =not st.d_t           end else ms.t7=min(1,ms.t7+0.05) end
 
-		if my>102 and my<113 and open=="main|settings" then cid=1 ms.t8=max(ms.t8-0.05,0.5) if clp1 then sfx(16) music(3,7,0)open="calibration" end else ms.t8=min(1,ms.t8+0.05) end
+		if my>102 and my<113 and open=="main|settings" then cid=1 ms.t8=max(ms.t8-0.05,0.5) if clp1 then sfx_(16) music(3,7,0)open="calibration" end else ms.t8=min(1,ms.t8+0.05) end
 
 		if my>122 and my<133 then cid=1 ms.t9=max(ms.t9-0.05,0.5)
-			if clp1 then sfx(17)
+			if clp1 then sfx_(17)
 				if open=="main|settings" then open="main" else open="pause" end
 				ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 ms.t7=1 ms.t8=1 ms.t9=1 end
 		else ms.t9=min(1,ms.t9+0.05) end
@@ -3752,7 +3805,7 @@ function TIC()
 	end
 	-------------------------------------------
 	--settings
-	if not st.sfx then sfx(-1,1,0) sfx(-1,1,1) sfx(-1,1,2) sfx(-1,1,3) end
+	if not st.sfx then sfx_(-1,1,0) sfx_(-1,1,1) sfx_(-1,1,2) sfx_(-1,1,3) end --it must exist
 	if not st.music then music(-1) end
 	vbank(1)
 	--cursor id
