@@ -1187,6 +1187,7 @@ maps[1][1]={
 	 --{X, Y, Z, type, [additional parameters]}
 	 {96*8.5,0,96*2.5,16},
 	 {96*6,24,96*3.5,1},
+	 {96*6,100,96*3.5,2},
 	 {96*8,0,0,24},
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
@@ -1864,6 +1865,10 @@ function unitic.player_collision()
 				or coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 				or coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
 			end
+		elseif draw.map[1][x0][y0][z0][2]==11 then
+			plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 62, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+		elseif draw.map[1][x0][y0][z0][2]==12 then
+			plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 34)
 		elseif draw.map[1][x0][y0][z0][2]==7 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.cd2=10 end
 		elseif draw.map[1][x0][y0][z0][2]==15 then
@@ -1898,6 +1903,10 @@ function unitic.player_collision()
 			end
 		elseif draw.map[3][x0][y0][z0][2]==7 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.cd2=10 end
+		elseif draw.map[3][x0][y0][z0][2]==11 then
+			plr_collide(x0 * 96 + 62, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+		elseif draw.map[3][x0][y0][z0][2]==12 then
+			plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 34, y0 * 128 + 126, z0 * 96)
 		elseif draw.map[3][x0][y0][z0][2]==15 then
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx_(2,"C-3",-1,1) end
 		end
@@ -2133,7 +2142,11 @@ function unitic.cube_update() --all physics related to cubes
 						collide(x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 					end
 				elseif draw.map[1][x0][y0][z0][2]==7 then
-					if coll(clx - 24,  cly - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then bf = true end
+					if coll(clx - 24,  cly - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then bf = true end		
+				elseif draw.map[1][x0][y0][z0][2]==11 then
+					collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 62, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+				elseif draw.map[1][x0][y0][z0][2]==12 then
+					collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 34)
 				end
 
 				if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
@@ -2154,6 +2167,10 @@ function unitic.cube_update() --all physics related to cubes
 					end
 				elseif draw.map[3][x0][y0][z0][2]==7 then
 					if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then bf=true end
+				elseif draw.map[3][x0][y0][z0][2]==11 then
+					collide(x0 * 96 + 62, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+				elseif draw.map[3][x0][y0][z0][2]==12 then
+					collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 34, y0 * 128 + 126, z0 * 96)
 				end
 
 			end end end
