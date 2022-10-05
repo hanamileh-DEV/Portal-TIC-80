@@ -2117,13 +2117,13 @@ function unitic.cube_update() --all physics related to cubes
 				if sx ~= 0 then draw.objects.c[i].vx = 0 end
 				cx = cx + sx
 				local sy = coll_shift(
-					cx - 24, cy - 24, clz - 24, cx + 24, cy + 24, clz + 24,
+					clx - 24, cy - 24, clz - 24, clx + 24, cy + 24, clz + 24,
 					x3, y3, z3, x4, y4, z4, 2
 				)
 				if sy ~= 0 then draw.objects.c[i].vy = 0 end
 				cy = cy + sy
 				local sz = coll_shift(
-					cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24,
+					clx - 24, cly - 24, cz - 24, clx + 24, cly + 24, cz + 24,
 					x3, y3, z3, x4, y4, z4, 3
 				)
 				if sz ~= 0 then draw.objects.c[i].vz = 0 end
