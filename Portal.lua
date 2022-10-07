@@ -2541,7 +2541,9 @@ function unitic.render() --------
 		end
 	end
 	--
-	local dist1, dist2, dist = math.huge, math.huge, false
+	local dist12d, dist22d, dist2d = math.huge, math.huge, false
+
+	local dist13d, dist23d, dist3d = math.huge, math.huge, false
 
 	local txsin = math.sin( plr.tx)
 	local txcos = math.cos( plr.tx)
@@ -2566,7 +2568,8 @@ function unitic.render() --------
 		local x0 = a3 * z0
 		local y0 = b3 * z0
 
-		dist1=(x0^2 + y0^2)^0.5
+		dist12d=(x0^2 + y0^2)^0.5
+		dist13d=(x1^2 + y1^2 + z1^2)^0.5
 	end
 
 	if draw.p[2] then
@@ -2588,12 +2591,15 @@ function unitic.render() --------
 		local x0 = a3 * z0
 		local y0 = b3 * z0
 
-		dist2=(x0^2 + y0^2)^0.5
-		dist = true
+		dist22d=(x0^2 + y0^2)^0.5
+		dist23d=(x2^2 + y2^2 + z2^2)^0.5
+		dist2d = true
+		dist3d = true
 	end
 
 	if draw.p[1] and draw.p[2] then
-		dist=dist1 < dist2
+		dist2d=dist12d < dist22d
+		dist3d=dist13d < dist23d
 	end
 
 	vbank(0)
@@ -2632,8 +2638,8 @@ function unitic.render() --------
 		elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
 		end
 		fps_.t4=time()
-		if st.h_q_p or min(dist1,dist2)<128^2 or (t%2==0 and min(dist1,dist2)<512^2) or (t%3==0 and min(dist1,dist2)>=512^2) then
-				if dist then
+		if st.h_q_p or min(dist13d,dist23d)<128^2 or (t%2==0 and min(dist13d,dist23d)<512^2) or (t%3==0 and min(dist13d,dist23d)>=512^2) then
+				if dist2d then
 					cam.x = 96*x2 + relx1
 					cam.y = 128*y2 + rely1
 					cam.z = 96*z2 + relz1
@@ -2653,7 +2659,7 @@ function unitic.render() --------
 				if st.r_both and draw.p[1] and draw.p[2] then
 				vbank(1) do
 					cls(0)
-					local p_verts = dist and draw.p_verts[1] or draw.p_verts[2]
+					local p_verts = dist3d and draw.p_verts[1] or draw.p_verts[2]
 					local portal = {draw.world.v[p_verts[1][1]], draw.world.v[p_verts[1][2]], draw.world.v[p_verts[1][3]], draw.world.v[p_verts[2][2]]}
 
 					local txsin = math.sin(plr.tx)
@@ -2712,7 +2718,7 @@ function unitic.render() --------
 						)
 					end
 				end vbank(0)
-				if dist then
+				if dist3d then
 					cam.x = 96*x1 + relx2
 					cam.y = 128*y1 + rely2
 					cam.z = 96*z1 + relz2
@@ -2747,7 +2753,7 @@ function unitic.render() --------
 	if (draw.p[1] or draw.p[2]) and not (st.r_both and draw.p[1] and draw.p[2]) then
 		--portal overlays
 		local v_id={}
-		if dist then
+		if dist2d then
 			v_id={
 				draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+1,
 				draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+1}
@@ -2781,10 +2787,10 @@ function unitic.render() --------
 
 		local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
 
-		if dist and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
+		if dist2d and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
 			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99) --orange
 			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
-		elseif dist==false and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
+		elseif dist2d==false and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
 			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
 			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0 ,200,24,200,0,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
 		end
