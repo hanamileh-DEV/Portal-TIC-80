@@ -1545,65 +1545,23 @@ function unitic.update(draw_portal,p_id)
 	local f3={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{23,248},{29,247},{23,247},-1},f=1},{16,13,15,uv={{23,248},{29,247},{23,247},-1},f=1},{10,12,11,uv={{23,248},{29,248},{29,247},-1},f=1},{16,14,13,uv={{23,248},{29,248},{29,247},-1},f=1}}
 	local f4={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{16,248},{22,247},{16,247},-1},f=1},{16,13,15,uv={{16,248},{22,247},{16,247},-1},f=1},{10,12,11,uv={{16,248},{22,248},{22,247},-1},f=1},{16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1}}
 
-	local f5={
-		{2,3,1,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},
-		{4,7,3,uv={{45+16,232},{32+16,245},{45+16,245},-1},f=2},
-		{8,5,7,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},
-		{7,1,3,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},
-		{4,6,8,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},
-		{2,4,3,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},
-		{4,8,7,uv={{45+16,232},{32+16,232},{32+16,245},-1},f=2},
-		{8,6,5,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},
-		{7,5,1,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},
-		{4,2,6,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},
-  }
-	local f6={
-		{2,3,1,uv={{45,246},{32,245},{32,246},-1},f=2},
-		{4,7,3,uv={{45,232},{32,245},{45,245},-1},f=2},
-		{8,5,7,uv={{45,246},{32,245},{32,246},-1},f=2},
-		{7,1,3,uv={{45,246},{32,245},{32,246},-1},f=2},
-		{4,6,8,uv={{45,246},{32,245},{32,246},-1},f=2},
-		{2,4,3,uv={{45,246},{45,245},{32,245},-1},f=2},
-		{4,8,7,uv={{45,232},{32,232},{32,245},-1},f=2},
-		{8,6,5,uv={{45,246},{45,245},{32,245},-1},f=2},
-		{7,5,1,uv={{45,246},{45,245},{32,245},-1},f=2},
-		{4,2,6,uv={{45,246},{45,245},{32,245},-1},f=2},
-  }
-
+	local f5={{2,3,1,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{4,7,3,uv={{45+16,232},{32+16,245},{45+16,245},-1},f=2},{8,5,7,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{7,1,3,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{4,6,8,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{2,4,3,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{4,8,7,uv={{45+16,232},{32+16,232},{32+16,245},-1},f=2},{8,6,5,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{7,5,1,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{4,2,6,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2}}
+	local f6={{2,3,1,uv={{45,246},{32,245},{32,246},-1},f=2},{4,7,3,uv={{45,232},{32,245},{45,245},-1},f=2},{8,5,7,uv={{45,246},{32,245},{32,246},-1},f=2},{7,1,3,uv={{45,246},{32,245},{32,246},-1},f=2},{4,6,8,uv={{45,246},{32,245},{32,246},-1},f=2},{2,4,3,uv={{45,246},{45,245},{32,245},-1},f=2},{4,8,7,uv={{45,232},{32,232},{32,245},-1},f=2},{8,6,5,uv={{45,246},{45,245},{32,245},-1},f=2},{7,5,1,uv={{45,246},{45,245},{32,245},-1},f=2},{4,2,6,uv={{45,246},{45,245},{32,245},-1},f=2}}
+	
 	local i2=0
-	for i=1,#draw.objects.c  do i2=i2+1
-		unitic.obj[i2]=draw.objects.c[i]
-		if draw.objects.c[i].inp and draw.p[1] and draw.p[2] then
+	for i=1,#draw.objects.c  do
+		i2=i2+1 unitic.obj[i2]=draw.objects.c [i]
+		if draw.objects.c[i].inp then
 			i2=i2+1 unitic.obj[i2]={
 				type = draw.objects.c[i].type,
 				draw = draw.objects.c[i].draw,
-				model= {v={},f={}},
+				model= draw.objects.c[i].model,
 
 				x = draw.objects.c[i].x1,
 				y = draw.objects.c[i].y1,
 				z = draw.objects.c[i].z1,
+			
 			}
-			for i3=1,#model[unitic.obj[i2].type].v do
-				unitic.obj[i2].model.v[i3][1]=model[1].v[i3][1]
-				unitic.obj[i2].model.v[i3][2]=model[1].v[i3][2]
-				unitic.obj[i2].model.v[i3][3]=model[1].v[i3][3]
-			end
-			for i3=1,#model[unitic.obj[i2].type].f do
-				draw.objects.c[#draw.objects.c].model.f[i]={
-					model[unitic.obj[i2].type].f[i][1],
-					model[unitic.obj[i2].type].f[i][2],
-					model[unitic.obj[i2].type].f[i][3],
-					uv={
-						{model[unitic.obj[i2].type].f[i].uv[1][1],model[unitic.obj[i2].type].f[i].uv[1][2]},
-						{model[unitic.obj[i2].type].f[i].uv[2][1],model[unitic.obj[i2].type].f[i].uv[2][2]},
-						{model[unitic.obj[i2].type].f[i].uv[3][1],model[unitic.obj[i2].type].f[i].uv[3][2]},-1
-					},
-					f=model[unitic.obj[i2].type].f[i].f}
-			end
-
-
-		else
-
 		end
 	end
 
@@ -2047,318 +2005,361 @@ local function cube_interact(cube)
 end
 
 function unitic.cube_update() --all physics related to cubes
-	local i=0 if #draw.objects.c~=0 then
-		repeat
-			i=i+1
+	local i=0 if #draw.objects.c==0 then return end
+	repeat
+		i=i+1
 
-			if cube_interact(draw.objects.c[i]) then
-				draw.objects.c[i].held = not draw.objects.c[i].held
-				plr.holding = not plr.holding
+		if cube_interact(draw.objects.c[i]) then
+			draw.objects.c[i].held = not draw.objects.c[i].held
+			plr.holding = not plr.holding
+		end
+
+		local clx=draw.objects.c[i].x
+		local cly=draw.objects.c[i].y
+		local clz=draw.objects.c[i].z
+
+		local cx=draw.objects.c[i].x
+		local cy=draw.objects.c[i].y
+		local cz=draw.objects.c[i].z
+
+		if draw.objects.c[i].held then
+			local hold_dist = 100
+			local txsin = math.sin(plr.tx)
+			local txcos = math.cos(plr.tx)
+			local tysin = math.sin(-plr.ty)
+			local tycos = math.cos(-plr.ty)
+			local tx = plr.x + hold_dist * tysin * txcos
+			local ty = plr.y + hold_dist * -txsin
+			local tz = plr.z + hold_dist * -tycos * txcos
+			local dx,dy,dz=tx-cx,ty-cy,tz-cz
+			local dist = math.sqrt(dx^2 + dy^2 + dz^2)
+			if dist ~= 0 then
+				local mdist=min(20, dist)
+				cx,cy,cz=cx+dx*(mdist/dist),cy+dy*(mdist/dist),cz+dz*(mdist/dist)
 			end
+			draw.objects.c[i].vx = dx
+			draw.objects.c[i].vy = dy
+			draw.objects.c[i].vz = dz
+		else
+			cx=cx+draw.objects.c[i].vx
+			cy=cy+draw.objects.c[i].vy
+			cz=cz+draw.objects.c[i].vz
+			draw.objects.c[i].vx=draw.objects.c[i].vx*0.9
+			draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
+			draw.objects.c[i].vz=draw.objects.c[i].vz*0.9
+		end
 
-			local clx=draw.objects.c[i].x
-			local cly=draw.objects.c[i].y
-			local clz=draw.objects.c[i].z
+		local bf = false --is the cube in the blue field
 
-			local cx=draw.objects.c[i].x
-			local cy=draw.objects.c[i].y
-			local cz=draw.objects.c[i].z
+		local x1=max((cx-25)//96,0)
+		local y1=max((cy-25)//128,0)
+		local z1=max((cz-25)//96,0)
 
-			if draw.objects.c[i].held then
-				local hold_dist = 100
-				local txsin = math.sin(plr.tx)
-				local txcos = math.cos(plr.tx)
-				local tysin = math.sin(-plr.ty)
-				local tycos = math.cos(-plr.ty)
-				local tx = plr.x + hold_dist * tysin * txcos
-				local ty = plr.y + hold_dist * -txsin
-				local tz = plr.z + hold_dist * -tycos * txcos
-				local dx,dy,dz=tx-cx,ty-cy,tz-cz
-				local dist = math.sqrt(dx^2 + dy^2 + dz^2)
-				if dist ~= 0 then
-					local mdist=min(20, dist)
-					cx,cy,cz=cx+dx*(mdist/dist),cy+dy*(mdist/dist),cz+dz*(mdist/dist)
-				end
-				draw.objects.c[i].vx = dx
-				draw.objects.c[i].vy = dy
-				draw.objects.c[i].vz = dz
-			else
-				cx=cx+draw.objects.c[i].vx
-				cy=cy+draw.objects.c[i].vy
-				cz=cz+draw.objects.c[i].vz
-				draw.objects.c[i].vx=draw.objects.c[i].vx*0.9
-				draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
-				draw.objects.c[i].vz=draw.objects.c[i].vz*0.9
-			end
+		local x2=min((cx+25)//96,world_size[1]-1)
+		local y2=min((cy+25)//128,world_size[2]-1)
+		local z2=min((cz+25)//96,world_size[3]-1)
 
-			local bf   = false --is the cube in the blue field
+		local function collide(x3, y3, z3, x4, y4, z4)
+			-- try moving the current amount in each axis, partially cancelling if needed
+			local sx = coll_shift(
+				cx - 24, cly - 24, clz - 24, cx + 24, cly + 24, clz + 24,
+				x3, y3, z3, x4, y4, z4, 1
+			)
+			if sx ~= 0 then draw.objects.c[i].vx = 0 end
+			cx = cx + sx
+			local sy = coll_shift(
+				clx - 24, cy - 24, clz - 24, clx + 24, cy + 24, clz + 24,
+				x3, y3, z3, x4, y4, z4, 2
+			)
+			if sy ~= 0 then draw.objects.c[i].vy = 0 end
+			cy = cy + sy
+			local sz = coll_shift(
+				clx - 24, cly - 24, cz - 24, clx + 24, cly + 24, cz + 24,
+				x3, y3, z3, x4, y4, z4, 3
+			)
+			if sz ~= 0 then draw.objects.c[i].vz = 0 end
+			cz = cz + sz
+		end
 
-			local x1=max((cx-25)//96,0) -- +-24
-			local y1=max((cy-25)//128,0)
-			local z1=max((cz-25)//96,0)
-
-			local x2=min((cx+25)//96,world_size[1]-1)
-			local y2=min((cy+25)//128,world_size[2]-1)
-			local z2=min((cz+25)//96,world_size[3]-1)
-
-			-- local function update_pos_vel(sx, sy, sz) -- Do we need it?
-			-- 		cx, cy, cz = cx + sx, cy + sy, cz + sz
-			-- 		if sx ~= 0 then draw.objects.c[i].vx = 0 end
-			-- 		if sy ~= 0 then draw.objects.c[i].vy = 0 end
-			-- 		if sz ~= 0 then draw.objects.c[i].vz = 0 end
-			-- end
-
-			local function collide(x3, y3, z3, x4, y4, z4)
-				-- try moving the current amount in each axis, partially cancelling if needed
-				local sx = coll_shift(
-					cx - 24, cly - 24, clz - 24, cx + 24, cly + 24, clz + 24,
-					x3, y3, z3, x4, y4, z4, 1
-				)
-				if sx ~= 0 then draw.objects.c[i].vx = 0 end
-				cx = cx + sx
-				local sy = coll_shift(
-					clx - 24, cy - 24, clz - 24, clx + 24, cy + 24, clz + 24,
-					x3, y3, z3, x4, y4, z4, 2
-				)
-				if sy ~= 0 then draw.objects.c[i].vy = 0 end
-				cy = cy + sy
-				local sz = coll_shift(
-					clx - 24, cly - 24, cz - 24, clx + 24, cly + 24, cz + 24,
-					x3, y3, z3, x4, y4, z4, 3
-				)
-				if sz ~= 0 then draw.objects.c[i].vz = 0 end
-				cz = cz + sz
-			end
-
-			for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
-				if wall_coll[draw.map[1][x0][y0][z0][2]] then
+		for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
+			if wall_coll[draw.map[1][x0][y0][z0][2]] then
+				collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+			elseif draw.map[1][x0][y0][z0][2]==5 or draw.map[1][x0][y0][z0][2]==6 then
+				if not draw.p[1] or not draw.p[2] then
 					collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-				elseif draw.map[1][x0][y0][z0][2]==5 or draw.map[1][x0][y0][z0][2]==6 then
-					if not draw.p[1] or not draw.p[2] then
-						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-					else
-						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
-						collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-						collide(x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-					end
-				elseif draw.map[1][x0][y0][z0][2]==7 then
-					if coll(clx - 24,  cly - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then bf = true end		
-				elseif draw.map[1][x0][y0][z0][2]==11 then
-					collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 62, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-				elseif draw.map[1][x0][y0][z0][2]==12 then
-					collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 34)
+				else
+					collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
+					collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+					collide(x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 				end
+			elseif draw.map[1][x0][y0][z0][2]==7 then
+				if coll(clx - 24,  cly - 24, clz - 24, clx + 24,  cy + 24, clz + 24, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then bf = true end		
+			elseif draw.map[1][x0][y0][z0][2]==11 then
+				collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 62, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+			elseif draw.map[1][x0][y0][z0][2]==12 then
+				collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 34)
+			end
 
-				if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
-					collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
-				elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
-					if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx_(0,"C-6",-1,1) end
-				end
+			if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
+				collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
+			elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
+				if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx_(0,"C-6",-1,1) end
+			end
 
-				if wall_coll[draw.map[3][x0][y0][z0][2]] then
+			if wall_coll[draw.map[3][x0][y0][z0][2]] then
+				collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+			elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
+				if not draw.p[1] or not draw.p[2] then
 					collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-				elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
-					if not draw.p[1] or not draw.p[2] then
-						collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-					else
-						collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
-						collide(x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-						collide(x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-					end
-				elseif draw.map[3][x0][y0][z0][2]==7 then
-					if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then bf=true end
-				elseif draw.map[3][x0][y0][z0][2]==11 then
-					collide(x0 * 96 + 62, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-				elseif draw.map[3][x0][y0][z0][2]==12 then
-					collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 34, y0 * 128 + 126, z0 * 96)
+				else
+					collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
+					collide(x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+					collide(x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 				end
-
-			end end end
-			--collision with the player
-			do
-				local x0=plr.x
-				local y0=plr.y
-				local z0=plr.z
-				collide(x0 - 16, y0 - 64, z0 - 16, x0 + 16, y0 + 16, z0 + 16)
+			elseif draw.map[3][x0][y0][z0][2]==7 then
+				if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then bf=true end
+			elseif draw.map[3][x0][y0][z0][2]==11 then
+				collide(x0 * 96 + 62, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+			elseif draw.map[3][x0][y0][z0][2]==12 then
+				collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 34, y0 * 128 + 126, z0 * 96)
 			end
 
-			--collision with objects
-			for i2=1,#draw.objects.c do
-				if i2~=i then
-					local x0=draw.objects.c[i2].x
-					local y0=draw.objects.c[i2].y
-					local z0=draw.objects.c[i2].z
+		end end end
+		--collision with the player
+		if not plr.noclip then --Correct the mystical disappearance of cubes when span through them
+			local x0=plr.x
+			local y0=plr.y
+			local z0=plr.z
+			collide(x0 - 16, y0 - 64, z0 - 16, x0 + 16, y0 + 16, z0 + 16)
+		end
+
+		--collision with objects
+		for i2=1,#draw.objects.c do
+			if i2~=i then
+				local x0=draw.objects.c[i2].x
+				local y0=draw.objects.c[i2].y
+				local z0=draw.objects.c[i2].z
+				collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
+				if draw.objects.c[i2].inp and draw.p[1] and draw.p[2] then
+					local x0=draw.objects.c[i].x1
+					local y0=draw.objects.c[i].y1
+					local z0=draw.objects.c[i].z1
 					collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
-					if draw.objects.c[i2].inp and draw.p[1] and draw.p[2] then
-						local x0=draw.objects.c[i].x1
-						local y0=draw.objects.c[i].y1
-						local z0=draw.objects.c[i].z1
-						collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
-					end
 				end
 			end
+		end
 
-			for i2=1,#draw.objects.lb do
-				local x0=draw.objects.lb[i2].x
-				local y0=draw.objects.lb[i2].y
-				local z0=draw.objects.lb[i2].z
-				collide(x0 - 48, y0 + 5, z0 - 48, x0 + 48, y0 + 5, z0 + 48)
-			end
+		for i2=1,#draw.objects.lb do
+			local x0=draw.objects.lb[i2].x
+			local y0=draw.objects.lb[i2].y
+			local z0=draw.objects.lb[i2].z
+			collide(x0 - 48, y0 + 5, z0 - 48, x0 + 48, y0 + 5, z0 + 48)
+		end
 
-			for i2=1,#draw.objects.b do
-				local x0=draw.objects.b[i2].x
-				local y0=draw.objects.b[i2].y
-				local z0=draw.objects.b[i2].z
-				collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
-			end
+		for i2=1,#draw.objects.b do
+			local x0=draw.objects.b[i2].x
+			local y0=draw.objects.b[i2].y
+			local z0=draw.objects.b[i2].z
+			collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
+		end
 
-			for i2=1,#draw.objects.t do
-				local x0=draw.objects.t[i2].x
-				local y0=draw.objects.t[i2].y
-				local z0=draw.objects.t[i2].z
-				collide(x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12)
-			end
+		for i2=1,#draw.objects.t do
+			local x0=draw.objects.t[i2].x
+			local y0=draw.objects.t[i2].y
+			local z0=draw.objects.t[i2].z
+			collide(x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12)
+		end
 
-			for i2=1,#draw.objects.fb do
-				local x0=draw.objects.fb[i2].x
-				local y0=draw.objects.fb[i2].y
-				local z0=draw.objects.fb[i2].z
-				collide(x0 - 37, y0, z0 - 37, x0 + 37, y0 + 7, z0 + 37)
-			end
+		for i2=1,#draw.objects.fb do
+			local x0=draw.objects.fb[i2].x
+			local y0=draw.objects.fb[i2].y
+			local z0=draw.objects.fb[i2].z
+			collide(x0 - 37, y0, z0 - 37, x0 + 37, y0 + 7, z0 + 37)
+		end
 
-			for i2=1,#draw.objects.l do
-				local x0=draw.objects.l[i2].x
-				local y0=draw.objects.l[i2].y
-				local z0=draw.objects.l[i2].z
-				local type=draw.objects.l[i2].type-17
-				
-				collide(x0-96,y0    ,z0-96, x0+96,y0    ,z0+96)
-				collide(x0-96,y0+128,z0-96, x0+96,y0+128,z0+96)
-
-				if type==0 then
-					collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
-					collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
-					collide(x0-96 ,y0    ,z0-96,x0-96 ,y0+128,z0-48)
-					collide(x0-96 ,y0    ,z0+48,x0-96 ,y0+128,z0+96)
-					collide(x0-192,y0    ,z0-48,x0-96 ,y0    ,z0+48)
-					collide(x0-192,y0+128,z0-48,x0-96 ,y0+128,z0+48)
-					collide(x0-192,y0    ,z0-48,x0-192,y0+128,z0+48)
-					collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
-					collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
-				elseif type==1 then
-					collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
-					collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
-					collide(x0+96 ,y0    ,z0-96,x0+96 ,y0+128,z0-48)
-					collide(x0+96 ,y0    ,z0+48,x0+96 ,y0+128,z0+96)
-					collide(x0+96 ,y0    ,z0-48,x0+192,y0    ,z0+48)
-					collide(x0+96 ,y0+128,z0-48,x0+192,y0+128,z0+48)
-					collide(x0+192,y0    ,z0-48,x0+192,y0+128,z0+48)
-					collide(x0+96 ,y0    ,z0-48,x0+192,y0+128,z0-48)
-					collide(x0+96 ,y0    ,z0+48,x0+192,y0+128,z0+48)
-				elseif type==2 then
-					collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
-					collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
-					collide(x0-96,y0    ,z0+96 ,x0-48,y0+128,z0+96 )
-					collide(x0+48,y0    ,z0+96 ,x0+96,y0+128,z0+96 )
-					collide(x0-48,y0    ,z0+96 ,x0+48,y0    ,z0+192)
-					collide(x0-48,y0+128,z0+96 ,x0+48,y0+128,z0+192)
-					collide(x0-48,y0    ,z0+192,x0+48,y0+128,z0+192)
-					collide(x0-48,y0    ,z0+96 ,x0-48,y0+128,z0+192)
-					collide(x0+48,y0    ,z0+96 ,x0+48,y0+128,z0+192)
-				elseif type==3 then
-					collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
-					collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
-					collide(x0-96,y0    ,z0-96 ,x0-48,y0+128,z0-96 )
-					collide(x0+48,y0    ,z0-96 ,x0+96,y0+128,z0-96 )
-					collide(x0-48,y0    ,z0-192,x0+48,y0    ,z0-96 )
-					collide(x0-48,y0+128,z0-192,x0+48,y0+128,z0-96 )
-					collide(x0-48,y0    ,z0-192,x0+48,y0+128,z0-192)
-					collide(x0-48,y0    ,z0-192,x0-48,y0+128,z0-96 )
-					collide(x0+48,y0    ,z0-192,x0+48,y0+128,z0-96 )
-				end
-			end
-
-			draw.objects.c[i].x = cx
-			draw.objects.c[i].y = cy
-			draw.objects.c[i].z = cz
+		for i2=1,#draw.objects.l do
+			local x0=draw.objects.l[i2].x
+			local y0=draw.objects.l[i2].y
+			local z0=draw.objects.l[i2].z
+			local type=draw.objects.l[i2].type-17
 			
-			local inbp,inop = false, false
-			--collision with portals
-			if draw.p[1] and draw.p[2] then
-				if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then inbp=true end
-				if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then inbp=true end
-				if draw.p[1][4]==1 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then inbp=true end
-				if draw.p[1][4]==3 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then inbp=true end
-							
-				if draw.p[2][4]==1 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then inop=true end
-				if draw.p[2][4]==3 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then inop=true end
-				if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then inop=true end
-				if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then inop=true end
+			collide(x0-96,y0    ,z0-96, x0+96,y0    ,z0+96)
+			collide(x0-96,y0+128,z0-96, x0+96,y0+128,z0+96)
+
+			if type==0 then
+				collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
+				collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
+				collide(x0-96 ,y0    ,z0-96,x0-96 ,y0+128,z0-48)
+				collide(x0-96 ,y0    ,z0+48,x0-96 ,y0+128,z0+96)
+				collide(x0-192,y0    ,z0-48,x0-96 ,y0    ,z0+48)
+				collide(x0-192,y0+128,z0-48,x0-96 ,y0+128,z0+48)
+				collide(x0-192,y0    ,z0-48,x0-192,y0+128,z0+48)
+				collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
+				collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
+			elseif type==1 then
+				collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
+				collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
+				collide(x0+96 ,y0    ,z0-96,x0+96 ,y0+128,z0-48)
+				collide(x0+96 ,y0    ,z0+48,x0+96 ,y0+128,z0+96)
+				collide(x0+96 ,y0    ,z0-48,x0+192,y0    ,z0+48)
+				collide(x0+96 ,y0+128,z0-48,x0+192,y0+128,z0+48)
+				collide(x0+192,y0    ,z0-48,x0+192,y0+128,z0+48)
+				collide(x0+96 ,y0    ,z0-48,x0+192,y0+128,z0-48)
+				collide(x0+96 ,y0    ,z0+48,x0+192,y0+128,z0+48)
+			elseif type==2 then
+				collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
+				collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
+				collide(x0-96,y0    ,z0+96 ,x0-48,y0+128,z0+96 )
+				collide(x0+48,y0    ,z0+96 ,x0+96,y0+128,z0+96 )
+				collide(x0-48,y0    ,z0+96 ,x0+48,y0    ,z0+192)
+				collide(x0-48,y0+128,z0+96 ,x0+48,y0+128,z0+192)
+				collide(x0-48,y0    ,z0+192,x0+48,y0+128,z0+192)
+				collide(x0-48,y0    ,z0+96 ,x0-48,y0+128,z0+192)
+				collide(x0+48,y0    ,z0+96 ,x0+48,y0+128,z0+192)
+			elseif type==3 then
+				collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
+				collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
+				collide(x0-96,y0    ,z0-96 ,x0-48,y0+128,z0-96 )
+				collide(x0+48,y0    ,z0-96 ,x0+96,y0+128,z0-96 )
+				collide(x0-48,y0    ,z0-192,x0+48,y0    ,z0-96 )
+				collide(x0-48,y0+128,z0-192,x0+48,y0+128,z0-96 )
+				collide(x0-48,y0    ,z0-192,x0+48,y0+128,z0-192)
+				collide(x0-48,y0    ,z0-192,x0-48,y0+128,z0-96 )
+				collide(x0+48,y0    ,z0-192,x0+48,y0+128,z0-96 )
+			end
+		end
+
+		--Duplication of the cube if it is in the portal (NOT to be confused with the movement of the cube to the portal!!)
+		local inbp,inop = false, false
+		if draw.p[1] and draw.p[2] then
+			if draw.p[1][4]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then inbp=true end
+			if draw.p[1][4]==3 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then inbp=true end
+						
+			if draw.p[2][4]==1 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then inop=true end
+			if draw.p[2][4]==3 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then inop=true end
+			
+			draw.objects.c[i].inp=inbp or inop
+
+			if draw.objects.c[i].inp then
+				--We make a portal copy
+				local x1, y1, z1 = portalcenter(1)
+				local x2, y2, z2 = portalcenter(2)
+
+				-- calculate portal offsets
+				local relx1 = cx - 96 * x1
+				local rely1 = cy - 128 * y1
+				local relz1 = cz - 96 * z1
+				local relx2 = cx - 96 * x2
+				local rely2 = cy - 128 * y2
+				local relz2 = cz - 96 * z2
 				
-				draw.objects.c[i].inp=inbp or inop
+				-- calculate portal rotation
+				local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+				local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+				local rotd1 = (2 + rot2 - rot1) % 4
+				local rotd2 = (2 + rot1 - rot2) % 4
 
-				if draw.objects.c[i].inp then
-					--We make a portal copy
-					local x1, y1, z1 = portalcenter(1)
-					local x2, y2, z2 = portalcenter(2)
+				if     rotd1 == 0 then
+				elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
+				elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
+				elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
+				end
 
-					-- calculate portal offsets
-					local relx1 = cx - 96 * x1
-					local rely1 = cy - 128 * y1
-					local relz1 = cz - 96 * z1
-					local relx2 = cx - 96 * x2
-					local rely2 = cy - 128 * y2
-					local relz2 = cz - 96 * z2
-					
-					-- calculate portal rotation
-					local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-					local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-					local rotd1 = (2 + rot2 - rot1) % 4
-					local rotd2 = (2 + rot1 - rot2) % 4
+				if     rotd2 == 0 then
+				elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
+				elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
+				elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
+				end
 
-					if     rotd1 == 0 then
-					elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
-					elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
-					elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
-					end
+				if inbp and inop==false then
+					draw.objects.c[i].x1 = 96*x2 + relx1
+					draw.objects.c[i].y1 = 128*y2 + rely1
+					draw.objects.c[i].z1 = 96*z2 + relz1
 
-					if     rotd2 == 0 then
-					elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
-					elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
-					elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
-					end
-
-					if inbp and inop==false then
-						draw.objects.c[i].x1 = 96*x2 + relx1
-						draw.objects.c[i].y1 = 128*y2 + rely1
-						draw.objects.c[i].z1 = 96*z2 + relz1
-
-					elseif inop and inbp==false then
-						draw.objects.c[i].x1 = 96*x1 + relx2
-						draw.objects.c[i].y1 = 128*y1 + rely2
-						draw.objects.c[i].z1 = 96*z1 + relz2
-					end
+				elseif inop and inbp==false then
+					draw.objects.c[i].x1 = 96*x1 + relx2
+					draw.objects.c[i].y1 = 128*y1 + rely2
+					draw.objects.c[i].z1 = 96*z1 + relz2
 				end
 			end
-			--
-			if bf or draw.objects.c[i].y<-20 then
-				sfx_(2)
-				--particles
-				for i2=1,80 do
-					addp(cx-24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-					addp(cx+24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-					addp(cx+R(-24,24),cy-24       ,cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-					addp(cx+R(-24,24),cy+24       ,cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-					addp(cx+R(-24,24),cy+R(-24,24),cz-24       ,R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-					addp(cx+R(-24,24),cy+R(-24,24),cz+24       ,R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
+		end
+		--We move the cube through the portal (not to be confused with duplication of the visual and physical shell)
+		--I would be glad if I didn’t have to do the same thing twice, but let it be a separate block
+		local bp,op = false, false
+		if draw.p[1] and draw.p[2] then
+			--Note that we work with a half of the cube collision (having collapsed one of the coordinates from 24 to 0) so that the cube is not in a quantum superposition while in 2 portals at the same time
+			if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx     , cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
+			if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz     , cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
+			if draw.p[1][4]==1 and draw.p[1][5]==2 and coll(cx     , cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
+			if draw.p[1][4]==3 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz     , draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
+						
+			if draw.p[2][4]==1 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx     , cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
+			if draw.p[2][4]==3 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz     , cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
+			if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(cx     , cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
+			if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz     , draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
+			
+			--teleporting
+			local x1, y1, z1 = portalcenter(1)
+			local x2, y2, z2 = portalcenter(2)
+
+			-- calculate portal offsets
+			local relx1 = cx - 96 * x1
+			local rely1 = cy - 128 * y1
+			local relz1 = cz - 96 * z1
+			local relx2 = cx - 96 * x2
+			local rely2 = cy - 128 * y2
+			local relz2 = cz - 96 * z2
+
+			-- calculate portal rotation
+			local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+			local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+			local rotd1 = (2 + rot2 - rot1) % 4
+			local rotd2 = (2 + rot1 - rot2) % 4
+
+			if bp then
+				if     rotd1 == 0 then
+				elseif rotd1 == 1 then relx1,relz1=relz1,-relx1  draw.objects.c[i].vx,draw.objects.c[i].vz=draw.objects.c[i].vz,-draw.objects.c[i].vx
+				elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1 draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vx,-draw.objects.c[i].vz
+				elseif rotd1 == 3 then relx1,relz1=-relz1,relx1  draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vz,draw.objects.c[i].vx
 				end
-				--
-				table.remove(draw.objects.c,i)
-				i=i-1
+
+				cx = 96*x2 + relx1
+				cy = 128*y2 + rely1
+				cz = 96*z2 + relz1
+			elseif op then
+				if     rotd2 == 0 then
+				elseif rotd2 == 1 then relx2,relz2=relz2,-relx2  draw.objects.c[i].vx,draw.objects.c[i].vz=draw.objects.c[i].vz,-draw.objects.c[i].vx
+				elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2 draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vx,-draw.objects.c[i].vz
+				elseif rotd2 == 3 then relx2,relz2=-relz2,relx2  draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vz,draw.objects.c[i].vx
+				end
+
+				cx = 96*x1 + relx2
+				cy = 128*y1 + rely2
+				cz = 96*z1 + relz2
+			end
+		end
+		--
+		draw.objects.c[i].x = cx
+		draw.objects.c[i].y = cy
+		draw.objects.c[i].z = cz
+		--
+		if bf or draw.objects.c[i].y<-200 then
+			sfx_(2)
+			--particles
+			for i2=1,80 do
+				addp(cx-24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
+				addp(cx+24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
+				addp(cx+R(-24,24),cy-24       ,cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
+				addp(cx+R(-24,24),cy+24       ,cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
+				addp(cx+R(-24,24),cy+R(-24,24),cz-24       ,R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
+				addp(cx+R(-24,24),cy+R(-24,24),cz+24       ,R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
 			end
 			--
-		until i>=#draw.objects.c
-	end
+			table.remove(draw.objects.c,i)
+			i=i-1
+		end
+		--
+	until i>=#draw.objects.c
 end
 
 function unitic.portal_collision()
@@ -2394,7 +2395,7 @@ function unitic.portal_collision()
 	local rotd1 = (2 + rot2 - rot1) % 4
 	local rotd2 = (2 + rot1 - rot2) % 4
 
-	if     rotd1 == 0 then
+	if     rotd1 == 0 then -- WTF do we need this for? 
 	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
 	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
 	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
