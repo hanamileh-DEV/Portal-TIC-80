@@ -119,7 +119,16 @@ local model={
 	}
 	},
 	{ --cube dispenser (3)
-		v={{24,24,24},{24,-24,24},{24,24,-24},{24,-24,-24},{-24,24,24},{-24,-24,24},{-24,24,-24},{-24,-24,-24},},
+		v={
+			{ 32, 31, 32},
+			{ 32,-32, 32},
+			{ 32, 31,-32},
+			{ 32,-32,-32},
+			{-32, 31, 32},
+			{-32,-32, 32},
+			{-32, 31,-32},
+			{-32,-32,-32},
+		},
 		f={
 			{5,3,1,uv={{120,232},{96, 208},{96 ,232},-1},f=3},
 			{3,8,4,uv={{120,232},{96, 256},{120,256},-1},f=3},
@@ -1167,7 +1176,7 @@ maps[1][1]={
 		{5,0,6,3,2,2},{6,0,6,3,2,2},{7,0,6,3,2,2},{8,0,6,3,2,2},{9,0,6,3,2,2},
 		{5,1,6,3,2,2},{6,1,6,3,2,2},{7,1,6,3,2,2},{8,1,6,3,2,2},{9,1,6,3,2,2},
 
-		{5,0,0,3,1,2},{6,0,0,3,3,14},{7,0,0,3,3,13},{8,0,0,3,1,2},{9,0,0,3,1,2},
+		{5,0,0,3,1,2},{6,0,0,3,3,14},{7,0,0,3,3,13},{8,0,0,3,1,2},{9,0,0,3,1,2},  {5,0,2,3,3,7}, -----
 		{5,1,0,3,1,2},{6,1,0,3,1,2},{7,1,0,3,1,2},{8,1,0,3,1,2},{9,1,0,3,1,2},
 		--
 		{5,0,0,2,2,1},{5,0,1,2,2,1},{5,0,2,2,2,1},{5,0,3,2,2,1},{5,0,4,2,2,1},{5,0,5,2,2,1},
@@ -1185,9 +1194,9 @@ maps[1][1]={
 	},
 	o={ --table for objects
 	 --{X, Y, Z, type, [additional parameters]}
+	 {820,256-32,130,3},
 	 {96*8.5,0,96*2.5,16},
-	 {96*6,24,96*3.5,1},
-	 {96*6,100,96*3.5,2},
+	 {96*6,24,96*3.5,1,1},
 	 {96*8,0,0,24},
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
@@ -2005,6 +2014,14 @@ local function cube_interact(cube)
 end
 
 function unitic.cube_update() --all physics related to cubes
+	-- dispensers
+	for i=1,#draw.objects.cd do
+		draw.objects.cd[i].t=draw.objects.cd[i].t-1
+		if draw.objects.cd[i].t==1 then
+			addobj(draw.objects.cd[i].x,draw.objects.cd[i].y,draw.objects.cd[i].z,draw.objects.cd[i].ct,i)
+		end
+	end
+	--cubes
 	local i=0 if #draw.objects.c==0 then return end
 	repeat
 		i=i+1
@@ -2354,6 +2371,11 @@ function unitic.cube_update() --all physics related to cubes
 				addp(cx+R(-24,24),cy+R(-24,24),cz-24       ,R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
 				addp(cx+R(-24,24),cy+R(-24,24),cz+24       ,R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
 			end
+			--
+			if draw.objects.c[i].held then plr.holding=false end
+			local i2=draw.objects.c[i].disp
+			draw.objects.cd[i2].t=60
+			draw.objects.cd[i2].ct=draw.objects.c[i].type
 			--
 			table.remove(draw.objects.c,i)
 			i=i-1
@@ -2967,6 +2989,7 @@ function addobj(x, y, z, type,t1) --objects
 		inp=false, --whether the cube is located in the portal
 		vx=0, vy=0, vz=0, --velocity
 		draw=true, --whether to display the model
+		disp=t1, -- cube dispenser ID
 		model={v={},f={}}}
 		for i=1,#model[type].v do
 			draw.objects.c[#draw.objects.c].model.v[i]={model[type].v[i][1],model[type].v[i][2],model[type].v[i][3]}
@@ -2988,6 +3011,7 @@ function addobj(x, y, z, type,t1) --objects
 		{type=type,
 		x=x,y=y,z=z,
 		draw=true,
+		t=0,ct=0, --cube type
 		model=model[type]}
 	elseif type==4 or type==5 or type==6 or type==7 then --light bridges
 		draw.objects.lb[#draw.objects.lb+1]=
@@ -3921,6 +3945,10 @@ function TIC()
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
 				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
+			},
+			{
+				draw.objects.cd[1].t
+
 			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
@@ -4042,7 +4070,6 @@ function TIC()
 	end
 	-------------------------------------------
 	--settings
-	if not st.sfx then sfx_(-1,1,0) sfx_(-1,1,1) sfx_(-1,1,2) sfx_(-1,1,3) end --it must exist
 	if not st.music then music(-1) end
 	vbank(1)
 	--cursor id
