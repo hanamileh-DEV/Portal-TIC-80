@@ -2489,7 +2489,7 @@ function unitic.draw_portalgun()
 	elli(217+p_g.x,121+p_g.y,5,2,9+p_g.c*2)
 end
 
-function unitic.render() --------
+function unitic.render() -------- 
 	--dynamic textures
 	if st.d_t then
 		for x0=0,15 do --light bridge
@@ -2569,7 +2569,7 @@ function unitic.render() --------
 		local y0 = b3 * z0
 
 		dist12d=(x0^2 + y0^2)^0.5
-		dist13d=(x1^2 + y1^2 + z1^2)^0.5
+		dist13d=((x1-plr.x)^2 + (y1-plr.y)^2 + (z1-plr.z)^2)^0.5
 	end
 
 	if draw.p[2] then
@@ -2592,7 +2592,7 @@ function unitic.render() --------
 		local y0 = b3 * z0
 
 		dist22d=(x0^2 + y0^2)^0.5
-		dist23d=(x2^2 + y2^2 + z2^2)^0.5
+		dist23d=((x2-plr.x)^2 + (y2-plr.y)^2 + (z2-plr.z)^2)^0.5
 		dist2d = true
 		dist3d = true
 	end
