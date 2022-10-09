@@ -1090,7 +1090,8 @@ local model={
 }
 
 local s = { --sounds
-t1=0, --sad story about a lonely variable in one table
+t1=0,
+n={0,0,0} --The exact position of the current track
 }
 
 local world_size={12,4,12}
@@ -1197,12 +1198,13 @@ maps[1][1]={
 	 {820,256-32,130,3},
 	 {96*8.5,0,96*2.5,16},
 	 {96*6,24,96*3.5,1,1},
+	 {96*6,300,96*3.5,1,1},
 	 {96*8,0,0,24},
 	},
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={}, --light bridge generators
 	lift={nil,{7,0,-1,3}}, --Initial and final elevator (X Y Z angle)
-	music=0, --Music ID for this level
+	music=3, --Music ID for this level
 	scripts=function()
 		if draw.objects.fb[1].tick then
 			if draw.objects.fb[1].s then
@@ -3766,17 +3768,7 @@ function TIC()
 			print("Settings"     ,4+(1-p.t3)*20, 85,7)
 			print("Exit"         ,4+(1-p.t4)*20,125,7)
 			--buttons
-			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1
-				if clp1 then
-					open="game"
-					sfx_(17)
-					poke(0x7FC3F,1,1)
-					if save.lvl2~=2 then music(maps[save.lvl].music) else music(3) end
-					lctp=ctp or 0
-					ctp=0
-					st_t=tstamp()
-				end 
-			else p.t1=min(p.t1+0.05,1) end
+			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1 else p.t1=min(p.t1+0.05,1) end
 
 			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                                                  end else p.t2=min(p.t2+0.05,1) end
 			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx_(16) clp1=false                         end else p.t3=min(p.t3+0.05,1) end
@@ -3790,8 +3782,16 @@ function TIC()
 			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)                               end else p.t2=min(p.t2+0.05,1) end
 		end
 
-		--Resume button
-		if keyp(44) and p.t>1 then open="game" music(maps[save.lvl].music) poke(0x7FC3F,1,1) end
+		--Resume
+		if (keyp(44) and p.t>1) or (my>52 and my<63 and clp1) then
+			open="game"
+			sfx_(17)
+			poke(0x7FC3F,1,1)
+			music(s.n[1],s.n[2],s.n[3])
+			lctp=ctp or 0
+			ctp=0
+			st_t=tstamp()
+		 end
 	end
 	--------------------------
 	-- game ------------------
@@ -3925,7 +3925,7 @@ function TIC()
 		ctp=F(lctp+(tstamp()-st_t))
 		pmem(4,save.ct+(tstamp()-st_t))
 	 --pause
-		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" music(3,7,0) poke(0x7FC3F,0,1) end
+		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
 		p.t=0
 	 --debug
 	 	local debug_text={
@@ -3945,10 +3945,6 @@ function TIC()
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
 				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			},
-			{
-				draw.objects.cd[1].t
-
 			}
 		}
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
