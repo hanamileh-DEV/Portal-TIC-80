@@ -1798,7 +1798,6 @@ function unitic.player_collision()
 	local colx = false
 	local coly = false
 	local colz = false
-
 	local function plr_collide(x1,y1,z1,x2,y2,z2)
 		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then
 			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then colx = true end
@@ -1886,6 +1885,7 @@ function unitic.player_collision()
 		local y0=draw.objects.c[i].y
 		local z0=draw.objects.c[i].z
 		plr_collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
+		if draw.objects.c[i].held and coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 + 24, z0 - 24, x0 + 24, y0 + 24.1, z0 + 24) then draw.objects.c[i].held=false plr.holding=false end
 		if draw.objects.c[i].inp then
 			local x0=draw.objects.c[i].x1
 			local y0=draw.objects.c[i].y1
