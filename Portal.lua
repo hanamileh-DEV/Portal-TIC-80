@@ -2767,7 +2767,7 @@ function unitic.render() --------
 	end
 
 	vbank(1)
-	if not st.potato_pc or R()<0.05 then cls(1) end
+	cls(1)
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 	unitic.update_pr()
 	unitic.update()
@@ -2811,10 +2811,10 @@ function unitic.render() --------
 
 		local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
 
-		if dist2d and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
+		if dist2d and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and not (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4]) then
 			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99) --orange
 			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
-		elseif dist2d==false and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4])==false then
+		elseif not dist2d and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and not (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4]) then
 			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
 			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0 ,200,24,200,0,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
 		end
@@ -2822,8 +2822,7 @@ function unitic.render() --------
 
 	--cross
 	if not plr.holding then
-		pix(120,68,4)
-		if true then pix(120,68,7) end
+		pix(120,68,7)
 		if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
 		if draw.p[1] then spr(496, 117, 65, 1) end
 		if draw.p[2] then spr(497, 117, 65, 1) end
@@ -3379,7 +3378,6 @@ function TIC()
 
 	clp1 = tm1 == 1
 	clp2 = tm2 == 1
-	--trace(mx.." "..my,12)
 	--------------------------
 	-- logo ------------------
 	--------------------------
