@@ -3781,7 +3781,7 @@ function TIC()
 		end
 
 		--Resume
-		if (keyp(44) and p.t>1) or (my>52 and my<63 and clp1) then
+		if (keyp(44) and p.t>1) or (my>52 and my<63 and clp1 and open=="pause") then
 			open="game"
 			sfx_(17)
 			poke(0x7FC3F,1,1)
