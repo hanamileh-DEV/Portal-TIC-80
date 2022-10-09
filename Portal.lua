@@ -2063,9 +2063,9 @@ function unitic.cube_update() --all physics related to cubes
 			cx=cx+draw.objects.c[i].vx
 			cy=cy+draw.objects.c[i].vy
 			cz=cz+draw.objects.c[i].vz
-			draw.objects.c[i].vx=draw.objects.c[i].vx*0.9
+			draw.objects.c[i].vx=min(max(draw.objects.c[i].vx*0.9,-20),20)
 			draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
-			draw.objects.c[i].vz=draw.objects.c[i].vz*0.9
+			draw.objects.c[i].vz=min(max(draw.objects.c[i].vz*0.9,-20),20)
 		end
 
 		local bf = false --is the cube in the blue field
