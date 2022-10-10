@@ -4,7 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
-local version="DEV 0.2.4"
+local version="DEV 0.2.5"
 
 --[[
 license:
@@ -3277,7 +3277,7 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 		table.insert(draw.world.v,{x*96,y*128,z*96})
 	end end end
 
-	for i=1,4 do
+	for i=1,3 do
 		q3={}
 		for x=0,world_size[1]-1 do
 			q2={}
@@ -3362,6 +3362,8 @@ local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
 local is={t=0,t1=0,t2=0} --init setting
+local sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
+local sn_k={19,14,1,11,5}
 
 local open="logo" sync(1,1,false)
 
@@ -3685,6 +3687,8 @@ function TIC()
 	-- load lvl --------------
 	--------------------------
 	if open=="load lvl" then
+		sync(2,0,false)
+		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
 		pmem(4,save.ct)
 
@@ -3860,6 +3864,58 @@ function TIC()
 		unitic.button_update()
 		unitic.turret_update()
 		fps_.t3=time()
+    --snake
+		local u=true
+		for i=1,65 do
+			if keyp(i) then if sn_k[sn.b]==i and u then sn.b=sn.b+1 else u=false sn.b=1 end end
+		end
+		if sn.b>#sn_k then
+			--game init
+			trace("snake :D",12)
+			sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="game",b=1}
+		end
+		--
+		if sn.state=="game" then
+			sn.t=sn.t+1
+			--update
+			if sn.t%5==0 then
+				if sn.s[#sn.s][1]==sn.a[1] and sn.s[#sn.s][2]==sn.a[2] then
+					sn.a={R(0,10),R(0,10)}
+				else
+					table.remove(sn.s,1)
+				end
+				local x,y=sn.s[#sn.s][1],sn.s[#sn.s][2]
+				if     sn.u==0 then y=(y-1)%11
+			   elseif sn.u==1 then y=(y+1)%11
+			   elseif sn.u==2 then x=(x-1)%11
+			   elseif sn.u==3 then x=(x+1)%11 end
+				for i=1,#sn.s do
+					if sn.s[i][1]==x and sn.s[i][2]==y then sn.state="game over" sn.t=120 break end
+				end
+				sn.s[#sn.s+1]={x,y}
+			end
+			for i=0,3 do if btn(i) then sn.u=i end end
+			--display
+			for x=33,43 do for y=233,243 do
+				setpix(x,y,1) --background
+				setpix(x+16,y,1)
+			end end
+			setpix(sn.a[1]+33,sn.a[2]+233,8) --apple
+			setpix(sn.a[1]+49,sn.a[2]+233,8)
+			for i=1,#sn.s do --snake
+				local x,y=sn.s[i][1],sn.s[i][2]
+				setpix(x+33,y+233,7)
+				setpix(x+49,y+233,7)
+			end
+		elseif sn.state=="game over" then
+			sn.t=sn.t-1
+			for x=33,43 do for y=233,243 do
+				local color=(x+y+sn.t//5)%2*6+1
+				setpix(x,y,color)
+				setpix(x+16,y,color)
+			end end
+			if sn.t==0 then sn.state="-" sync(2,0,false) end
+		end
 	 --render
 		unitic.render()
 		if plr.pg_lvl>0 then unitic.draw_portalgun() end
