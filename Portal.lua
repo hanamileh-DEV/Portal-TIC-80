@@ -4,7 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
-local version="DEV 0.2.5"
+local version="DEV 0.3.0"
 
 --[[
 license:
@@ -2042,23 +2042,111 @@ function unitic.cube_update() --all physics related to cubes
 		local cz=draw.objects.c[i].z
 
 		if draw.objects.c[i].held then
+			local p={{}} --All points {x, y, z, dx, dy, dz, dist}
 			local hold_dist = 100
 			local txsin = math.sin(plr.tx)
 			local txcos = math.cos(plr.tx)
 			local tysin = math.sin(-plr.ty)
 			local tycos = math.cos(-plr.ty)
-			local tx = plr.x + hold_dist * tysin * txcos
-			local ty = plr.y + hold_dist * -txsin
-			local tz = plr.z + hold_dist * -tycos * txcos
-			local dx,dy,dz=tx-cx,ty-cy,tz-cz
-			local dist = math.sqrt(dx^2 + dy^2 + dz^2)
-			if dist ~= 0 then
-				local mdist=min(20, dist)
-				cx,cy,cz=cx+dx*(mdist/dist),cy+dy*(mdist/dist),cz+dz*(mdist/dist)
+			p[1].x = plr.x + hold_dist * tysin * txcos
+			p[1].y = plr.y + hold_dist * -txsin
+			p[1].z = plr.z + hold_dist * -tycos * txcos
+			--the remaining points (if the segment passes through the portal)
+			local ps={x=plr.x,y=plr.y,z=plr.z} --starting point
+			local pf={x=p[1].x,y=p[1].y,z=p[1].z} --final point
+
+			for i_=1,10 do --Itteration limit
+				local inbp=false
+				local inop=false
+
+				local x,y,z,f=raycast(ps.x,ps.y,ps.z,pf.x,pf.y,pf.z,
+				{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
+				{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+				if not x then break end
+				local wt=draw.map[f][x][y][z][2] --Type of wall
+				if wt==5 and f~=2 then inbp=true end
+				if wt==6 and f~=2 then inop=true end
+
+				if inbp then trace("inbp",13) end
+				if inop then trace("inop",13) end
+
+				if not (inbp or inop) then
+					p[#p+1]={x=x,y=y,z=z}
+					break
+				else --We teleport the segment
+					local x1, y1, z1 = portalcenter(1)
+					local x2, y2, z2 = portalcenter(2)
+					
+					local relx1 = ps.x - 96 * x1
+					local rely1 = ps.y - 128 * y1
+					local relz1 = ps.z - 96 * z1
+					local relx2 = ps.x - 96 * x2
+					local rely2 = ps.y - 128 * y2
+					local relz2 = ps.z - 96 * z2
+
+					local relx3 = pf.x - 96 * x1
+					local rely3 = pf.y - 128 * y1
+					local relz3 = pf.z - 96 * z1
+					local relx4 = pf.x - 96 * x2
+					local rely4 = pf.y - 128 * y2
+					local relz4 = pf.z - 96 * z2
+
+					local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+					local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+					local rotd1 = (2 + rot2 - rot1) % 4
+					local rotd2 = (2 + rot1 - rot2) % 4
+
+					if     rotd1 == 1 then relx1,relz1=relz1,-relx1  relx3,relz3=relz3,-relx3
+					elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1 relx3,relz3=-relx3,-relz3
+					elseif rotd1 == 3 then relx1,relz1=-relz1,relx1  relx3,relz3=-relz3,relx3
+					end
+
+					if     rotd2 == 1 then relx2,relz2=relz2,-relx2  relx4,relz4=relz4,-relx4
+					elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2 relx4,relz4=-relx4,-relz4
+					elseif rotd2 == 3 then relx2,relz2=-relz2,relx2  relx4,relz4=-relz4,relx4
+					end
+
+					if inbp then
+						ps.x = 96*x2 + relx1
+						ps.y = 128*y2 + rely1
+						ps.z = 96*z2 + relz1
+						pf.x = 96*x2 + relx3
+						pf.y = 128*y2 + rely3
+						pf.z = 96*z2 + relz3
+					elseif inop then
+						ps.x = 96*x1 + relx2
+						ps.y = 128*y1 + rely2
+						ps.z = 96*z1 + relz2
+						pf.x = 96*x1 + relx4
+						pf.y = 128*y1 + rely4
+						pf.z = 96*z1 + relz4
+					end
+					p[#p+1]={x=pf.x,y=pf.y,z=pf.z}
+				end
 			end
-			draw.objects.c[i].vx = dx
-			draw.objects.c[i].vy = dy
-			draw.objects.c[i].vz = dz
+			--Point processing
+			local p2=p[1] --The nearest point
+			for i2=1,#p do
+				p[i2].dx=p[i2].x-cx
+				p[i2].dy=p[i2].y-cy
+				p[i2].dz=p[i2].z-cz
+				p[i2].dist = (p[i2].dx^2 + p[i2].dy^2 + p[i2].dz^2)^0.5
+				--Search for the nearest point
+				if p[i2].dist<p2.dist then
+					p2=p[i2]
+				end
+			end
+
+			if p2.dist ~= 0 then
+				local mdist=min(20, p2.dist)
+				cx=cx+p2.dx*(mdist/p2.dist)
+				cy=cy+p2.dy*(mdist/p2.dist)
+				cz=cz+p2.dz*(mdist/p2.dist)
+			end
+
+			draw.objects.c[i].vx = p2.dx
+			draw.objects.c[i].vy = p2.dy
+			draw.objects.c[i].vz = p2.dz
 		else
 			cx=cx+draw.objects.c[i].vx
 			cy=cy+draw.objects.c[i].vy
@@ -2067,7 +2155,7 @@ function unitic.cube_update() --all physics related to cubes
 			draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
 			draw.objects.c[i].vz=min(max(draw.objects.c[i].vz*0.9,-20),20)
 		end
-
+		
 		local bf = false --is the cube in the blue field
 
 		local x1=max((cx-25)//96,0)
@@ -4002,6 +4090,7 @@ function TIC()
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 			}
 		}
+
 		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
 
 		vbank(1)
