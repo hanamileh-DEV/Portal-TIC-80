@@ -1980,7 +1980,6 @@ end
 
 local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true}
 
-
 function unitic.player_collision()
 	local colx = false
 	local coly = false
@@ -2176,7 +2175,7 @@ local function cube_interact(cube)
 		cube.x,cube.y,cube.z,
 		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
 		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
-
+	
 	local txsin = math.sin(plr.tx)
 	local txcos = math.cos(plr.tx)
 	local tysin = math.sin(-plr.ty)
@@ -2196,7 +2195,7 @@ local function cube_interact(cube)
 	local cosang = dot / dist
 
 	if cube.held then
-		return keyp(5) or dist > 300 or rc
+		return keyp(5) or rc
 	else
 		return keyp(5) and dist < 150 and not rc and cosang > 0.95
 	end
@@ -2239,73 +2238,42 @@ function unitic.cube_update() --all physics related to cubes
 			p[1].y = plr.y + hold_dist * -txsin
 			p[1].z = plr.z + hold_dist * -tycos * txcos
 			--the remaining points (if the segment passes through the portal)
-			local ps={x=plr.x,y=plr.y,z=plr.z} --starting point
-			local pf={x=p[1].x,y=p[1].y,z=p[1].z} --final point
+			if (draw.p[1] or draw.p[2]) then
+				local ps={x=plr.x,y=plr.y,z=plr.z} --starting point
+				local pf={x=p[1].x,y=p[1].y,z=p[1].z} --final point
 
-			for i_=1,10 do --Itteration limit
-				local inbp=false
-				local inop=false
+				for i_=1,10 do --Itteration limit
+					local inbp=false
+					local inop=false
 
-				local x,y,z,f=raycast(ps.x,ps.y,ps.z,pf.x,pf.y,pf.z,
-				{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
-				{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
-				if not x then break end
-				local wt=draw.map[f][x][y][z][2] --Type of wall
-				if wt==5 and f~=2 then inbp=true end
-				if wt==6 and f~=2 then inop=true end
+					local x,y,z,f=raycast(ps.x,ps.y,ps.z,pf.x,pf.y,pf.z,
+					{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
+					{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+					if not x then break end
+					local wt=draw.map[f][x][y][z][2] --Type of wall
+					if wt==5 and f~=2 then inbp=true end
+					if wt==6 and f~=2 then inop=true end
 
-				if not (inbp or inop) then
-					p[#p+1]={x=x,y=y,z=z}
-					break
-				else --We teleport the segment
-					local x1, y1, z1 = portalcenter(1)
-					local x2, y2, z2 = portalcenter(2)
-					
-					local relx1 = ps.x - 96 * x1
-					local rely1 = ps.y - 128 * y1
-					local relz1 = ps.z - 96 * z1
-					local relx2 = ps.x - 96 * x2
-					local rely2 = ps.y - 128 * y2
-					local relz2 = ps.z - 96 * z2
-
-					local relx3 = pf.x - 96 * x1
-					local rely3 = pf.y - 128 * y1
-					local relz3 = pf.z - 96 * z1
-					local relx4 = pf.x - 96 * x2
-					local rely4 = pf.y - 128 * y2
-					local relz4 = pf.z - 96 * z2
-
-					local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-					local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-					local rotd1 = (2 + rot2 - rot1) % 4
-					local rotd2 = (2 + rot1 - rot2) % 4
-
-					if     rotd1 == 1 then relx1,relz1=relz1,-relx1  relx3,relz3=relz3,-relx3
-					elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1 relx3,relz3=-relx3,-relz3
-					elseif rotd1 == 3 then relx1,relz1=-relz1,relx1  relx3,relz3=-relz3,relx3
+					if not (inbp or inop) then
+						p[#p+1]={x=x,y=y,z=z}
+						break
+					else --We teleport the segment
+						if inbp then
+							ps.x,ps.y,ps.z=teleport(1,ps.x,ps.y,ps.z)
+							pf.x,pf.y,pf.z=teleport(1,pf.x,pf.y,pf.z)
+						elseif inop then
+							ps.x,ps.y,ps.z=teleport(2,ps.x,ps.y,ps.z)
+							pf.x,pf.y,pf.z=teleport(2,pf.x,pf.y,pf.z)
+						end
+						p[#p+1]={x=pf.x,y=pf.y,z=pf.z}
 					end
-
-					if     rotd2 == 1 then relx2,relz2=relz2,-relx2  relx4,relz4=relz4,-relx4
-					elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2 relx4,relz4=-relx4,-relz4
-					elseif rotd2 == 3 then relx2,relz2=-relz2,relx2  relx4,relz4=-relz4,relx4
-					end
-
-					if inbp then
-						ps.x = 96*x2 + relx1
-						ps.y = 128*y2 + rely1
-						ps.z = 96*z2 + relz1
-						pf.x = 96*x2 + relx3
-						pf.y = 128*y2 + rely3
-						pf.z = 96*z2 + relz3
-					elseif inop then
-						ps.x = 96*x1 + relx2
-						ps.y = 128*y1 + rely2
-						ps.z = 96*z1 + relz2
-						pf.x = 96*x1 + relx4
-						pf.y = 128*y1 + rely4
-						pf.z = 96*z1 + relz4
-					end
-					p[#p+1]={x=pf.x,y=pf.y,z=pf.z}
+				end
+				--If there are no portals between the cube and the player, add the point behind the portal
+				if #p==1 then
+					p[2]={}
+					p[3]={}
+					p[2].x,p[2].y,p[2].z=teleport(1,p[1].x,p[1].y,p[1].z)
+					p[3].x,p[3].y,p[3].z=teleport(2,p[1].x,p[1].y,p[1].z)
 				end
 			end
 			--Point processing
