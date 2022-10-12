@@ -1933,6 +1933,51 @@ local function portalcenter(i)
 	return x, y, z
 end
 
+local function teleport(pid --[[portal id]],x,y,z,tx,ty)
+	local x1, y1, z1 = portalcenter(1)
+	local x2, y2, z2 = portalcenter(2)
+	
+	-- calculate portal offsets
+	local relx1 = x - 96 * x1
+	local rely1 = y - 128 * y1
+	local relz1 = z - 96 * z1
+	local relx2 = x - 96 * x2
+	local rely2 = y - 128 * y2
+	local relz2 = z - 96 * z2
+
+	-- calculate portal rotation
+	local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+	local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+	local rotd1 = (2 + rot2 - rot1) % 4
+	local rotd2 = (2 + rot1 - rot2) % 4
+
+	if     rotd1 == 0 then -- WTF do we need this for? 
+	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
+	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
+	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
+  	end
+
+	if     rotd2 == 0 then
+	elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
+	elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
+	elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
+  	end
+
+	if tx then
+		if pid==1 then
+			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1,tx,ty + math.pi * rotd1 / 2
+		elseif pid==2 then
+			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2,tx,ty + math.pi * rotd2 / 2
+		end
+	else
+		if pid==1 then
+			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1
+		elseif pid==2 then
+			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2
+		end
+	end
+end
+
 local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true}
 
 
@@ -2208,9 +2253,6 @@ function unitic.cube_update() --all physics related to cubes
 				local wt=draw.map[f][x][y][z][2] --Type of wall
 				if wt==5 and f~=2 then inbp=true end
 				if wt==6 and f~=2 then inop=true end
-
-				if inbp then trace("inbp",13) end
-				if inop then trace("inop",13) end
 
 				if not (inbp or inop) then
 					p[#p+1]={x=x,y=y,z=z}
@@ -2489,47 +2531,10 @@ function unitic.cube_update() --all physics related to cubes
 			
 			draw.objects.c[i].inp=inbp or inop
 
-			if draw.objects.c[i].inp then
-				--We make a portal copy
-				local x1, y1, z1 = portalcenter(1)
-				local x2, y2, z2 = portalcenter(2)
-
-				-- calculate portal offsets
-				local relx1 = cx - 96 * x1
-				local rely1 = cy - 128 * y1
-				local relz1 = cz - 96 * z1
-				local relx2 = cx - 96 * x2
-				local rely2 = cy - 128 * y2
-				local relz2 = cz - 96 * z2
-				
-				-- calculate portal rotation
-				local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-				local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-				local rotd1 = (2 + rot2 - rot1) % 4
-				local rotd2 = (2 + rot1 - rot2) % 4
-
-				if     rotd1 == 0 then
-				elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
-				elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
-				elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
-				end
-
-				if     rotd2 == 0 then
-				elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
-				elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
-				elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
-				end
-
-				if inbp and inop==false then
-					draw.objects.c[i].x1 = 96*x2 + relx1
-					draw.objects.c[i].y1 = 128*y2 + rely1
-					draw.objects.c[i].z1 = 96*z2 + relz1
-
-				elseif inop and inbp==false then
-					draw.objects.c[i].x1 = 96*x1 + relx2
-					draw.objects.c[i].y1 = 128*y1 + rely2
-					draw.objects.c[i].z1 = 96*z1 + relz2
-				end
+			if inbp and inop==false then
+				draw.objects.c[i].x1,draw.objects.c[i].y1,draw.objects.c[i].z1=teleport(1,cx,cy,cz)
+			elseif inop and inbp==false then
+				draw.objects.c[i].x1,draw.objects.c[i].y1,draw.objects.c[i].z1=teleport(2,cx,cy,cz)
 			end
 		end
 		--We move the cube through the portal (not to be confused with duplication of the visual and physical shell)
@@ -2631,49 +2636,10 @@ function unitic.portal_collision()
 	if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(plr.x, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
 	if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
 	--teleporting
-
-	local x1, y1, z1 = portalcenter(1)
-	local x2, y2, z2 = portalcenter(2)
-
-	-- calculate portal offsets
-	local relx1 = plr.x - 96 * x1
-	local rely1 = plr.y - 128 * y1
-	local relz1 = plr.z - 96 * z1
-	local relx2 = plr.x - 96 * x2
-	local rely2 = plr.y - 128 * y2
-	local relz2 = plr.z - 96 * z2
-
-	-- calculate portal rotation
-	local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-	local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-	local rotd1 = (2 + rot2 - rot1) % 4
-	local rotd2 = (2 + rot1 - rot2) % 4
-
-	if     rotd1 == 0 then -- WTF do we need this for? 
-	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
-	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
-	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
-  	end
-
-	if     rotd2 == 0 then
-	elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
-	elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
-	elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
-  	end
-
-
 	if bp and op==false then
-		plr.x = 96*x2 + relx1
-		plr.y = 128*y2 + rely1
-		plr.z = 96*z2 + relz1
-		plr.ty = plr.ty + math.pi * rotd1 / 2
-		plr.tx = plr.tx
+		plr.x,plr.y,plr.z,plr.tx,plr.ty=teleport(1,plr.x,plr.y,plr.z,plr.tx,plr.ty)
 	elseif op and bp==false then
-		plr.x = 96*x1 + relx2
-		plr.y = 128*y1 + rely2
-		plr.z = 96*z1 + relz2
-		plr.ty = plr.ty + math.pi * rotd2 / 2
-		plr.tx = plr.tx
+		plr.x,plr.y,plr.z,plr.tx,plr.ty=teleport(2,plr.x,plr.y,plr.z,plr.tx,plr.ty)
 	end
 end
 
