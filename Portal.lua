@@ -1126,8 +1126,14 @@ local p_g={x=0,y=0,c=1,t1=0,t2=0}
 local l_t={
 	{
 		"Welcome to the Aperture Science",
-		"Text for tests",
-		"Hello, world"
+		"To skip this boring text, hold Z",
+		"You were selected to undergo several tests",
+		"Use the mouse to rotate the camera",
+		"To control the player, press W A S D space",
+		"To open the Pause menu, press ~",
+		"(Make sure you have chosen English layout)",
+		"To interact with buttons or cubes, press E",
+		"The portal will open after 3... 2... 1..."
 	},
 	{
 		"It is amazing that this elevator still works",
@@ -1138,7 +1144,7 @@ local l_t={
 	}
 	}
 local l_t2={
-	draw=false, --Should the text be thrown out
+	draw=true, --Should the text be thrown out
 	pause=false, --as not surprising, this is a pause
 	id=1, --The number of the desired array of the text
 	i=1,
@@ -1224,9 +1230,27 @@ maps[1][1]={
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={}, --light bridge generators
 	lift={nil,{7,0,-1,3}}, --Initial and final elevator (X Y Z angle)
-	music=3, --Music ID for this level
-	init=function()end,
+	music=0, --Music ID for this level
+	init=function()
+		plr.x=280
+		plr.y=64
+		plr.z=280
+		plr.ty=-pi2
+		maps[1][1].t=0
+		l_t2={draw=true,pause=false,id=1,i=1,t=0}
+	end,
 	scripts=function()
+		if l_t2.i>9 then
+			l_t2.i=1
+			l_t2.draw=false
+			addwall(4,0,2,1,1,5)
+			addwall(4,0,0,1,1,6)
+
+			draw.p[1]={4,0,2,1,1}
+			draw.p[2]={4,0,0,1,1}
+			update_world()
+		end
+
 		if draw.objects.fb[1].tick then
 			if draw.objects.fb[1].s then
 				addwall(6,0,0,3,3,12)
@@ -3828,7 +3852,7 @@ function TIC()
 
 		if save.lvl==0 then save.lvl=1 end
 		save.lvl2=1
-		save.lvl=2 --debug
+		--save.lvl=2 --debug
 
 		pmem(0,save.lvl)
 		load_world(save.lvl2,save.lvl)
@@ -4260,9 +4284,7 @@ function TIC()
 	-------------------------------------------
 	--settings
 	if not st.music then music(-1) end
-	vbank(1)
 	--cursor id
-	vbank(0)
 	poke4(0x07FF6,cid)
 	--fps (2)
 	avf[t%60]=t2
