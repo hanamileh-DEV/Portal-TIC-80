@@ -2210,7 +2210,8 @@ function unitic.cube_update() --all physics related to cubes
 		end
 	end
 	--cubes
-	local i=0 if #draw.objects.c==0 then return end
+	local i=0
+	if #draw.objects.c==0 then return end
 	repeat
 		i=i+1
 
@@ -2255,7 +2256,7 @@ function unitic.cube_update() --all physics related to cubes
 					if wt==6 and f~=2 then inop=true end
 
 					if not (inbp or inop) then
-						p[#p+1]={x=x,y=y,z=z}
+						p[#p+1]={x=pf.x,y=pf.y,z=pf.z}
 						break
 					else --We teleport the segment
 						if inbp then
@@ -2296,15 +2297,22 @@ function unitic.cube_update() --all physics related to cubes
 				cz=cz+p2.dz*(mdist/p2.dist)
 			end
 
-			draw.objects.c[i].vx = p2.dx
-			draw.objects.c[i].vy = p2.dy
-			draw.objects.c[i].vz = p2.dz
+			draw.objects.c[i].vx = min(max(-20,p2.dx),20)
+			draw.objects.c[i].vy = min(max(-20,p2.dy),20)
+			draw.objects.c[i].vz = min(max(-20,p2.dz),20)
+			if p2.dist>500 then
+				draw.objects.c[i].held=false
+				draw.objects.c[i].vx=0
+				draw.objects.c[i].vy=0
+				draw.objects.c[i].vz=0
+				plr.holding=false
+			end
 		else
 			cx=cx+draw.objects.c[i].vx
 			cy=cy+draw.objects.c[i].vy
 			cz=cz+draw.objects.c[i].vz
 			draw.objects.c[i].vx=min(max(draw.objects.c[i].vx*0.9,-20),20)
-			draw.objects.c[i].vy=max(draw.objects.c[i].vy-0.5,-20)
+			draw.objects.c[i].vy=min(max(draw.objects.c[i].vy-0.5,-20),20)
 			draw.objects.c[i].vz=min(max(draw.objects.c[i].vz*0.9,-20),20)
 		end
 		
