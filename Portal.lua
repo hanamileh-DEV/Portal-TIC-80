@@ -69,7 +69,7 @@ end
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false, pg_lvl = 3 --[[portal gun level]]}
+local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false, pg_lvl = 2 --[[portal gun level]]}
 
 --engine settings:
 local unitic = {
@@ -2992,9 +2992,11 @@ function unitic.render() --------
 	--cross
 	if not plr.holding then
 		pix(120,68,7)
-		if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
-		if draw.p[1] then spr(496, 117, 65, 1) end
-		if draw.p[2] then spr(497, 117, 65, 1) end
+		if plr.pg_lvl>0 then
+			if draw.p[1] or draw.p[2] then spr(498,117,65,1) end
+			if draw.p[1] then spr(496, 117, 65, 1) end
+			if draw.p[2] then spr(497, 117, 65, 1) end
+		end
 	end
 	fps_.t9=time()
 end
@@ -3109,16 +3111,16 @@ local function portal_gun()
 	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
 	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
-	if clp1 then p_g.c=1 p_g.t2=1 end
-	if clp2 then p_g.c=2 p_g.t2=1 end
+	if clp1 and plr.pg_lvl>0 then p_g.c=1 p_g.t2=1 end
+	if clp2 and plr.pg_lvl>1 then p_g.c=2 p_g.t2=1 end
 
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
-		if clp1 then
+		if clp1 and plr.pg_lvl>0 then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
 			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1]}
 			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
 			update_world()
-		elseif clp2 then
+		elseif clp2 and plr.pg_lvl>1 then
 			if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) end
 			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1]}
 			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
@@ -3126,9 +3128,9 @@ local function portal_gun()
 		end
 	elseif x and (clp1 or clp2) then
 		local x1,y1,z1=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true},true)
-		if clp1 then
+		if clp1 and plr.pg_lvl>0 then
 			for i=0,99 do addp(x1,y1,z1,(R()-0.5)*5,(R()-0.5)*5,(R()-0.5)*5,R(5,25),R(10,11)) end
-		elseif clp2 then
+		elseif clp2 and plr.pg_lvl>1 then
 			for i=0,99 do addp(x1,y1,z1,(R()-0.5)*5,(R()-0.5)*5,(R()-0.5)*5,R(5,25),R(13,14)) end
 		end
 	end
