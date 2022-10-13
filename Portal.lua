@@ -1231,6 +1231,7 @@ maps[1][1]={
 	lg={}, --light bridge generators
 	lift={nil,{7,0,-1,3}}, --Initial and final elevator (X Y Z angle)
 	music=0, --Music ID for this level
+	pg_lvl=0, --portal gun lvl
 	init=function()
 		plr.x=280
 		plr.y=64
@@ -1355,6 +1356,7 @@ maps[1][2]={
 	lg={}, --light bridge generators
 	lift={{-1,1,1,0},{2,1,7,2}}, --Initial and final elevator (X Y Z angle)
 	music=3, --Music ID for this level
+	pg_lvl=0, --portal gun lvl
 	init=function()
 		l_t2={draw=true,pause=false,id=2,i=1,t=0}
 		maps[1][2].t=0 --a variable for the level
@@ -1384,6 +1386,129 @@ maps[1][2]={
 	end
 }
 
+maps[1][3]={
+	w={
+		--floor
+		{0,0,0,2,2,1},{1,0,0,2,2,1},{2,0,0,2,2,1},{3,0,0,2,2,1},{4,0,0,2,2,1},{5,0,0,2,2,1},{6,0,0,2,2,1},{7,0,0,2,2,1},
+		{0,0,1,2,2,1},{1,0,1,2,2,1},{2,0,1,2,2,1},{3,0,1,2,2,1},{4,0,1,2,2,1},{5,0,1,2,2,1},{6,0,1,2,2,1},{7,0,1,2,2,1},
+		{0,0,2,2,2,1},{1,0,2,2,2,1},{2,0,2,2,2,1},{3,0,2,2,2,1},{4,0,2,2,2,1},{5,0,2,2,2,1},{6,0,2,2,2,1},{7,0,2,2,2,1},
+		{0,0,3,2,2,1},{1,0,3,2,2,1},{2,0,3,2,2,1},{3,0,3,2,2,1},{4,0,3,2,2,1},{5,0,3,2,2,1},{6,0,3,2,2,1},{7,0,3,2,2,1},
+		{2,0,4,2,2,1},{3,0,4,2,2,1},{4,0,4,2,2,1},{5,0,4,2,2,1},
+		{2,0,5,2,2,1},{3,0,5,2,2,1},{4,0,5,2,2,1},{5,0,5,2,2,1},
+
+		{0,2,0,2,1,2},{1,2,0,2,1,2},{2,2,0,2,1,2},{3,2,0,2,1,2},{4,2,0,2,1,2},{5,2,0,2,1,2},{6,2,0,2,1,2},{7,2,0,2,1,2},
+		{0,2,1,2,1,2},{1,2,1,2,1,2},{2,2,1,2,1,2},{3,2,1,2,1,2},{4,2,1,2,1,2},{5,2,1,2,1,2},{6,2,1,2,1,2},{7,2,1,2,1,2},
+		{0,2,2,2,1,2},{1,2,2,2,1,2},{2,2,2,2,1,2},{3,2,2,2,1,2},{4,2,2,2,1,2},{5,2,2,2,1,2},{6,2,2,2,1,2},{7,2,2,2,1,2},
+		{0,2,3,2,1,2},{1,2,3,2,1,2},{2,2,3,2,1,2},{3,2,3,2,1,2},{4,2,3,2,1,2},{5,2,3,2,1,2},{6,2,3,2,1,2},{7,2,3,2,1,2},
+		{2,2,4,2,1,2},{3,2,4,2,1,2},{4,2,4,2,1,2},{5,2,4,2,1,2},
+		{2,2,5,2,1,2},{3,2,5,2,1,2},{4,2,5,2,1,2},{5,2,5,2,1,2},
+		--walls
+		{0,0,0,1,2,2},{0,1,0,1,2,2},
+		{0,0,1,1,2,2},{0,1,1,1,2,2},
+		{0,0,2,1,2,2},{0,1,2,1,2,2},
+		{0,0,3,1,2,2},{0,1,3,1,2,2},
+		
+		{2,0,0,1,3,4},
+		{2,0,1,1,3,4},
+		{2,0,2,1,3,4},
+		{2,0,3,1,3,4},
+
+		{6,0,0,1,3,4},
+		{6,0,1,1,3,4},
+		{6,0,2,1,3,4},
+		{6,0,3,1,3,4},
+		
+		{8,0,0,1,1,2},{8,1,0,1,1,2},
+		{8,0,1,1,1,2},{8,1,1,1,1,2},
+		{8,0,2,1,1,2},{8,1,2,1,1,2},
+		{8,0,3,1,1,2},{8,1,3,1,1,2},
+		--
+		{0,0,0,3,1,2},{0,1,0,3,1,2},
+		{1,0,0,3,1,2},{1,1,0,3,1,2},
+		{2,0,0,3,1,10},{2,1,0,3,1,2},
+		{3,0,0,3,3,12},{3,1,0,3,1,2},
+		{4,0,0,3,3,11},{4,1,0,3,1,2},
+		{5,0,0,3,1,6},{5,1,0,3,1,2},
+		{6,0,0,3,1,2},{6,1,0,3,1,2},
+		{7,0,0,3,1,2},{7,1,0,3,1,2},
+
+		
+		{0,0,4,3,2,2},{0,1,4,3,2,2},
+		{1,0,4,3,2,2},{1,1,4,3,2,2},
+		{2,0,4,3,3,15},
+		{3,0,4,3,3,15},
+		{4,0,4,3,3,15},
+		{5,0,4,3,3,15},
+		{6,0,4,3,2,2},{6,1,4,3,2,2},
+		{7,0,4,3,2,2},{7,1,4,3,2,2},
+
+		{6,0,2,3,3,7},{0,0,2,3,3,7},
+		{7,0,2,3,3,7},{1,0,2,3,3,7},
+		
+		{2,0,6,3,2,1},{2,1,6,3,2,1},
+		{3,0,6,3,2,1},{3,1,6,3,2,1},
+		{4,0,6,3,2,1},{4,1,6,3,2,1},
+		{5,0,6,3,2,1},{5,1,6,3,2,1},
+		--
+		{2,0,5,1,2,2},{2,1,5,1,2,1},
+		{2,0,4,1,2,1},{2,1,4,1,2,1},
+
+		{6,0,5,1,3,13},{6,1,5,1,1,2},
+		{6,0,4,1,3,14},{6,1,4,1,1,2},
+		
+	},
+	o={ --table for objects
+	 --{X, Y, Z, type, [additional parameters]}
+		{209,0,93,8,30},
+		{561,0,275,9,30},
+		{210,0,368,11,30},
+		{96,0,96,16},
+		{672,224,96,3},
+		{672,0,96,1,1},
+		{480,0,480,23},
+	},
+	p={}, --table for portals (leave empty if the portals are not needed)
+	lg={}, --light bridge generators
+	lift={{4,0,-1,3},{7,0,5,1}}, --Initial and final elevator (X Y Z angle)
+	music=3, --Music ID for this level
+	pg_lvl=0, --portal gun lvl
+	init=function()
+		l_t2={draw=false,pause=false,id=2,i=1,t=0}
+		draw.p[2]={5,0,0,3,1}
+	end,
+	scripts=function()
+		if draw.objects.b[1].tick and draw.objects.b[1].s then
+			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
+			addwall(0,0,4,3,2,5)
+			draw.p[1]={0,0,4,3,2}
+			update_world()
+		end
+		if draw.objects.b[2].tick and draw.objects.b[2].s then
+			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
+			addwall(8,0,3,1,1,5)
+			draw.p[1]={8,0,3,1,1}
+			update_world()
+		end
+		if draw.objects.b[3].tick and draw.objects.b[3].s then
+			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
+			addwall(2,0,5,1,2,5)
+			draw.p[1]={2,0,5,1,2}
+			update_world()
+		end
+		if draw.objects.fb[1].tick then
+			if draw.objects.fb[1].s then
+				addwall(6,0,5,1,3,11)
+				addwall(6,0,4,1,3,12)
+			else
+				addwall(6,0,5,1,3,13)
+				addwall(6,0,4,1,3,14)
+			end
+			draw.objects.d[1].s=draw.objects.fb[1].s
+			update_world()
+		end
+	end
+}
+
 maps[0][2]={ --main gameroom
 	w={ --table for walls
 	--{X, Y, Z, angle, face, type}
@@ -1399,6 +1524,7 @@ maps[0][2]={ --main gameroom
 	lg={{0,0,1,1,2}}, --light bridge generators
 	lift={{1,0,-1,3},{-1,0,10,0}}, --Initial and final elevator (X Y Z angle)
 	music=0, --Music ID for this level
+	pg_lvl=2, --portal gun lvl
 	init=function()end,
 	scripts=function()
 		if draw.objects.fb[1].tick then
@@ -1454,6 +1580,7 @@ p={},
 lg={},
 lift={nil,nil},
 music=-1,
+pg_lvl=0, --portal gun lvl
 init=function()end,
 scripts=function()end
 }
@@ -3159,7 +3286,7 @@ local function portal_gun()
 		end
 	end
 
-	if keyp(6) or plr.cd2>1 then
+	if keyp(6) or (plr.cd2>1 and save.lvl~=3 and save.lvl2~=1) then
 		if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 		if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) draw.p[2]=nil update_world() end
 	end
@@ -3852,69 +3979,73 @@ function TIC()
 		
 		if save.lvl==0 then save.lvl=1 end
 		save.lvl2=1
-		--save.lvl=2 --debug
-
 		pmem(0,save.lvl)
-		load_world(save.lvl2,save.lvl)
-		plr.hp=100
-		plr.hp2=100
-		if not maps[save.lvl2][save.lvl].lift[1] then
-			plr.x=32
-			plr.y=64
-			plr.z=32
-			plr.tx=0
-			plr.ty=0
-		elseif maps[save.lvl2][save.lvl].lift[1][4]==0 then
-			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96-144
-			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96
-			plr.tx=0
-			plr.ty=-pi2
-		elseif maps[save.lvl2][save.lvl].lift[1][4]==1 then
-			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96+144
-			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96
-			plr.tx=0
-			plr.ty=pi2
-		elseif maps[save.lvl2][save.lvl].lift[1][4]==2 then
-			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96
-			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96+144
-			plr.tx=0
-			plr.ty=0
-		elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then
-			plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96
-			plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-			plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96-144
-			plr.tx=0
-			plr.ty=math.pi
+		if save.lvl>#maps[save.lvl2] then
+			open="still alive"
+			music(7) vbank(1) cls(0) vbank(0) respal()
 		else
-			plr.x=32
-			plr.y=64
-			plr.z=32
-			plr.tx=0
-			plr.ty=0
-		end
-
-		music(maps[save.lvl2][save.lvl].music)
-		--Updating the texture of the level boards
-		local n1=save.lvl//10
-		local n2=save.lvl%10
-		for x=0,6 do
-			for y=0,10 do
-				setpix(100+x,35+y,l_b[n1][x][y])
-				setpix(109+x,35+y,l_b[n2][x][y])
+			load_world(save.lvl2,save.lvl)
+			plr.hp=100
+			plr.hp2=100
+			if not maps[save.lvl2][save.lvl].lift[1] then
+				plr.x=32
+				plr.y=64
+				plr.z=32
+				plr.tx=0
+				plr.ty=0
+			elseif maps[save.lvl2][save.lvl].lift[1][4]==0 then
+				plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96-144
+				plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
+				plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96
+				plr.tx=0
+				plr.ty=-pi2
+			elseif maps[save.lvl2][save.lvl].lift[1][4]==1 then
+				plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96+144
+				plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
+				plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96
+				plr.tx=0
+				plr.ty=pi2
+			elseif maps[save.lvl2][save.lvl].lift[1][4]==2 then
+				plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96
+				plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
+				plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96+144
+				plr.tx=0
+				plr.ty=0
+			elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then
+				plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96
+				plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
+				plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96-144
+				plr.tx=0
+				plr.ty=math.pi
+			else
+				plr.x=32
+				plr.y=64
+				plr.z=32
+				plr.tx=0
+				plr.ty=0
 			end
+
+			music(maps[save.lvl2][save.lvl].music)
+			--Updating the texture of the level boards
+			local n1=save.lvl//10
+			local n2=save.lvl%10
+			for x=0,6 do
+				for y=0,10 do
+					setpix(100+x,35+y,l_b[n1][x][y])
+					setpix(109+x,35+y,l_b[n2][x][y])
+				end
+			end
+			--
+			mx,my=0,0
+			poke(0x7FC3F,1,1)
+			plr.d=false
+			plr.pg_lvl=maps[save.lvl2][save.lvl].pg_lvl
+			plr.holding=false
+			maps[save.lvl2][save.lvl].init()
+			open="game"
+			stt=0
+			st_t=tstamp() --The start time of this level
 		end
-		--
-		mx,my=0,0
-		poke(0x7FC3F,1,1)
-		plr.d=false
-		plr.holding=false
-		maps[save.lvl2][save.lvl].init()
-		open="game"
-		stt=0
-		st_t=tstamp() --The start time of this level
 	end
 	--------------------------
 	-- pause -----------------
@@ -4111,10 +4242,11 @@ function TIC()
 			local x1=plr.x
 			local y1=plr.y
 			local z1=plr.z
-			if (maps[save.lvl2][save.lvl].lift[2][4]==1 and coll(x1-16,y1-64,z1-64,x1+16,y1+16,z1+16, x0-144,y0+64,z0    ,x0-144,y0+64,z0    ))
-			or (maps[save.lvl2][save.lvl].lift[2][4]==2 and coll(x1-16,y1-64,z1-64,x1+16,y1+16,z1+16, x0+144,y0+64,z0    ,x0+144,y0+64,z0    ))
-			or (maps[save.lvl2][save.lvl].lift[2][4]==3 and coll(x1-16,y1-64,z1-64,x1+16,y1+16,z1+16, x0    ,y0+64,z0-144,x0    ,y0+64,z0-144))
-			or (maps[save.lvl2][save.lvl].lift[2][4]==4 and coll(x1-16,y1-64,z1-64,x1+16,y1+16,z1+16, x0    ,y0+64,z0+144,x0    ,y0+64,z0+144))
+
+			if (maps[save.lvl2][save.lvl].lift[2][4]==0 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-144,y0+64,z0    ,x0-144,y0+64,z0    ))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==1 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0+144,y0+64,z0    ,x0+144,y0+64,z0    ))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==2 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0    ,y0+64,z0+144,x0    ,y0+64,z0+144))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==3 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0    ,y0+64,z0-144,x0    ,y0+64,z0-144))
 			then stt=max(stt,121) end
 		end
 
@@ -5038,7 +5170,7 @@ end
 -- 060:0100110011002100210031003100410041005100510061006100710071008100810091009100a100a100b100b100c100c100d100d100e100e100f100302000000000
 -- 061:010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100302000000000
 -- 062:000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000302000000000
--- 063:0000100010002000200030003000400040005000500060006000700070008000800090009000a000a000b000b000c000c000d000d000e000e000f000312000000000
+-- 063:000000000000000000000000000000000000000000000000000000000000100020003000400050006000700080009000a000b000c000d000e000f000312000000000
 -- </SFX>
 
 -- <PATTERNS>
