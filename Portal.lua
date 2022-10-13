@@ -4,7 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
-local version="DEV 0.3.0"
+local version="DEV 0.3.1"
 
 --[[
 license:
@@ -3849,7 +3849,7 @@ function TIC()
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
 		pmem(4,save.ct)
-
+		
 		if save.lvl==0 then save.lvl=1 end
 		save.lvl2=1
 		--save.lvl=2 --debug
@@ -3896,7 +3896,7 @@ function TIC()
 			plr.ty=0
 		end
 
-		if save.lvl2~=2 then music(maps[save.lvl2][save.lvl].music) end
+		music(maps[save.lvl2][save.lvl].music)
 		--Updating the texture of the level boards
 		local n1=save.lvl//10
 		local n2=save.lvl%10
@@ -4104,11 +4104,21 @@ function TIC()
 	 --Level scripts
 		maps[save.lvl2][save.lvl].scripts()
 	 --finish lift
-	 --[[
-		if not plr.d and plr.x//96==maps[save.lvl2][save.lvl].lift[2][1] and plr.y//128==maps[save.lvl2][save.lvl].lift[2][2] and plr.z//96==maps[save.lvl2][save.lvl].lift[2][3] then stt=max(stt,121)end
-		
-		]]
-		if stt>150 then open="load lvl" if plr.d then save.lvl=save.lvl-1 end end
+		if not plr.d and maps[save.lvl2][save.lvl].lift[2] then
+			local x0=maps[save.lvl2][save.lvl].lift[2][1]*96
+			local y0=maps[save.lvl2][save.lvl].lift[2][2]*128
+			local z0=maps[save.lvl2][save.lvl].lift[2][3]*96
+			local x1=plr.x
+			local y1=plr.y
+			local z1=plr.z
+			if (maps[save.lvl2][save.lvl].lift[2][4]==1 and coll(x1-16,y1-64,z1-64,x1+16,y1+16,z1+16, x0-144,y0+64,z0    ,x0-144,y0+64,z0    ))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==2 and coll(x1-16,y1-64,z1-64,x1+16,y1+16,z1+16, x0+144,y0+64,z0    ,x0+144,y0+64,z0    ))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==3 and coll(x1-16,y1-64,z1-64,x1+16,y1+16,z1+16, x0    ,y0+64,z0-144,x0    ,y0+64,z0-144))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==4 and coll(x1-16,y1-64,z1-64,x1+16,y1+16,z1+16, x0    ,y0+64,z0+144,x0    ,y0+64,z0+144))
+			then stt=max(stt,121) end
+		end
+
+		if stt>150 then open="load lvl" if not plr.d then save.lvl=save.lvl+1 end end
 	 --death
 	 	if plr.hp<=0 then
 			plr.d=true
