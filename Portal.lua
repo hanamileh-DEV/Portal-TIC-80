@@ -47,11 +47,11 @@ sfx   =true,
 }
 
 local save={ --saving the game
-i=pmem(0)~=0, --How for the first time the player went into the game
+i=pmem(0)==0, --How for the first time the player went into the game
 lvl=pmem(0),
 lvl2=0, --ID set of levels
 st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
-bt=pmem(2), --the best time to pass skilltests
+--pmem(2) not used
 d=pmem(3), --the number of player deaths (in the main game)
 ct=pmem(4), --current time passing the main game
 }
@@ -71,8 +71,6 @@ local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
 local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false, pg_lvl = 3 --[[portal gun level]]}
 
-
-plr.godmode=true
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -1148,12 +1146,11 @@ local l_t2={
 }
 
 --maps
-local maps={[0]={},[1]={},[2]={}}
+local maps={[0]={},[1]={}}
 
 --[[
 	0 set of levels - system levels
 	1 set of levels - levels of the main game
-	2 set of levels - Levels for skilltest
 ]]
 
 maps[1][1]={
@@ -3529,7 +3526,6 @@ local speed=4
 --init
 local tm1,tm2 = 0,0
 local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --pause
-local ls={t=0,pr=0} --loading screen
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
@@ -3630,7 +3626,7 @@ function TIC()
 	--------------------------
 	-- main screen -----------
 	--------------------------
-	if open=="main" or open=="main|newgame" or open=="main|authors" or open=="main|settings" or open=="main|skilltest" then
+	if open=="main" or open=="main|newgame" or open=="main|authors" or open=="main|settings" then
 		ms.t=ms.t+1
 		--camera
 		vbank(0)
@@ -3647,9 +3643,8 @@ function TIC()
 		if open~="main|settings" then spr(256,min(-104+ms.t*6,8),4,0,1,0,0,13,3) end
 
 		if open=="main" then
-			if not save.i then print("Continue"  ,min(ms.t*2-10,4)+(1-ms.t1)*20, 45,7) end
-			print("New game"  ,min(ms.t*2-20,4)+(1-ms.t2)*20, 55,7)
-			print("Skill test",min(ms.t*2-30,4)+(1-ms.t3)*20, 75,7)
+			if not save.i then print("Continue"  ,min(ms.t*2-10,4)+(1-ms.t1)*20, 65,7) end
+			print("New game"  ,min(ms.t*2-20,4)+(1-ms.t2)*20, 75,7)
 			print("Settings"  ,min(ms.t*2-40,4)+(1-ms.t4)*20, 95,7)
 			print("Authors"   ,min(ms.t*2-50,4)+(1-ms.t5)*20,105,7)
 			print("Exit"      ,min(ms.t*2-60,4)+(1-ms.t6)*20,125,7)
@@ -3658,11 +3653,10 @@ function TIC()
 			print("version "..version,238-text_size,130,7)
 			vbank(0)
 			--buttons
- 			if my>42  and my<53  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl2=1 end else ms.t1=min(1,ms.t1+0.05) end
+ 			if my>62  and my<73  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl2=1 end else ms.t1=min(1,ms.t1+0.05) end
 
-			if my>52  and my<63  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" sfx_(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
+			if my>72  and my<83  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" sfx_(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
 
-			if my>72  and my<83  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then open="main|skilltest" end else ms.t3=min(1,ms.t3+0.05) end
 
 			if my>92  and my<103 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx_(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
 			if my>102 and my<113 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then open="main|authors" sfx_(16) ms.t1=1 end else ms.t5=min(1,ms.t5+0.05) end
@@ -3678,20 +3672,6 @@ function TIC()
 			print("Cancel",4+(1-ms.t2)*20,105,7)
 			if my>82  and my<93  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end else ms.t1=min(1,ms.t1+0.05) end
 			if my>102 and my<113 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx_(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
-		elseif open=="main|skilltest" then
-			print("Set of skilltest levels",1,35,7)
-			print("Take these levels",1,55,13)
-			print("as quickly as possible",1,65,13)
-			local bt=""
-			if save.bt//60<10 then bt=bt.."0"..save.bt//60 ..":" else bt=bt..save.bt//60 ..":" end
-			if save.bt% 60<10 then bt=bt.."0"..save.bt%60 else bt=bt..save.bt%60 end
-
-			print("Your record: "..bt,1,85,11)
-			print("Start game",4+(1-ms.t1)*20,105,7)
-			print("Back",4+(1-ms.t2)*20,125,7)
-			if my>102 and my<112 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" music(3) ctp=0 save.lvl2=2 end else ms.t1=min(1,ms.t1+0.05) end
-			if my>122 and my<132 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx_(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
-
 		elseif open=="main|authors" then
 			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
 			print("Author of the engine: HanamileH"         ,1,55,7)
@@ -3836,26 +3816,6 @@ function TIC()
 		if sts.t==35 then open="main|settings" music(2) end
 	end
 	--------------------------
-	-- loading ---------------
-	--------------------------
-	if open=="load" then vbank(1) cls() vbank(0) respal()
-		cls(1)
-		ls.t=ls.t+1
-		--progressbar
-		rectb(1,133,237,2,2)
-		rectb(1,133,ls.pr/100*237,2,7)
-		ls.pr=min(ls.pr+2,100)
-		--text
-		print("Please wait...",80,125,7)
-		--animation
-		clip(200,30,24,90)
-		spr(425,200,30+ls.t*3%90,-1,1,0,0,3,3)
-		spr(425,200,30+ls.t*3%90-90,-1,1,0,0,3,3)
-		clip()
-		rect(193,28,38,2,10)
-		rect(193,118,38,2,13)
-	end
-	--------------------------
 	-- load lvl --------------
 	--------------------------
 	if open=="load lvl" then
@@ -3928,8 +3888,6 @@ function TIC()
 		maps[save.lvl2][save.lvl].init()
 		open="game"
 		stt=0
-		lctp=ctp or 0
-		ctp=0  --current time passing
 		st_t=tstamp() --The start time of this level
 	end
 	--------------------------
@@ -3986,8 +3944,6 @@ function TIC()
 	-- game ------------------
 	--------------------------
 	if open=="game" then
-		if keyp(21) then draw.objects.c = {{type=1, x=500,y=200,z=96, x1=0,y1=0,z1=0, inp=false, vx=0, vy=0, vz=0, draw=true, model=model[1]},{type=1, x=500,y=200,z=96, vx=0, vy=0, vz=0, draw=true, model=model[2]}} end
-
 		if stt~=120 then stt=stt+1 end
 		fps_.t1=time()
 		plr.cd2=max(plr.cd2-1,0)
@@ -4142,15 +4098,6 @@ function TIC()
 			print(text:sub(1,(59-stt)//4),120-text_size/2,91,1)
 			print(text:sub(1,(59-stt)//4),120-text_size/2,90,7)
 		end
-		--timer
-		local text=""
-		if ctp//60<10 then text=text.."0"..ctp//60 ..":" else text=text..ctp//60 ..":" end
-		if ctp% 60<10 then text=text.."0"..ctp%60 else text=text..ctp%60 end
-
-		local text_size=print(text,240,0,true)
-
-		print(text,120-text_size/2,131,1,true)
-		print(text,120-text_size/2,130,7,true)
 	 --
 		if l_t2.draw then
 			local text=l_t[l_t2.id][l_t2.i]
@@ -4166,7 +4113,6 @@ function TIC()
 			end
 		end
 	 --
-		ctp=F(lctp+(tstamp()-st_t))
 		pmem(4,save.ct+(tstamp()-st_t))
 	 --pause
 		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
@@ -4358,13 +4304,12 @@ function BDR(scn_y) scn_y=scn_y-4
 	end
 
 	if open=="main" then
-		if scn_y==0 or scn_y==53 or scn_y==63 or scn_y==83 or scn_y==103 or scn_y==113 or scn_y==133 then
+		if scn_y==0 or scn_y==73 or scn_y==83 or scn_y==103 or scn_y==113 or scn_y==133 then
 			respal()
 			darkpal(min(ms.t/60,0.5))
 		end
-		if scn_y==43  then darkpal(ms.t1) end
-		if scn_y==53  then darkpal(ms.t2) end
-		if scn_y==73  then darkpal(ms.t3) end
+		if scn_y==63  then darkpal(ms.t1) end
+		if scn_y==73  then darkpal(ms.t2) end
 		if scn_y==93  then darkpal(ms.t4) end
 		if scn_y==103 then darkpal(ms.t5) end
 		if scn_y==123 then darkpal(ms.t6) end
@@ -4377,15 +4322,6 @@ function BDR(scn_y) scn_y=scn_y-4
 		end
 		if scn_y==83 then darkpal(ms.t1) end
 		if scn_y==103 then darkpal(ms.t2) end
-	end
-
-	if open=="main|skilltest" then
-		if scn_y==0 or scn_y==113 or scn_y==133 then
-			respal()
-			darkpal(0.2)
-		end
-		if scn_y==103 then darkpal(ms.t1) end
-		if scn_y==123 then darkpal(ms.t2) end
 	end
 
 	if open=="main|authors" then
@@ -4420,6 +4356,8 @@ function BDR(scn_y) scn_y=scn_y-4
 		vbank(1) poke(0x03FF9,256+R(-1,1)*R(0,F(plr.cd2/2)))
 	end
 end
+
+
 -- <TILES>
 -- 000:4444444443333333434333334333333343333433433333334343334343333333
 -- 001:4444444433333333433343333333333334333334333333333333333333333333
