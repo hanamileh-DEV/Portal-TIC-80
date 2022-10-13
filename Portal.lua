@@ -3954,16 +3954,16 @@ function TIC()
 			--buttons
 			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1 else p.t1=min(p.t1+0.05,1) end
 
-			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                                                  end else p.t2=min(p.t2+0.05,1) end
-			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx_(16) clp1=false                         end else p.t3=min(p.t3+0.05,1) end
-			if my>122 and my<133 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx_(16) end                                      else p.t4=min(p.t4+0.05,1) end
+			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                           end else p.t2=min(p.t2+0.05,1) end
+			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx_(16) clp1=false end else p.t3=min(p.t3+0.05,1) end
+			if my>122 and my<133 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx_(16)              end else p.t4=min(p.t4+0.05,1) end
 		elseif open=="pause|accept" then
 			print("Do you really want to leave the game?",4,45,7)
 			print("Your current game will not be saved",4,55,7)
 			print("Accept",4+(1-p.t1)*20,85,7)
 			print("Back"  ,4+(1-p.t2)*20,105,7)
 			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(0,1) end else p.t1=min(p.t1+0.05,1) end
-			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)                               end else p.t2=min(p.t2+0.05,1) end
+			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)                                  end else p.t2=min(p.t2+0.05,1) end
 		end
 
 		--Resume
@@ -3971,7 +3971,12 @@ function TIC()
 			open="game"
 			sfx_(17)
 			poke(0x7FC3F,1,1)
-			music(s.n[1],s.n[2],s.n[3])
+			trace(s.n[1])
+			if s.n[1]~=255 then
+				music(s.n[1],s.n[2],s.n[3])
+			elseif st.music then
+				music(maps[save.lvl2][save.lvl].music)
+			end
 			lctp=ctp or 0
 			ctp=0
 			st_t=tstamp()
