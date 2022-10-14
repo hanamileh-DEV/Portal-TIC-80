@@ -4,7 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
-local version="DEV 0.3.1"
+local version="DEV 0.3.2"
 
 --[[
 license:
@@ -69,7 +69,7 @@ end
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 95, y = 65, z = 500, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false, pg_lvl = 2 --[[portal gun level]]}
+local plr = { x = 0, y = 64, z = 0, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false, pg_lvl = 2 --[[portal gun level]]}
 
 --engine settings:
 local unitic = {
@@ -1136,6 +1136,7 @@ local l_t={
 		"The portal will open after 3... 2... 1..."
 	},
 	{
+		"The door was open behind you",
 		"It is amazing that this elevator still works",
 		"I thought you were going to overload it",
 		"To pass the next level you need to cross the abyss",
@@ -1150,6 +1151,19 @@ local l_t2={
 	i=1,
 	t=0
 }
+
+--sprite editor
+local function setpix(sx,sy,color)
+	local id=sx//8+sy//8*16
+	local adr=sx%8+sy%8*8
+	poke4(0x8000+id*64+adr,color)
+end
+
+local function getpix(sx,sy)
+	local id=sx//8+sy//8*16
+	local adr=sx%8+sy%8*8
+	return peek4(0x8000+id*64+adr)
+end
 
 --maps
 local maps={[0]={},[1]={}}
@@ -1230,7 +1244,6 @@ maps[1][1]={
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={}, --light bridge generators
 	lift={nil,{7,0,-1,3}}, --Initial and final elevator (X Y Z angle)
-	music=0, --Music ID for this level
 	pg_lvl=0, --portal gun lvl
 	init=function()
 		plr.x=280
@@ -1239,6 +1252,10 @@ maps[1][1]={
 		plr.ty=-pi2
 		maps[1][1].t=0
 		l_t2={draw=true,pause=false,id=1,i=1,t=0}
+		for x=0,19 do
+		for y=0,28 do
+			setpix(93-x,y+99,15)
+		end end
 	end,
 	scripts=function()
 		if l_t2.i>9 then
@@ -1355,14 +1372,13 @@ maps[1][2]={
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={}, --light bridge generators
 	lift={{-1,1,1,0},{2,1,7,2}}, --Initial and final elevator (X Y Z angle)
-	music=3, --Music ID for this level
 	pg_lvl=0, --portal gun lvl
 	init=function()
 		l_t2={draw=true,pause=false,id=2,i=1,t=0}
 		maps[1][2].t=0 --a variable for the level
 	end,
 	scripts=function()
-		if l_t2.i>5 then maps[1][2].t=maps[1][2].t+1 end
+		if l_t2.i>6 then maps[1][2].t=maps[1][2].t+1 end
 		if maps[1][2].t==1 then
 			addwall(2,1,0,3,1,5)
 			addwall(7,1,0,3,1,6)
@@ -1470,7 +1486,6 @@ maps[1][3]={
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={}, --light bridge generators
 	lift={{4,0,-1,3},{7,0,5,1}}, --Initial and final elevator (X Y Z angle)
-	music=3, --Music ID for this level
 	pg_lvl=0, --portal gun lvl
 	init=function()
 		l_t2={draw=false,pause=false,id=2,i=1,t=0}
@@ -1524,7 +1539,6 @@ maps[0][2]={ --main gameroom
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={{0,0,1,1,2}}, --light bridge generators
 	lift={{1,0,-1,3},{-1,0,10,0}}, --Initial and final elevator (X Y Z angle)
-	music=0, --Music ID for this level
 	pg_lvl=2, --portal gun lvl
 	init=function()end,
 	scripts=function()
@@ -1581,7 +1595,6 @@ o={},
 p={},
 lg={},
 lift={nil,nil},
-music=-1,
 pg_lvl=0, --portal gun lvl
 init=function()end,
 scripts=function()end
@@ -1667,19 +1680,6 @@ if st.sfx then sfx(...) end
 end
 local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
-end
---sprite editor
-
-local function setpix(sx,sy,color)
-	local id=sx//8+sy//8*16
-	local adr=sx%8+sy%8*8
-	poke4(0x8000+id*64+adr,color)
-end
-
-local function getpix(sx,sy)
-	local id=sx//8+sy//8*16
-	local adr=sx%8+sy%8*8
-	return peek4(0x8000+id*64+adr)
 end
 
 local b_f={} --Texture for the blue field (It is necessary for optimization)
@@ -3979,11 +3979,11 @@ function TIC()
 		sync(2,0,false)
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
+		save.lvl2=1
+		-- save.lvl=2
 		pmem(4,save.ct)
 		
 		if save.lvl==0 then save.lvl=1 end
-		save.lvl2=0
-		save.lvl=2
 		pmem(0,save.lvl)
 		if save.lvl>#maps[save.lvl2] then
 			open="still alive"
@@ -3998,39 +3998,41 @@ function TIC()
 				plr.z=32
 				plr.tx=0
 				plr.ty=0
-			elseif maps[save.lvl2][save.lvl].lift[1][4]==0 then
-				plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96-144
-				plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-				plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96
-				plr.tx=0
-				plr.ty=-pi2
-			elseif maps[save.lvl2][save.lvl].lift[1][4]==1 then
-				plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96+144
-				plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-				plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96
-				plr.tx=0
-				plr.ty=pi2
-			elseif maps[save.lvl2][save.lvl].lift[1][4]==2 then
-				plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96
-				plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-				plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96+144
-				plr.tx=0
-				plr.ty=0
-			elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then
-				plr.x=maps[save.lvl2][save.lvl].lift[1][1]*96
-				plr.y=maps[save.lvl2][save.lvl].lift[1][2]*128+64
-				plr.z=maps[save.lvl2][save.lvl].lift[1][3]*96-144
-				plr.tx=0
-				plr.ty=math.pi
 			else
-				plr.x=32
-				plr.y=64
-				plr.z=32
-				plr.tx=0
-				plr.ty=0
+				local x0=maps[save.lvl2][save.lvl].lift[1][1]*96
+				local y0=maps[save.lvl2][save.lvl].lift[1][2]*128
+				local z0=maps[save.lvl2][save.lvl].lift[1][3]*96
+				
+				--We shift the player regarding the rotation of the elevator
+				local rot1,rot2
+				rot2=rot1 or 0
+				if maps[save.lvl2][save.lvl].lift[1][4]==2 then rot1=0 end
+				if maps[save.lvl2][save.lvl].lift[1][4]==0 then rot1=1 end
+				if maps[save.lvl2][save.lvl].lift[1][4]==3 then rot1=2 end
+				if maps[save.lvl2][save.lvl].lift[1][4]==1 then rot1=3 end
+
+				local rot=(rot1 + rot2)%4
+
+				if rot==0 then --do something (plz)
+				elseif rot==1 then plr.x,plr.z=plr.z,-plr.x
+				elseif rot==2 then plr.x,plr.z=-plr.x,-plr.z
+				elseif rot==3 then plr.x,plr.z=-plr.z,plr.x
+				end
+				
+				plr.x=plr.x+x0
+				plr.y=plr.y+y0
+				plr.z=plr.z+z0
+				--
+				if     maps[save.lvl2][save.lvl].lift[1][4]==0 then plr.x=plr.x-144 plr.ty=plr.ty-pi2
+				elseif maps[save.lvl2][save.lvl].lift[1][4]==1 then plr.x=plr.x+144 plr.ty=plr.ty+pi2
+				elseif maps[save.lvl2][save.lvl].lift[1][4]==2 then plr.z=plr.z+144 plr.ty=plr.ty
+				elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then plr.z=plr.z-144 plr.ty=plr.ty+math.pi end
+
 			end
 
-			music(maps[save.lvl2][save.lvl].music)
+			if save.lvl2==1 and save.lvl==1 then music(0)
+			elseif peek(0x13FFC)~=3 then music(3)
+			end
 			--Updating the texture of the level boards
 			local n1=save.lvl//10
 			local n2=save.lvl%10
@@ -4148,11 +4150,6 @@ function TIC()
 			if plr.cd3>0 then
 				updpal(1,0.2*(3-plr.cd3*0.2),0.2*(3-plr.cd3*0.2))
 			end
-			if stt<60 then
-				darkpal(stt/60)
-			elseif stt>120 then
-				darkpal(max(0,150-stt)/30)
-			end
 		end
 	 --camera rotation
 	 	if p.t==0 and stt>2 then
@@ -4239,6 +4236,27 @@ function TIC()
 		if plr.godmode then plr.hp=100 end
 	 --Level scripts
 		maps[save.lvl2][save.lvl].scripts()
+	 --init lift
+		if stt<41 and maps[save.lvl2][save.lvl].lift[1] then
+			local x0=maps[save.lvl2][save.lvl].lift[1][1]*96
+			local y0=maps[save.lvl2][save.lvl].lift[1][2]*128
+			local z0=maps[save.lvl2][save.lvl].lift[1][3]*96
+			local x1=plr.x
+			local y1=plr.y
+			local z1=plr.z
+			--Do not let the player out of the elevator
+			plr.y=min(max(y1,y0+64),y0+112)
+			if     maps[save.lvl2][save.lvl].lift[1][4]==0 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0-192),x0-144)
+			elseif maps[save.lvl2][save.lvl].lift[1][4]==1 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0+144),x0+192)
+			elseif maps[save.lvl2][save.lvl].lift[1][4]==2 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0+144),z0+192)
+			elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0-192),z0-144) end
+			--Updating the texture of the elevator door
+			local x=(40-stt)//2
+			if stt%2==1 then for y=0,28 do
+				setpix(93-x,y+99,15)
+				if x>0 then setpix(94-x,y+99,4) end
+			end end
+		end
 	 --finish lift
 		if not plr.d and maps[save.lvl2][save.lvl].lift[2] then
 			local x0=maps[save.lvl2][save.lvl].lift[2][1]*96
@@ -4248,14 +4266,39 @@ function TIC()
 			local y1=plr.y
 			local z1=plr.z
 
-			if (maps[save.lvl2][save.lvl].lift[2][4]==0 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-144,y0+64,z0    ,x0-144,y0+64,z0    ))
-			or (maps[save.lvl2][save.lvl].lift[2][4]==1 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0+144,y0+64,z0    ,x0+144,y0+64,z0    ))
-			or (maps[save.lvl2][save.lvl].lift[2][4]==2 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0    ,y0+64,z0+144,x0    ,y0+64,z0+144))
-			or (maps[save.lvl2][save.lvl].lift[2][4]==3 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0    ,y0+64,z0-144,x0    ,y0+64,z0-144))
+			if (maps[save.lvl2][save.lvl].lift[2][4]==0 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-192,y0,z0-48 , x0-144,y0+128,z0+48 ))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==1 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0+144,y0,z0-48 , x0+192,y0+128,z0+48 ))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==2 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-48 ,y0,z0+144, x0+48 ,y0+128,z0+192))
+			or (maps[save.lvl2][save.lvl].lift[2][4]==3 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-48 ,y0,z0-192, x0+48 ,y0+128,z0-144))
 			then stt=max(stt,121) end
+			if stt>120 then
+				--Do not let the player out of the elevator
+				plr.y=min(max(y1,y0+64),y0+112)
+				if     maps[save.lvl2][save.lvl].lift[2][4]==0 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0-192),x0-144)
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==1 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0+144),x0+192)
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==2 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0+144),z0+192)
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==3 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0-192),z0-144) end
+				--Updating the texture of the elevator door
+				local x=(stt-121)//2
+				if stt%2==1 and x<20 then for y=0,28 do
+					setpix(93-x,y+99,5)
+					if x>0 and x<19 then setpix(92-x,y+99,4) end
+				end end
+			end
+			if stt>190 then
+				plr.x=plr.x-x0
+				plr.y=plr.y-y0
+				plr.z=plr.z-z0
+				if     maps[save.lvl2][save.lvl].lift[2][4]==0 then plr.x=plr.x+144 plr.ty=plr.ty+pi2
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==1 then plr.x=plr.x-144 plr.ty=plr.ty-pi2
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==2 then plr.z=plr.z-144 plr.ty=plr.ty
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==3 then plr.z=plr.z+144 plr.ty=plr.ty-math.pi end
+
+				open="load lvl"
+				if not plr.d then save.lvl=save.lvl+1 end
+			end
 		end
 
-		if stt>150 then open="load lvl" if not plr.d then save.lvl=save.lvl+1 end end
 	 --death
 	 	if plr.hp<=0 then
 			plr.d=true
@@ -4275,7 +4318,7 @@ function TIC()
 		if l_t2.draw then
 			local text=l_t[l_t2.id][l_t2.i]
 			local text_size=print(text,240,0,1,false,1,true)
-			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if keyp(26,20,2) then l_t2.t=l_t2.t+0.5 end if (l_t2.t%1==0 or l_t2.t%1~=0 and keyp(26,20,2)) and l_t2.t//1<#text then sfx_(19)end end
+			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if keyp(26,20,1) then l_t2.t=l_t2.t+0.5 end if (l_t2.t%1==0 or l_t2.t%1~=0 and keyp(26,20,2)) and l_t2.t//1<#text then sfx_(19)end end
 			rect(120-text_size/2-1,113,text_size+2,8,2)
 			print(text:sub(1,F(l_t2.t)),120-text_size/2,115,1,false,1,true)
 			print(text:sub(1,F(l_t2.t)),120-text_size/2,114,7,false,1,true)
@@ -4726,9 +4769,9 @@ end
 -- 198:2b2444442b2433332b2433332b2433332b2433332b2433332b2433332b243333
 -- 199:4444444433333333333333333333333333333333333333333333333333333333
 -- 200:444442b2333342b2333342b2333342b2333342b2333342b2333342b2333342b2
--- 201:2b2222222b2222222333333323ffffff23ffffff23ffffff23ffffff23ffffff
--- 202:222222222222222233333333ffffffffffffffffffffffffffffffffffffffff
--- 203:222222b2222222b233333332ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 201:2b2222222b222222233333332355555523555555235555552355555523555555
+-- 202:2222222222222222333333335555555555555555555555555555555555555555
+-- 203:222222b2222222b2333333325555553255555532555555325555553255555532
 -- 204:4444444343333332433433324333323243433332433323324333333232222222
 -- 205:4444444343333332433433324333323243433332433323324333333232222222
 -- 206:4444444343333332433433324333323243433332433323324333333232222222
@@ -4741,9 +4784,9 @@ end
 -- 214:2b2433332b2433332b2433332b2433332b2433332b2433332b2433332b243333
 -- 215:3333333333333333333333333333333333333333333333333333333333333333
 -- 216:333342b2333342b2333342b2333342b2333342b2333342b2333342b2333342b2
--- 217:23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff
--- 218:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 219:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 217:2355555523555555235555552355555523555555235555552355555523555555
+-- 218:5555555555555555555555555555555555555555555555555555555555555555
+-- 219:5555553255555532555555325555553255555532555555325555553255555532
 -- 220:4444444343333332433433324333323243433332433323324333333232222222
 -- 221:4444444343333332433433324333323243433332433323324333333232222222
 -- 222:4444444343333332433433324333323243433332433323324333333232222222
@@ -4756,9 +4799,9 @@ end
 -- 230:2b2433332b2433332b2433332b2444442b22222233333333333333332b222222
 -- 231:3333333333333333333333334444444422222222333333333333333322222222
 -- 232:333342b2333342b2333342b2444442b2222222b23333333333333333222222b2
--- 233:23ffffff23ffffff23ffffff23ffffff23ffffff33ffffff33ffffff23ffffff
--- 234:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 235:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 233:2355555523555555235555552355555523555555335555553355555523555555
+-- 234:5555555555555555555555555555555555555555555555555555555555555555
+-- 235:5555553255555532555555325555553255555532555555325555553255555532
 -- 236:4444444343333332433433324333323243433332433323324333333232222222
 -- 237:4444444343333332433433324333323243433332433323324333333232222222
 -- 238:4444444343333332433433324333323243433332433323324333333232222222
@@ -4771,9 +4814,9 @@ end
 -- 246:2b2222222b2222222b2222222b2222222b2222222b2222222b2222222b222222
 -- 247:2222222222222222222222222222222222222222222222222222222222222222
 -- 248:222222b2222222b2222222b2222222b2222222b2222222b2222222b2222222b2
--- 249:23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff23ffffff
--- 250:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
--- 251:ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32ffffff32
+-- 249:2355555523555555235555552355555523555555235555552355555523555555
+-- 250:5555555555555555555555555555555555555555555555555555555555555555
+-- 251:5555553255555532555555325555553255555532555555325555553255555532
 -- 255:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
 -- </TILES>
 
@@ -5180,7 +5223,7 @@ end
 
 -- <PATTERNS>
 -- 000:6008f5000000000000000000a008f5000000000000000000b008f5000000000000f008f5000000000000d008f50000006008f5000000000000000000a008f5000000000000000000b008f5000000000000f008f5000000000000d008f50000006008f5000000000000000000a008f5000000000000000000b008f5000000000000f008f5000000000000d008f50000006008f5000000000000000000a008f5000000000000000000b008f5000000000000f008f5000000000000d008f5000000
--- 001:6008f9001400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b008f9a008f98008f98008f9000000000000a008f9000000000000000000000000000000000000000000000000000000b008f9a008f98008f98008f9000000000000a008f90000006008f90000008008f9d008f7000000000000000000000000000000000000000000000000
+-- 001:6008f9000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b008f9a008f98008f98008f9000000000000a008f9000000000000000000000000000000000000000000000000000000b008f9a008f98008f98008f9000000000000a008f90000006008f90000008008f9d008f7000000000000000000000000000000000000000000000000
 -- 002:8008f9000000a008f9b008f90000008008f90000000000005008f90000006008f98008f9000000d008f70000000000006008f9000000000000000000000000000000000000000000000000000000000000000000b008f9a008f98008f98008f9000000000000a008f9000000000000000000000000000000000000000000000000000000b008f9a008f98008f98008f9000000000000a008f90000006008f90000008008f9d008f7000000000000000000000000000000000000000000000000
 -- 003:8008f9000000a008f9b008f90000008008f90000000000005008f90000006008f98008f9000000d008f7000000000000e008f70000000000006008f90000000000009008f9000000000000000000d008f9e008f9e008f9d008f99008f9000000d008f70000000000005008f90000000000008008f9000000000000b008f9d008f9d008f9b008f98008f95008f9000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 004:bff8f7aff8f78ff8f7810bf7010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
