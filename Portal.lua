@@ -1516,7 +1516,8 @@ maps[0][2]={ --main gameroom
 	o={ --table for objects
 	 --{X, Y, Z, type, [additional parameters]}
 	 {2.5*96,0,2.5*96,16},
-	 {800,100,900,2},
+	 {3.5*96,256-32,3.5*96,3},
+	 {3.5*96,24,3.5*96,2,1},
 	 {800,0,900,15},
 
 	},
@@ -1527,6 +1528,7 @@ maps[0][2]={ --main gameroom
 	pg_lvl=2, --portal gun lvl
 	init=function()end,
 	scripts=function()
+		l_t2={draw=false,pause=false,id=1,i=1,t=0}
 		if draw.objects.fb[1].tick then
 			if draw.objects.fb[1].s then
 				draw.lg[1]=nil
@@ -1600,8 +1602,6 @@ for x=0,10 do
 end
 
 maps[0][2].w[#maps[0][2].w+1]={0,0,1,1,2,9}
-
-maps[0][2].w[#maps[0][2].w+1]={2,0,0,3,1,8}
 maps[0][2].w[#maps[0][2].w+1]={3,0,11,3,2,9}
 maps[0][2].w[#maps[0][2].w+1]={0,1,2,1,2,16}
 maps[0][2].w[#maps[0][2].w+1]={0,1,3,1,2,17}
@@ -1627,6 +1627,10 @@ maps[0][2].w[#maps[0][2].w+1]={0,0,10,1,3,11}
 maps[0][2].w[#maps[0][2].w+1]={0,0,9,1,3,12}
 maps[0][2].w[#maps[0][2].w+1]={0,0,0,3,3,12}
 maps[0][2].w[#maps[0][2].w+1]={1,0,0,3,3,11}
+maps[0][2].w[#maps[0][2].w+1]={11,0,1,1,1,2}
+maps[0][2].w[#maps[0][2].w+1]={3,2,3,2,3,2}
+
+
 --song text
 local s_t={
 	"This is one of the",
@@ -3978,7 +3982,8 @@ function TIC()
 		pmem(4,save.ct)
 		
 		if save.lvl==0 then save.lvl=1 end
-		save.lvl2=1
+		save.lvl2=0
+		save.lvl=2
 		pmem(0,save.lvl)
 		if save.lvl>#maps[save.lvl2] then
 			open="still alive"
