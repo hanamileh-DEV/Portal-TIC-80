@@ -1253,8 +1253,7 @@ maps[1][1]={
 		plr.ty=-pi2
 		maps[1][1].t=0
 		l_t2={draw=true,pause=false,id=1,i=1,t=0}
-		for x=0,19 do
-		for y=0,28 do
+		for x=0,19 do for y=0,28 do
 			setpix(93-x,y+99,15)
 		end end
 	end,
@@ -4078,7 +4077,23 @@ function TIC()
 			--buttons
 			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1 else p.t1=min(p.t1+0.05,1) end
 
-			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="load lvl"                           end else p.t2=min(p.t2+0.05,1) end
+			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1
+				if clp1 then
+					open="load lvl"
+					if s.n[1]~=255 then
+						music(s.n[1],s.n[2],s.n[3])
+					elseif st.music then
+						music(maps[save.lvl2][save.lvl].music)
+					end
+					plr.x=0
+					plr.y=64
+					plr.z=0
+					plr.tx=0
+					plr.ty=0
+					for x=0,19 do for y=0,28 do
+						setpix(93-x,y+99,5)
+					end end
+				end else p.t2=min(p.t2+0.05,1) end
 			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx_(16) clp1=false end else p.t3=min(p.t3+0.05,1) end
 			if my>122 and my<133 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx_(16)              end else p.t4=min(p.t4+0.05,1) end
 		elseif open=="pause|accept" then
@@ -4095,7 +4110,6 @@ function TIC()
 			open="game"
 			sfx_(17)
 			poke(0x7FC3F,1,1)
-			trace(s.n[1])
 			if s.n[1]~=255 then
 				music(s.n[1],s.n[2],s.n[3])
 			elseif st.music then
