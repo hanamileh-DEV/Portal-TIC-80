@@ -2137,11 +2137,18 @@ function unitic.player_collision()
 	local colx = false
 	local coly = false
 	local colz = false
+
 	local function plr_collide(x1,y1,z1,x2,y2,z2)
+		local ti=false
 		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then colx = true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x1,y1,z1, x2,y2,z2) then coly = true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x1,y1,z1, x2,y2,z2) then colz = true end
+			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then ti = true colx=true end
+			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x1,y1,z1, x2,y2,z2) then ti = true coly=true end
+			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x1,y1,z1, x2,y2,z2) then ti = true colz=true end
+			if not ti and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, x1,y1,z1, x2,y2,z2) then
+				if y1~=y2 and z1~=z2 then colx=true end
+				if x1~=x2 and z1~=z2 then coly=true end
+				if x1~=x2 and y1~=y2 then colz=true end
+			end
 		end
 	end
 
@@ -2194,7 +2201,7 @@ function unitic.player_collision()
 			plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 		elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
 			if not draw.p[1] or not draw.p[2] then
-				plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+				plr_collide(x0 * 96, y0 * 128, z0 * 96, x0 * 96 + 96, y0 * 128 + 128, z0 * 96)
 			else
 				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
 				or coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
