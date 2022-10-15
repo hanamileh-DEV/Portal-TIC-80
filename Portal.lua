@@ -2320,7 +2320,7 @@ function unitic.player_collision()
 	plr.xy=coly
 end
 
-local function cube_interact(cube)
+local function cube_interact(cube,p)
 	if plr.holding and not cube.held then return false end
 
 	local rc=raycast(
@@ -2328,7 +2328,8 @@ local function cube_interact(cube)
 		cube.x,cube.y,cube.z,
 		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
 		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
-	
+	if p then rc=nil end
+
 	local txsin = math.sin(plr.tx)
 	local txcos = math.cos(plr.tx)
 	local tysin = math.sin(-plr.ty)
@@ -2353,6 +2354,7 @@ local function cube_interact(cube)
 		return keyp(5) and dist < 150 and not rc and cosang > 0.95
 	end
 end
+local cht=0
 
 function unitic.cube_update() --all physics related to cubes
 	-- dispensers
@@ -2368,11 +2370,6 @@ function unitic.cube_update() --all physics related to cubes
 	repeat
 		i=i+1
 
-		if cube_interact(draw.objects.c[i]) then
-			draw.objects.c[i].held = not draw.objects.c[i].held
-			plr.holding = not plr.holding
-		end
-
 		local clx=draw.objects.c[i].x
 		local cly=draw.objects.c[i].y
 		local clz=draw.objects.c[i].z
@@ -2380,8 +2377,9 @@ function unitic.cube_update() --all physics related to cubes
 		local cx=draw.objects.c[i].x
 		local cy=draw.objects.c[i].y
 		local cz=draw.objects.c[i].z
-
+		local portal
 		if draw.objects.c[i].held then
+			portal=false
 			local p={{}} --All points {x, y, z, dx, dy, dz, dist}
 			local hold_dist = 100
 			local txsin = math.sin(plr.tx)
@@ -2412,6 +2410,7 @@ function unitic.cube_update() --all physics related to cubes
 						p[#p+1]={x=pf.x,y=pf.y,z=pf.z}
 						break
 					else --We teleport the segment
+						portal=true
 						if inbp then
 							ps.x,ps.y,ps.z=teleport(1,ps.x,ps.y,ps.z)
 							pf.x,pf.y,pf.z=teleport(1,pf.x,pf.y,pf.z)
@@ -2422,6 +2421,7 @@ function unitic.cube_update() --all physics related to cubes
 						p[#p+1]={x=pf.x,y=pf.y,z=pf.z}
 					end
 				end
+				if portal then cht=min(cht+1,3) elseif cht>0 then portal=true cht=cht-1 end
 				--If there are no portals between the cube and the player, add the point behind the portal
 				if #p==1 then
 					p[2]={}
@@ -2469,6 +2469,11 @@ function unitic.cube_update() --all physics related to cubes
 			draw.objects.c[i].vz=min(max(draw.objects.c[i].vz*0.9,-20),20)
 		end
 		
+		if cube_interact(draw.objects.c[i],portal) then
+			draw.objects.c[i].held = not draw.objects.c[i].held
+			plr.holding = not plr.holding
+		end
+
 		local bf = false --is the cube in the blue field
 
 		local x1=max((cx-25)//96,0)
@@ -3980,8 +3985,8 @@ function TIC()
 		sync(2,0,false)
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
-		save.lvl2=1
-		-- save.lvl=2
+		save.lvl2=0
+		save.lvl=2
 		pmem(4,save.ct)
 		
 		if save.lvl==0 then save.lvl=1 end
@@ -4141,6 +4146,8 @@ function TIC()
 		if plr.noclip then speed=12 end
 		if keyp(57) or keyp(22) then plr.noclip = not plr.noclip end
 		if keyp(2) then plr.godmode = not plr.godmode end
+	--zoom
+	if key(65) then unitic.fov=min(unitic.fov*1.2,800) else unitic.fov=max(unitic.fov/1.2,80) end
 	--jump
 		if plr.noclip and not plr.d then
 			if key(48) then plr.y = plr.y + 8 end
