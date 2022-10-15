@@ -4,6 +4,7 @@
 -- script: lua
 -- saveid: portal3d_unitic
 
+local debug=true
 local version="DEV 0.3.2"
 
 --[[
@@ -69,7 +70,7 @@ end
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
-local plr = { x = 0, y = 64, z = 0, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 1, cd3 = 0, holding = false, pg_lvl = 2 --[[portal gun level]]}
+local plr = { x = 0, y = 64, z = 0, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 0, cd3 = 0, holding = false, pg_lvl = 2 --[[portal gun level]]}
 
 --engine settings:
 local unitic = {
@@ -1374,10 +1375,11 @@ maps[1][2]={
 	lift={{-1,1,1,0},{2,1,7,2}}, --Initial and final elevator (X Y Z angle)
 	pg_lvl=0, --portal gun lvl
 	init=function()
-		l_t2={draw=true,pause=false,id=2,i=1,t=0}
+		l_t2={draw=false,pause=false,id=2,i=1,t=0}
 		maps[1][2].t=0 --a variable for the level
 	end,
 	scripts=function()
+		if stt==50 then l_t2.draw=true end
 		if l_t2.i>6 then maps[1][2].t=maps[1][2].t+1 end
 		if maps[1][2].t==1 then
 			addwall(2,1,0,3,1,5)
@@ -3290,7 +3292,7 @@ local function portal_gun()
 		end
 	end
 
-	if keyp(6) or (plr.cd2>1 and save.lvl~=3 and save.lvl2~=1) then
+	if debug and (keyp(6) or (plr.cd2>1 and save.lvl~=3 and save.lvl2~=1)) then
 		if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 		if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) draw.p[2]=nil update_world() end
 	end
@@ -4173,7 +4175,6 @@ function TIC()
 		end
 		if sn.b>#sn_k then
 			--game init
-			trace("snake :D",12)
 			sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="game",b=1}
 		end
 		--
@@ -4308,11 +4309,11 @@ function TIC()
 		local text="Level "..save.lvl
 		local text_size=print(text,240,0)
 		if stt<60 then
-			print(text:sub(1,stt//4),120-text_size/2,91,1)
-			print(text:sub(1,stt//4),120-text_size/2,90,7)
+			print(text:sub(1,stt//4),120-text_size/2,130,1)
+			print(text:sub(1,stt//4),120-text_size/2,129,7)
 		elseif stt<120 then
-			print(text:sub(1,(59-stt)//4),120-text_size/2,91,1)
-			print(text:sub(1,(59-stt)//4),120-text_size/2,90,7)
+			print(text:sub(1,(59-stt)//4),120-text_size/2,130,1)
+			print(text:sub(1,(59-stt)//4),120-text_size/2,129,7)
 		end
 	 --
 		if l_t2.draw then
@@ -4349,23 +4350,22 @@ function TIC()
 			},
 			{
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
-				#draw.objects.c.." "..#draw.objects.cd.." "..#draw.objects.lb.." "..#draw.objects.b,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 			}
 		}
 
-		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
-
+		if keyp(49) then plr.dt=(plr.dt+1)%(#debug_text+1) end
+		
 		vbank(1)
+		if plr.dt~=0 and debug then
 			for i=1,#debug_text[plr.dt] do
 				local text_size=print(debug_text[plr.dt][i], 240,0)
 				rect(0,7*(i-1),text_size+2,8,2)
 				print(debug_text[plr.dt][i], 1, 2+7*(i-1), 1)
 				print(debug_text[plr.dt][i], 1, 1+7*(i-1), 7)
 			end
-
+		end
 			if plr.godmode then print("Godmode" ,1,130,7) else print("HP: "..plr.hp,1,130,7) end
-
 			if plr.noclip then print("Noclip", 104, 85, 7) end
 		vbank(0)
 	end
