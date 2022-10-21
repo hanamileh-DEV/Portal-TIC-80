@@ -3793,6 +3793,7 @@ local speed=4
 local tm1,tm2 = 0,0
 local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --pause
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
+local ach={t=0,y=0,t2=0} --achievement (easter egg)
 local d_t=0 --darkening
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
@@ -4157,6 +4158,7 @@ function TIC()
 			plr.d=false
 			plr.pg_lvl=maps[save.lvl2][save.lvl].pg_lvl
 			plr.holding=false
+			ach.t2=0
 			maps[save.lvl2][save.lvl].init()
 			open="game"
 			stt=0
@@ -4352,6 +4354,31 @@ function TIC()
 	 --render
 		unitic.render()
 		if plr.pg_lvl>0 then unitic.draw_portalgun() end
+	 --achievement
+		if keyp(6) then
+			ach.t=1
+			ach.y=16
+		end
+		if ach.t>0 then
+			ach.t=ach.t+1
+			if ach.t<128 then
+				ach.y=ach.y-0.8
+			else
+				ach.y=ach.y+0.8
+			end
+			ach.y=max(ach.y,0)
+			if ach.y>17 then ach.t=0 end
+			--
+			vbank(1)
+			rect(75 ,120+ach.y,110,15,2)
+			circ(75 ,127+ach.y,7,2)
+			circ(185,127+ach.y,7,2)
+			spr(380+ach.t//30%2*2,75-5,122+ach.y,0,1,0,0,2,2)
+			print("achievement unlocked!",82,122+ach.y,1,false,1,true)
+			print("achievement unlocked!",82,121+ach.y,7,false,1,true)
+			print("150G - Come back to the start",82,129+ach.y,1,false,1,true)
+			print("150G - Come back to the start",82,128+ach.y,6,false,1,true)
+		end
 	 --portal gun
 		pcall(portal_gun)
 	 --sounds
@@ -4367,25 +4394,39 @@ function TIC()
 	 --Level scripts
 		maps[save.lvl2][save.lvl].scripts()
 	 --init lift
-		if stt<41 and maps[save.lvl2][save.lvl].lift[1] then
+		if maps[save.lvl2][save.lvl].lift[1] then
 			local x0=maps[save.lvl2][save.lvl].lift[1][1]*96
 			local y0=maps[save.lvl2][save.lvl].lift[1][2]*128
 			local z0=maps[save.lvl2][save.lvl].lift[1][3]*96
 			local x1=plr.x
 			local y1=plr.y
 			local z1=plr.z
-			--Do not let the player out of the elevator
-			plr.y=min(max(y1,y0+64),y0+112)
-			if     maps[save.lvl2][save.lvl].lift[1][4]==0 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0-192),x0-144)
-			elseif maps[save.lvl2][save.lvl].lift[1][4]==1 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0+144),x0+192)
-			elseif maps[save.lvl2][save.lvl].lift[1][4]==2 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0+144),z0+192)
-			elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0-192),z0-144) end
-			--Updating the texture of the elevator door
-			local x=(40-stt)//2
-			if stt%2==1 then for y=0,28 do
-				setpix(93-x,y+99,15)
-				if x>0 then setpix(94-x,y+99,4) end
-			end end
+			if stt<41 then
+				--Do not let the player out of the elevator
+				plr.y=min(max(y1,y0+64),y0+112)
+				if     maps[save.lvl2][save.lvl].lift[1][4]==0 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0-192),x0-144)
+				elseif maps[save.lvl2][save.lvl].lift[1][4]==1 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0+144),x0+192)
+				elseif maps[save.lvl2][save.lvl].lift[1][4]==2 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0+144),z0+192)
+				elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0-192),z0-144) end
+
+				--Updating the texture of the elevator door
+				local x=(40-stt)//2
+				if stt%2==1 then for y=0,28 do
+					setpix(93-x,y+99,15)
+					if x>0 then setpix(94-x,y+99,4) end
+				end end
+			end
+			--Easter egg
+			if maps[save.lvl2][save.lvl].lift[1][4]==0 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-192,y0,z0-48 , x0-144,y0+128,z0+48 )
+			or maps[save.lvl2][save.lvl].lift[1][4]==1 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0+144,y0,z0-48 , x0+192,y0+128,z0+48 )
+			or maps[save.lvl2][save.lvl].lift[1][4]==2 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-48 ,y0,z0+144, x0+48 ,y0+128,z0+192)
+			or maps[save.lvl2][save.lvl].lift[1][4]==3 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-48 ,y0,z0-192, x0+48 ,y0+128,z0-144) 
+			then
+				if ach.t2>120 then ach.t=1 ach.y=16 end
+				ach.t2=0
+			else
+				ach.t2=ach.t2+1
+			end
 		end
 	 --finish lift
 		if not plr.d and maps[save.lvl2][save.lvl].lift[2] then
@@ -4480,6 +4521,10 @@ function TIC()
 			{
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
+			},
+			{
+				ach.t2
+
 			}
 		}
 
@@ -5144,7 +5189,10 @@ end
 -- 121:7777777676666665766766657666656576766665766656657666666565555555
 -- 122:122212221222122212221222122212221232123212221222122ba222111aa111
 -- 123:1777777616666665166766651666656516766665166656651666666515555555
--- 127:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
+-- 124:000bb01100b444440b444444b4444444b4444444044444441444444414444444
+-- 125:0000000010000000410000004410000044100000440000004410000044100000
+-- 126:0003301100344444034444443444444434444444044444441444444414444444
+-- 127:0000000010000000410000004410000044100000440000004410000044100000
 -- 128:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
 -- 129:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
 -- 130:00ff00ff00ff00ffff00ff00ff00ff0000ff00ff00ff00ffff00ff00ff00ff00
@@ -5157,7 +5205,10 @@ end
 -- 137:7777777676666665766766657666656576766665766656657666666565555555
 -- 138:1222222212223222123222321222222212211222712112217611111565555555
 -- 139:1777777616666665166766651666656516766665766656657666666565555555
--- 143:a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0a00000d0
+-- 140:0144444400144444000110110000000000000000000000000000000000000000
+-- 141:4100000010000000000000000000000000000000000000000000000000000000
+-- 142:0144444400144444000110110000000000000000000000000000000000000000
+-- 143:4100000010000000000000000000000000000000000000000000000000000000
 -- 144:fffffffffffffffffffffffffffffffcffffffccfffffcccffffccccffffcccc
 -- 145:fffffffffffffffffccccccfcccccccccccccccccccccccccccccccccccccccc
 -- 146:ffffffffffffffffffffffffcfffffffccffffffcccfffffccccffffccccffff
