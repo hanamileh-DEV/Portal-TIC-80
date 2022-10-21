@@ -3793,6 +3793,7 @@ local speed=4
 local tm1,tm2 = 0,0
 local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --pause
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
+local d_t=0 --darkening
 local l_={t=0} --logo
 local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
 local is={t=0,t1=0,t2=0} --init setting
@@ -4089,14 +4090,13 @@ function TIC()
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
 		save.lvl2=1
-		-- save.lvl=2
+		--save.lvl=4
 		pmem(4,save.ct)
 		
 		if save.lvl==0 then save.lvl=1 end
 		pmem(0,save.lvl)
 		if save.lvl>#maps[save.lvl2] then
-			open="still alive"
-			music(7) vbank(1) cls(0) vbank(0) respal()
+			open="darkening"
 		else
 			load_world(save.lvl2,save.lvl)
 			plr.hp=100
@@ -4556,9 +4556,30 @@ function TIC()
 		pmem(1,save.st)
 	end
 	--------------------------
+	-- darkening -------------
+	if open=="darkening" then
+		d_t=d_t+1
+		for vb=0,1 do
+			vbank(vb)
+			respal()
+			darkpal(1-d_t/30)
+		end
+		if d_t==30 then
+			open="still alive"
+			music(7)
+			vbank(0)cls()respal()
+			vbank(1)cls()respal()
+		end
+	end
+	--------------------------
 	-- still alive -----------
 	--------------------------
 	if open=="still alive" then
+		vbank(0)
+		--pal
+		d_t=max(d_t-1,0)
+		respal()darkpal(1-d_t/30)
+		--GUI
 		cls(0)
 		rectb(1,1,120,133,13)
 		rectb(122,1,117,65,13)
