@@ -4116,12 +4116,13 @@ function TIC()
 				--We shift the player regarding the rotation of the elevator
 				local rot1,rot2
 				rot2=rot1 or 0
-				if maps[save.lvl2][save.lvl].lift[1][4]==2 then rot1=0 end
-				if maps[save.lvl2][save.lvl].lift[1][4]==0 then rot1=1 end
-				if maps[save.lvl2][save.lvl].lift[1][4]==3 then rot1=2 end
-				if maps[save.lvl2][save.lvl].lift[1][4]==1 then rot1=3 end
 
-				local rot=(rot1 + rot2)%4
+				if maps[save.lvl2][save.lvl].lift[1][4]==0 then rot1=3 end
+				if maps[save.lvl2][save.lvl].lift[1][4]==1 then rot1=1 end
+				if maps[save.lvl2][save.lvl].lift[1][4]==2 then rot1=2 end
+				if maps[save.lvl2][save.lvl].lift[1][4]==3 then rot1=0 end
+
+				local rot=(2 + rot1 - rot2)%4
 
 				if rot==0 then --do something (plz)
 				elseif rot==1 then plr.x,plr.z=plr.z,-plr.x
@@ -4355,10 +4356,6 @@ function TIC()
 		unitic.render()
 		if plr.pg_lvl>0 then unitic.draw_portalgun() end
 	 --achievement
-		if keyp(6) then
-			ach.t=1
-			ach.y=16
-		end
 		if ach.t>0 then
 			ach.t=ach.t+1
 			if ach.t<128 then
@@ -4456,7 +4453,7 @@ function TIC()
 					if x>0 and x<19 then setpix(92-x,y+99,4) end
 				end end
 			end
-			if stt>190 then
+			if stt>190 then trace(maps[save.lvl2][save.lvl].lift[2][4])
 				plr.x=plr.x-x0
 				plr.y=plr.y-y0
 				plr.z=plr.z-z0
@@ -4521,10 +4518,6 @@ function TIC()
 			{
 				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
 				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
-			},
-			{
-				ach.t2
-
 			}
 		}
 
@@ -4602,6 +4595,7 @@ function TIC()
 	end
 	--------------------------
 	-- darkening -------------
+	--------------------------
 	if open=="darkening" then
 		d_t=d_t+1
 		for vb=0,1 do
