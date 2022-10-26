@@ -2594,7 +2594,7 @@ function unitic.cube_update() --all physics related to cubes
 			p[1].y = plr.y + hold_dist * -txsin
 			p[1].z = plr.z + hold_dist * -tycos * txcos
 			--the remaining points (if the segment passes through the portal)
-			if (draw.p[1] or draw.p[2]) then
+			if (draw.p[1] and draw.p[2]) then
 				local ps={x=plr.x,y=plr.y,z=plr.z} --starting point
 				local pf={x=p[1].x,y=p[1].y,z=p[1].z} --final point
 
