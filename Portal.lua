@@ -2511,7 +2511,9 @@ function unitic.player_collision()
 	local colx = false
 	local coly = false
 	local colz = false
-	
+	local bp=false
+	local op=false
+
 	local function plr_collide(x1,y1,z1,x2,y2,z2)
 		local ti=false
 		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then
@@ -2523,6 +2525,25 @@ function unitic.player_collision()
 				if x1~=x2 and z1~=z2 then coly=true end
 				if x1~=x2 and y1~=y2 then colz=true end
 			end
+		end
+		if bp or op then
+			local x3,y3,z3,x4,y4,z4
+			if bp then
+				x3,y3,z3=teleport(2,x1,y1,z1)
+				x4,y4,z4=teleport(2,x2,y2,z2)
+			elseif op then
+				x3,y3,z3=teleport(1,x1,y1,z1)
+				x4,y4,z4=teleport(1,x2,y2,z2)
+			end
+			x3,x4=min(x3,x4),max(x3,x4)
+			y3,y4=min(y3,y4),max(y3,y4)
+			z3,z4=min(z3,z4),max(z3,z4)
+			if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x3,y3,z3, x4,y4,z4) then
+				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x3,y3,z3, x4,y4,z4) then colx=true end
+				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x3,y3,z3, x4,y4,z4) then coly=true end
+				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x3,y3,z3, x4,y4,z4) then colz=true end
+			end
+
 		end
 	end
 
@@ -2599,6 +2620,15 @@ function unitic.player_collision()
 			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx_(2,"C-3",-1,1) end
 		end
 	end end end
+	--Is the player in the portal (it is necessary that the player can not go through the objects on the other side of the portal)
+	if draw.p[1] and draw.p[2] then
+		--Blue portal
+		if draw.p[1][4]==1 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
+		if draw.p[1][4]==3 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
+		--orange portal
+		if draw.p[2][4]==1 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
+		if draw.p[2][4]==3 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
+	end
 	--collision with objects
 	for i=1,#draw.objects.c do
 		local x0=draw.objects.c[i].x
@@ -4736,7 +4766,7 @@ function TIC()
 					if x>0 and x<19 then setpix(92-x,y+99,4) end
 				end end
 			end
-			if stt>190 then trace(maps[save.lvl2][save.lvl].lift[2][4])
+			if stt>190 then
 				plr.x=plr.x-x0
 				plr.y=plr.y-y0
 				plr.z=plr.z-z0
