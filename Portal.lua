@@ -2743,39 +2743,12 @@ function unitic.player_collision()
 		end
 	end
 
-	for i=1,#draw.objects.cd do
-		local x0=draw.objects.cd[i].x
-		local y0=draw.objects.cd[i].y
-		local z0=draw.objects.cd[i].z
-		obj_collide(3, x0, y0, z0)
-	end
-
-	for i=1,#draw.objects.lb do
-		local x0=draw.objects.lb[i].x
-		local y0=draw.objects.lb[i].y
-		local z0=draw.objects.lb[i].z
-		obj_collide(draw.objects.lb[i].type , x0, y0, z0)
-	end
-
-	for i=1,#draw.objects.b do
-		local x0=draw.objects.b[i].x
-		local y0=draw.objects.b[i].y
-		local z0=draw.objects.b[i].z
-		obj_collide(draw.objects.b[i].type , x0, y0, z0)
-	end
-
-	for i=1,#draw.objects.t do
-		local x0=draw.objects.t[i].x
-		local y0=draw.objects.t[i].y
-		local z0=draw.objects.t[i].z
-		obj_collide(draw.objects.t[i].type , x0, y0, z0)
-	end
-
-	for i=1,#draw.objects.l do
-		local x0=draw.objects.l[i].x
-		local y0=draw.objects.l[i].y
-		local z0=draw.objects.l[i].z
-		obj_collide(draw.objects.l[i].type , x0, y0, z0)
+	local object_types = {"cd", "lb", "b", "t", "l"}
+	for _,type in ipairs(object_types) do
+		for _,obj in ipairs(draw.objects[type]) do
+			local x0, y0, z0 = obj.x, obj.y, obj.z
+			obj_collide(obj.type, x0, y0, z0)
+		end
 	end
 
 	if plr.noclip then return end
@@ -3047,25 +3020,13 @@ function unitic.cube_update() --all physics related to cubes
 			end
 		end
 
+		-- cube special cases
+
 		for i2=1,#draw.objects.lb do
 			local x0=draw.objects.lb[i2].x
 			local y0=draw.objects.lb[i2].y+5 -- <--
 			local z0=draw.objects.lb[i2].z
 			obj_collide(draw.objects.lb[i].type , x0, y0, z0)
-		end
-
-		for i2=1,#draw.objects.b do
-			local x0=draw.objects.b[i2].x
-			local y0=draw.objects.b[i2].y
-			local z0=draw.objects.b[i2].z
-			obj_collide(draw.objects.b[i].type , x0, y0, z0)
-		end
-
-		for i2=1,#draw.objects.t do
-			local x0=draw.objects.t[i2].x
-			local y0=draw.objects.t[i2].y
-			local z0=draw.objects.t[i2].z
-			obj_collide(draw.objects.t[i].type , x0, y0, z0)
 		end
 
 		for i2=1,#draw.objects.fb do --exception for cubes
@@ -3075,11 +3036,12 @@ function unitic.cube_update() --all physics related to cubes
 			collide(x0 - 37, y0, z0 - 37, x0 + 37, y0 + 7, z0 + 37)
 		end
 
-		for i2=1,#draw.objects.l do
-			local x0=draw.objects.l[i2].x
-			local y0=draw.objects.l[i2].y
-			local z0=draw.objects.l[i2].z
-			obj_collide(draw.objects.l[i].type , x0, y0, z0)
+		local object_types = {"b", "t", "l"}
+		for _,type in ipairs(object_types) do
+			for _,obj in ipairs(draw.objects[type]) do
+				local x0, y0, z0 = obj.x, obj.y, obj.z
+				obj_collide(obj.type, x0, y0, z0)
+			end
 		end
 
 		--Duplication of the cube if it is in the portal (NOT to be confused with the movement of the cube to the portal!!)
