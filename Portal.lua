@@ -5,7 +5,7 @@
 -- saveid: portal3d_unitic
 
 local debug=true
-local version="DEV 0.3.2"
+local version="DEV 0.4.0"
 
 --[[
 license:
@@ -82,6 +82,8 @@ local unitic = {
 	obj  = {}, --objects
 	p    = {} --particles
 }
+
+-- Please note than some objects do not have collisions. (coll={})
 local model={
 	{--cube (1)
 	v={{ 23.9, 23.9, 23.9},{ 23.9,-23.9, 23.9},{ 23.9, 23.9,-23.9},{ 23.9,-23.9,-23.9},{-23.9, 23.9, 23.9},{-23.9,-23.9, 23.9},{-23.9, 23.9,-23.9},{-23.9,-23.9,-23.9},},
@@ -98,7 +100,8 @@ local model={
 		 {2,4,8,uv={{96,256},{96,232},{72,232},-1},f=2},
 		 {1,3,4,uv={{96,232},{72,232},{72,256},-1},f=2},
 		 {5,1,2,uv={{96,232},{72,232},{72,256},-1},f=2},
-	}
+	},
+	coll={{-24,-24,-24,24,24,24}} --collision cube {XYZ, XYZ}
 	},
 	{--cube companion (2)
 	v={{ 23.9, 23.9, 23.9},{ 23.9,-23.9, 23.9},{ 23.9, 23.9,-23.9},{ 23.9,-23.9,-23.9},{-23.9, 23.9, 23.9},{-23.9,-23.9, 23.9},{-23.9, 23.9,-23.9},{-23.9,-23.9,-23.9},},
@@ -115,7 +118,8 @@ local model={
 		 {2,4,8,uv={{96,256-24},{96,232-24},{72,232-24},-1},f=2},
 		 {1,3,4,uv={{96,232-24},{72,232-24},{72,256-24},-1},f=2},
 		 {5,1,2,uv={{96,232-24},{72,232-24},{72,256-24},-1},f=2},
-	}
+	},
+	coll={{-24,-24,-24,24,24,24}}
 	},
 	{ --cube dispenser (3)
 		v={
@@ -140,23 +144,29 @@ local model={
 			{7,5,6,uv={{120,232},{96, 232},{96 ,256},-1},f=3},
 			{2,4,8,uv={{120,232},{120,208},{96 ,208},-1},f=3},
 			{1,3,4,uv={{120,232},{96, 232},{96 ,256},-1},f=3},
-			{5,1,2,uv={{120,232},{96, 232},{96 ,256},-1},f=3}}
+			{5,1,2,uv={{120,232},{96, 232},{96 ,256},-1},f=3}
+		},
+		coll={{-24,-24,-24,24,24,24}}
 	},
 	{--light bridge (-X) (4)
 		v={{-48,4, 48},{ 48,4, 48},{-48,4,-48},{ 48,4,-48}},
-		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}}
+		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}},
+		coll={{-48,0,-48,48,0,48}}
 	},
 	{ --light bridge (+X) (5)
 		v={{-48,4,-48},{ 48,4,-48},{-48,4, 48},{ 48,4, 48}},
-		f={{1,2,3,uv={{0,232},{16,232},{0,248}},f=3},{2,3,4,uv={{16,232},{0,248},{16,248}},f=3}}
+		f={{1,2,3,uv={{0,232},{16,232},{0,248}},f=3},{2,3,4,uv={{16,232},{0,248},{16,248}},f=3}},
+		coll={{-48,0,-48,48,0,48}}
 	},
 	{--light bridge (-Z) (6)
 		v={{-48,4,-48},{-48,4, 48},{ 48,4,-48},{ 48,4, 48}},
-		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}}
+		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}},
+		coll={{-48,0,-48,48,0,48}}
 	},
 	{--light bridge (+Z) (7)
 		v={{ 48,4, 48},{ 48,4,-48},{-48,4, 48},{-48,4,-48}},
-		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}}
+		f={{2,1,4,uv={{0,232},{16,232},{0,248}},f=3},{1,4,3,uv={{16,232},{0,248},{16,248}},f=3}},
+		coll={{-48,0,-48,48,0,48}}
 	},
 	{--button -X (8)
 		v={
@@ -186,7 +196,8 @@ local model={
 			{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},
 			{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},
 			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
-		}
+		},
+		coll={{-6,0,-6,6,52,6}}
 	},
 	{--button +X (9)
 		v={
@@ -216,7 +227,8 @@ local model={
 			{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},
 			{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},
 			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
-		}
+		},
+		coll={{-6,0,-6,6,52,6}}
 	},
 	{--button -Z (10)
 		v={
@@ -246,7 +258,8 @@ local model={
 			{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},
 			{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},
 			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
-		}
+		},
+		coll={{-6,0,-6,6,52,6}}
 	},
 	{--button +Z (11)
 		v={
@@ -276,7 +289,8 @@ local model={
 			{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},
 			{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},
 			{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},
-		}
+		},
+		coll={{-6,0,-6,6,52,6}}
 	},
 	{ --turret -X (12)
 		v={
@@ -369,7 +383,8 @@ local model={
 			{38,37,40,uv={{128,143},{128,140},{124,140},-1},f=3},
 			{29,26,28,uv={{122,138},{120,136},{120,138},-1},f=2},
 			{29,27,26,uv={{122,138},{122,136},{120,136},-1},f=2},
-		}
+		},
+		coll={{-12,0,-12,12,69,12}}
 	},
 	{ --turret +X (13)
 		v={
@@ -462,7 +477,8 @@ local model={
 			{38,37,40,uv={{128,143},{128,140},{124,140},-1},f=3},
 			{29,26,28,uv={{122,138},{120,136},{120,138},-1},f=2},
 			{29,27,26,uv={{122,138},{122,136},{120,136},-1},f=2},
-		}
+		},
+		coll={{-12,0,-12,12,69,12}}
 	},
 	{ --turret -Z (14)
 		v={
@@ -555,7 +571,8 @@ local model={
 			{38,37,40,uv={{128,143},{128,140},{124,140},-1},f=3},
 			{29,26,28,uv={{122,138},{120,136},{120,138},-1},f=2},
 			{29,27,26,uv={{122,138},{122,136},{120,136},-1},f=2},
-		}
+		},
+		coll={{-12,0,-12,12,69,12}}
 	},
 	{ --turret +Z (15)
 		v={
@@ -648,7 +665,8 @@ local model={
 			{38,37,40,uv={{128,143},{128,140},{124,140},-1},f=3},
 			{29,26,28,uv={{122,138},{120,136},{120,138},-1},f=2},
 			{29,27,26,uv={{122,138},{122,136},{120,136},-1},f=2},
-		}
+		},
+		coll={{-12,0,-12,12,69,12}}
 	},
 	{ --Floor button (16)
 		v={
@@ -684,7 +702,8 @@ local model={
 			 {16,13,15,uv={{16,248},{22,247},{16,247},-1},f=1},
 			 {10,12,11,uv={{16,248},{22,248},{22,247},-1},f=1},
 			 {16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1},
-		}
+		},
+		coll={}
 	},
 	{ --lift -X (17)
 	v={
@@ -760,6 +779,20 @@ local model={
 		{16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
 		{14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
 		{30,24,25,uv={{96,96},{72,96},{72,128},-1},f=3},
+	},
+	coll={
+		{-96,0  ,-96,96,0  ,96},
+		{-96,128,-96,96,128,96},
+		--
+		{-96 ,0  ,-96, 96 ,128,-96},
+		{-96 ,0  , 96, 96 ,128, 96},
+		{-96 ,0  ,-96,-96 ,128,-48},
+		{-96 ,0  , 48,-96 ,128, 96},
+		{-192,0  ,-48,-96 ,0  , 48},
+		{-192,128,-48,-96 ,128, 48},
+		{-192,0  ,-48,-192,128, 48},
+		{-192,0  ,-48,-96 ,128,-48},
+		{-192,0  , 48,-96 ,128, 48}
 	}
 	},
 	{ --lift +X (18)
@@ -836,6 +869,20 @@ local model={
 		{16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
 		{14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
 		{30,24,25,uv={{96,96},{72,96},{72,128},-1},f=3},
+	},
+	coll={
+		{-96,0  ,-96,96,0  ,96},
+		{-96,128,-96,96,128,96},
+		--
+		{-96 ,0  ,-96, 96 ,128,-96},
+		{-96 ,0  , 96, 96 ,128, 96},
+		{ 96 ,0  ,-96, 96 ,128,-48},
+		{ 96 ,0  , 48, 96 ,128, 96},
+		{ 96 ,0  ,-48, 192,0  , 48},
+		{ 96 ,128,-48, 192,128, 48},
+		{ 192,0  ,-48, 192,128, 48},
+		{ 96 ,0  ,-48, 192,128,-48},
+		{ 96 ,0  , 48, 192,128, 48}
 	}
 	},
 	{ --lift -Z (19)
@@ -912,6 +959,20 @@ local model={
 		{16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
 		{14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
 		{30,24,25,uv={{96,96},{72,96},{72,128},-1},f=3},
+	},
+	coll={
+		{-96,0  ,-96,96,0  ,96},
+		{-96,128,-96,96,128,96},
+		--
+		{-96,0  ,-96 ,-96,128,96 },
+		{ 96,0  ,-96 , 96,128,96 },
+		{-96,0  , 96 ,-48,128,96 },
+		{ 48,0  , 96 , 96,128,96 },
+		{-48,0  , 96 , 48,0  ,192},
+		{-48,128, 96 , 48,128,192},
+		{-48,0  , 192, 48,128,192},
+		{-48,0  , 96 ,-48,128,192},
+		{ 48,0  , 96 , 48,128,192}
 	}
 	},
 	{ --lift +Z (20)
@@ -988,6 +1049,20 @@ local model={
 		{16,13,14,uv={{72,128},{72,96},{48,96},-1},f=2},
 		{14,24,25,uv={{72,96},{48,96},{48,128},-1},f=2},
 		{30,24,25,uv={{96,96},{72,96},{72,128},-1},f=3},
+	},
+	coll={
+		{-96,0  ,-96,96,0  ,96},
+		{-96,128,-96,96,128,96},
+		--
+		{-96,0  ,-96 ,-96,128, 96 },
+		{ 96,0  ,-96 , 96,128, 96 },
+		{-96,0  ,-96 ,-48,128,-96 },
+		{ 48,0  ,-96 , 96,128,-96 },
+		{-48,0  ,-192, 48,0  ,-96 },
+		{-48,128,-192, 48,128,-96 },
+		{-48,0  ,-192, 48,128,-192},
+		{-48,0  ,-192,-48,128,-96 },
+		{ 48,0  ,-192, 48,128,-96 }
 	}
 	},
 	{ --display -X (21)
@@ -1012,7 +1087,8 @@ local model={
 			 {8,6,5,uv={{45,246},{45,245},{32,245},-1},f=2},
 			 {7,5,1,uv={{45,246},{45,245},{32,245},-1},f=2},
 			 {4,2,6,uv={{45,246},{45,245},{32,245},-1},f=2},
-		}
+		},
+		coll={}
 	},
 	{ --display +X (22)
 		v={
@@ -1036,7 +1112,8 @@ local model={
 			 {8,6,5,uv={{45,246},{45,245},{32,245},-1},f=2},
 			 {7,5,1,uv={{45,246},{45,245},{32,245},-1},f=2},
 			 {4,2,6,uv={{45,246},{45,245},{32,245},-1},f=2},
-		}
+		},
+		coll={}
 	},
 	{ --display -Z (23)
 		v={
@@ -1060,7 +1137,8 @@ local model={
 			 {8,6,5,uv={{45,246},{45,245},{32,245},-1},f=2},
 			 {7,5,1,uv={{45,246},{45,245},{32,245},-1},f=2},
 			 {4,2,6,uv={{45,246},{45,245},{32,245},-1},f=2},
-		}
+		},
+		coll={}
 	},
 	{ --display +Z (24)
 		v={
@@ -1084,7 +1162,8 @@ local model={
 			 {8,6,5,uv={{45,246},{45,245},{32,245},-1},f=2},
 			 {7,5,1,uv={{45,246},{45,245},{32,245},-1},f=2},
 			 {4,2,6,uv={{45,246},{45,245},{32,245},-1},f=2},
-		}
+		},
+		coll={}
 	},
 }
 
@@ -2650,6 +2729,14 @@ function unitic.player_collision()
 		end
 	end
 
+	local function obj_collide(id,x,y,z)
+		if #model[id].coll==0 then return end
+		for i=1,#model[id].coll do
+			local col1=model[id].coll[i]
+			plr_collide(x+col1[1],y+col1[2],z+col1[3], x+col1[4],y+col1[5],z+col1[6])
+		end
+	end
+
 	local x1=max((plr.x-17)//96,0)
 	local y1=max((plr.y-65)//128,0)
 	local z1=max((plr.z-17)//96,0)
@@ -2737,93 +2824,21 @@ function unitic.player_collision()
 		local x0=draw.objects.c[i].x
 		local y0=draw.objects.c[i].y
 		local z0=draw.objects.c[i].z
-		plr_collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
+		obj_collide(1, x0, y0, z0)
 		if draw.objects.c[i].held and coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 + 24, z0 - 24, x0 + 24, y0 + 24.1, z0 + 24) then draw.objects.c[i].held=false plr.holding=false end
 		if draw.objects.c[i].inp then
 			local x0=draw.objects.c[i].x1
 			local y0=draw.objects.c[i].y1
 			local z0=draw.objects.c[i].z1
-			plr_collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
+			obj_collide(1, x0, y0, z0)
 		end
 	end
 
-	for i=1,#draw.objects.cd do
-		local x0=draw.objects.cd[i].x
-		local y0=draw.objects.cd[i].y
-		local z0=draw.objects.cd[i].z
-		plr_collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
-	end
-
-	for i=1,#draw.objects.lb do
-		local x0=draw.objects.lb[i].x
-		local y0=draw.objects.lb[i].y
-		local z0=draw.objects.lb[i].z
-		plr_collide(x0 - 48, y0, z0 - 48, x0 + 48, y0, z0 + 48)
-	end
-
-	for i=1,#draw.objects.b do
-		local x0=draw.objects.b[i].x
-		local y0=draw.objects.b[i].y
-		local z0=draw.objects.b[i].z
-		plr_collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
-	end
-
-	for i=1,#draw.objects.t do
-		local x0=draw.objects.t[i].x
-		local y0=draw.objects.t[i].y
-		local z0=draw.objects.t[i].z
-		plr_collide(x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12)
-	end
-
-	for i=1,#draw.objects.l do
-		local x0=draw.objects.l[i].x
-		local y0=draw.objects.l[i].y
-		local z0=draw.objects.l[i].z
-		local type=draw.objects.l[i].type-17
-		
-		plr_collide(x0-96,y0    ,z0-96, x0+96,y0    ,z0+96)
-		plr_collide(x0-96,y0+128,z0-96, x0+96,y0+128,z0+96)
-
-		if type==0 then
-			plr_collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
-			plr_collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
-			plr_collide(x0-96 ,y0    ,z0-96,x0-96 ,y0+128,z0-48)
-			plr_collide(x0-96 ,y0    ,z0+48,x0-96 ,y0+128,z0+96)
-			plr_collide(x0-192,y0    ,z0-48,x0-96 ,y0    ,z0+48)
-			plr_collide(x0-192,y0+128,z0-48,x0-96 ,y0+128,z0+48)
-			plr_collide(x0-192,y0    ,z0-48,x0-192,y0+128,z0+48)
-			plr_collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
-			plr_collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
-		elseif type==1 then
-			plr_collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
-			plr_collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
-			plr_collide(x0+96 ,y0    ,z0-96,x0+96 ,y0+128,z0-48)
-			plr_collide(x0+96 ,y0    ,z0+48,x0+96 ,y0+128,z0+96)
-			plr_collide(x0+96 ,y0    ,z0-48,x0+192,y0    ,z0+48)
-			plr_collide(x0+96 ,y0+128,z0-48,x0+192,y0+128,z0+48)
-			plr_collide(x0+192,y0    ,z0-48,x0+192,y0+128,z0+48)
-			plr_collide(x0+96 ,y0    ,z0-48,x0+192,y0+128,z0-48)
-			plr_collide(x0+96 ,y0    ,z0+48,x0+192,y0+128,z0+48)
-		elseif type==2 then
-			plr_collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
-			plr_collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
-			plr_collide(x0-96,y0    ,z0+96 ,x0-48,y0+128,z0+96 )
-			plr_collide(x0+48,y0    ,z0+96 ,x0+96,y0+128,z0+96 )
-			plr_collide(x0-48,y0    ,z0+96 ,x0+48,y0    ,z0+192)
-			plr_collide(x0-48,y0+128,z0+96 ,x0+48,y0+128,z0+192)
-			plr_collide(x0-48,y0    ,z0+192,x0+48,y0+128,z0+192)
-			plr_collide(x0-48,y0    ,z0+96 ,x0-48,y0+128,z0+192)
-			plr_collide(x0+48,y0    ,z0+96 ,x0+48,y0+128,z0+192)
-		elseif type==3 then
-			plr_collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
-			plr_collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
-			plr_collide(x0-96,y0    ,z0-96 ,x0-48,y0+128,z0-96 )
-			plr_collide(x0+48,y0    ,z0-96 ,x0+96,y0+128,z0-96 )
-			plr_collide(x0-48,y0    ,z0-192,x0+48,y0    ,z0-96 )
-			plr_collide(x0-48,y0+128,z0-192,x0+48,y0+128,z0-96 )
-			plr_collide(x0-48,y0    ,z0-192,x0+48,y0+128,z0-192)
-			plr_collide(x0-48,y0    ,z0-192,x0-48,y0+128,z0-96 )
-			plr_collide(x0+48,y0    ,z0-192,x0+48,y0+128,z0-96 )
+	local object_types = {"cd", "lb", "b", "t", "l"}
+	for _,type in ipairs(object_types) do
+		for _,obj in ipairs(draw.objects[type]) do
+			local x0, y0, z0 = obj.x, obj.y, obj.z
+			obj_collide(obj.type, x0, y0, z0)
 		end
 	end
 
@@ -3020,6 +3035,14 @@ function unitic.cube_update() --all physics related to cubes
 			cz = cz + sz
 		end
 
+		local function obj_collide(id,x,y,z)
+			if #model[id].coll==0 then return end
+			for i=1,#model[id].coll do
+				local col1=model[id].coll[i]
+				collide(x+col1[1],y+col1[2],z+col1[3], x+col1[4],y+col1[5],z+col1[6])
+			end
+		end
+
 		for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
 			if wall_coll[draw.map[1][x0][y0][z0][2]] then
 				collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
@@ -3078,93 +3101,37 @@ function unitic.cube_update() --all physics related to cubes
 				local x0=draw.objects.c[i2].x
 				local y0=draw.objects.c[i2].y
 				local z0=draw.objects.c[i2].z
-				collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
+				obj_collide(1, x0, y0, z0)
 				if draw.objects.c[i2].inp and draw.p[1] and draw.p[2] then
 					local x0=draw.objects.c[i].x1
 					local y0=draw.objects.c[i].y1
 					local z0=draw.objects.c[i].z1
-					collide(x0 - 24, y0 - 24, z0 - 24, x0 + 24, y0 + 24, z0 + 24)
+					obj_collide(1, x0, y0, z0)
 				end
 			end
 		end
 
+		-- cube special cases
+
 		for i2=1,#draw.objects.lb do
 			local x0=draw.objects.lb[i2].x
-			local y0=draw.objects.lb[i2].y
+			local y0=draw.objects.lb[i2].y+5 -- <--
 			local z0=draw.objects.lb[i2].z
-			collide(x0 - 48, y0 + 5, z0 - 48, x0 + 48, y0 + 5, z0 + 48)
+			obj_collide(draw.objects.lb[i].type , x0, y0, z0)
 		end
 
-		for i2=1,#draw.objects.b do
-			local x0=draw.objects.b[i2].x
-			local y0=draw.objects.b[i2].y
-			local z0=draw.objects.b[i2].z
-			collide(x0 - 6, y0, z0 - 6, x0 + 6, y0 + 52, z0 + 6)
-		end
-
-		for i2=1,#draw.objects.t do
-			local x0=draw.objects.t[i2].x
-			local y0=draw.objects.t[i2].y
-			local z0=draw.objects.t[i2].z
-			collide(x0 - 12, y0, z0 - 12, x0 + 12, y0 + 69, z0 + 12)
-		end
-
-		for i2=1,#draw.objects.fb do
+		for i2=1,#draw.objects.fb do --exception for cubes
 			local x0=draw.objects.fb[i2].x
 			local y0=draw.objects.fb[i2].y
 			local z0=draw.objects.fb[i2].z
 			collide(x0 - 37, y0, z0 - 37, x0 + 37, y0 + 7, z0 + 37)
 		end
 
-		for i2=1,#draw.objects.l do
-			local x0=draw.objects.l[i2].x
-			local y0=draw.objects.l[i2].y
-			local z0=draw.objects.l[i2].z
-			local type=draw.objects.l[i2].type-17
-			
-			collide(x0-96,y0    ,z0-96, x0+96,y0    ,z0+96)
-			collide(x0-96,y0+128,z0-96, x0+96,y0+128,z0+96)
-
-			if type==0 then
-				collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
-				collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
-				collide(x0-96 ,y0    ,z0-96,x0-96 ,y0+128,z0-48)
-				collide(x0-96 ,y0    ,z0+48,x0-96 ,y0+128,z0+96)
-				collide(x0-192,y0    ,z0-48,x0-96 ,y0    ,z0+48)
-				collide(x0-192,y0+128,z0-48,x0-96 ,y0+128,z0+48)
-				collide(x0-192,y0    ,z0-48,x0-192,y0+128,z0+48)
-				collide(x0-192,y0    ,z0-48,x0-96 ,y0+128,z0-48)
-				collide(x0-192,y0    ,z0+48,x0-96 ,y0+128,z0+48)
-			elseif type==1 then
-				collide(x0-96 ,y0    ,z0-96,x0+96 ,y0+128,z0-96)
-				collide(x0-96 ,y0    ,z0+96,x0+96 ,y0+128,z0+96)
-				collide(x0+96 ,y0    ,z0-96,x0+96 ,y0+128,z0-48)
-				collide(x0+96 ,y0    ,z0+48,x0+96 ,y0+128,z0+96)
-				collide(x0+96 ,y0    ,z0-48,x0+192,y0    ,z0+48)
-				collide(x0+96 ,y0+128,z0-48,x0+192,y0+128,z0+48)
-				collide(x0+192,y0    ,z0-48,x0+192,y0+128,z0+48)
-				collide(x0+96 ,y0    ,z0-48,x0+192,y0+128,z0-48)
-				collide(x0+96 ,y0    ,z0+48,x0+192,y0+128,z0+48)
-			elseif type==2 then
-				collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
-				collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
-				collide(x0-96,y0    ,z0+96 ,x0-48,y0+128,z0+96 )
-				collide(x0+48,y0    ,z0+96 ,x0+96,y0+128,z0+96 )
-				collide(x0-48,y0    ,z0+96 ,x0+48,y0    ,z0+192)
-				collide(x0-48,y0+128,z0+96 ,x0+48,y0+128,z0+192)
-				collide(x0-48,y0    ,z0+192,x0+48,y0+128,z0+192)
-				collide(x0-48,y0    ,z0+96 ,x0-48,y0+128,z0+192)
-				collide(x0+48,y0    ,z0+96 ,x0+48,y0+128,z0+192)
-			elseif type==3 then
-				collide(x0-96,y0    ,z0-96 ,x0-96,y0+128,z0+96 )
-				collide(x0+96,y0    ,z0-96 ,x0+96,y0+128,z0+96 )
-				collide(x0-96,y0    ,z0-96 ,x0-48,y0+128,z0-96 )
-				collide(x0+48,y0    ,z0-96 ,x0+96,y0+128,z0-96 )
-				collide(x0-48,y0    ,z0-192,x0+48,y0    ,z0-96 )
-				collide(x0-48,y0+128,z0-192,x0+48,y0+128,z0-96 )
-				collide(x0-48,y0    ,z0-192,x0+48,y0+128,z0-192)
-				collide(x0-48,y0    ,z0-192,x0-48,y0+128,z0-96 )
-				collide(x0+48,y0    ,z0-192,x0+48,y0+128,z0-96 )
+		local object_types = {"b", "t", "l"}
+		for _,type in ipairs(object_types) do
+			for _,obj in ipairs(draw.objects[type]) do
+				local x0, y0, z0 = obj.x, obj.y, obj.z
+				obj_collide(obj.type, x0, y0, z0)
 			end
 		end
 
