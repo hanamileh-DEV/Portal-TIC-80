@@ -49,7 +49,7 @@ sfx   =true,
 
 local save={ --saving the game
 i=pmem(0)==0, --How for the first time the player went into the game
-lvl=pmem(0),
+lvl=5,--pmem(0),
 lvl2=0, --ID set of levels
 st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
 --pmem(2) not used
@@ -2199,6 +2199,165 @@ local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk 
 	end
 end
 
+local function portalcenter(i)
+	local x, y, z = table.unpack(draw.p[i])
+	if draw.p[i][4] == 3 then
+		x = x + 0.5
+	else
+		z = z + 0.5
+	end
+	y = y + 0.5
+	return x, y, z
+end
+
+local function teleport(pid --[[portal id]],x,y,z,tx,ty)
+	local x1, y1, z1 = portalcenter(1)
+	local x2, y2, z2 = portalcenter(2)
+
+	-- calculate portal offsets
+	local relx1 = x - 96 * x1
+	local rely1 = y - 128 * y1
+	local relz1 = z - 96 * z1
+	local relx2 = x - 96 * x2
+	local rely2 = y - 128 * y2
+	local relz2 = z - 96 * z2
+
+	-- calculate portal rotation
+	local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+	local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+	local rotd1 = (2 + rot2 - rot1) % 4
+	local rotd2 = (2 + rot1 - rot2) % 4
+
+	if     rotd1 == 0 then
+	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
+	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
+	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
+  	end
+
+	if     rotd2 == 0 then
+	elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
+	elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
+	elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
+  	end
+
+	if tx then
+		if pid==1 then
+			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1,tx,ty + math.pi * rotd1 / 2
+		elseif pid==2 then
+			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2,tx,ty + math.pi * rotd2 / 2
+		end
+	else
+		if pid==1 then
+			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1
+		elseif pid==2 then
+			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2
+		end
+	end
+end
+
+local function get_tile(axis, x, y, z)
+	local step = draw.map
+	step = step[axis]
+	step = step[x]
+	if not step then return nil end
+	step = step[y]
+	if not step then return nil end
+	step = step[z]
+	return step
+end
+
+-- Calculate the difference between a value and the next step in a direction
+local function to_next(val, interval, dir)
+	if dir > 0 then
+		return interval - val % interval
+	else
+		return (interval - val) % interval - interval
+	end
+end
+
+local function new_raycast(x, y, z, rx, ry, rz, len, portals, walls, floors)
+	-- normalised ray vector
+	local dist = math.sqrt(rx^2 + ry^2 + rz^2)
+	local nx, ny, nz = rx / dist, ry / dist, rz / dist
+	local tilehit
+	local newx, newy, newz, newrx, newrz
+	while true do
+		-- calculate the amount each component should step
+		local sx, sy, sz = to_next(x, 96, rx), to_next(y, 128, ry), to_next(z, 96, rz)
+		-- calculate the distance travelled by each component step
+		local lx, ly, lz = sx / nx, sy / ny, sz / nz
+		-- select the smallest as the next step
+		local lookup, axis
+		if lx < ly and lx < lz then
+			x, y, z = x + sx, y + lx * ny, z + lx * nz
+			len = len - lx
+			lookup, axis = walls, 1
+		elseif ly < lz then
+			x, y, z = x + ly * nx, y + sy, z + ly * nz
+			len = len - ly
+			lookup, axis = floors, 2
+		else
+			x, y, z = x + lz * nx, y + lz * ny, z + sz
+			len = len - lz
+			lookup, axis = walls, 3
+		end
+		-- stop if we've travelled far enough
+		if len < 0 then break end
+		-- fetch and check the current tile
+		local tx, ty, tz = x//96, y//128, z//96
+		tile = get_tile(axis, tx, ty, tz)
+		if not tile then break end
+		if lookup[tile[2]] then
+			-- we hit a tile, break out of the loop and start testing objects
+			tilehit = {
+				x=x, y=y, z=z,
+				tx=tx, ty=ty, tz=tz,
+				axis=axis, tile=tile
+			}
+			break
+		end
+		-- Check for, and prepare to pass through portals (if enabled)
+		if portals and draw.p[1] and draw.p[2] then
+			local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+			local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+			local rotd1 = (2 + rot2 - rot1) % 4
+			local rotd2 = (2 + rot1 - rot2) % 4
+			if tile[2] == 5 then
+				newx, newy, newz = teleport(1, x, y, z)
+				if     rotd1 == 0 then newrx,newrz=rx,rz
+				elseif rotd1 == 1 then newrx,newrz=rz,-rx
+				elseif rotd1 == 2 then newrx,newrz=-rx,-rz
+				elseif rotd1 == 3 then newrx,newrz=-rz,rx
+				end
+			end
+			if tile[2] == 6 then
+				newx, newy, newz = teleport(2, x, y, z)
+				if     rotd2 == 0 then newrx,newrz=rx,rz
+				elseif rotd2 == 1 then newrx,newrz=rz,-rx
+				elseif rotd2 == 2 then newrx,newrz=-rx,-rz
+				elseif rotd2 == 3 then newrx,newrz=-rz,rx
+				end
+			end
+		end
+	end
+	-- TODO: object test code
+	if newx then
+		return new_raycast(newx, newy, newz, newrx, ry, newrz, len, portals, walls, floors)
+	end
+	return tilehit
+end
+
+local function nrdemo()
+	if not key(5) then return end
+	local rx=-math.sin(plr.ty)*math.cos(plr.tx)
+	local ry=-math.sin(plr.tx)
+	local rz=-math.cos(plr.ty)*math.cos(plr.tx)
+	local hit = new_raycast(plr.x, plr.y, plr.z, rx, ry, rz, 10000, true, {[1]=true,[2]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true}, {[1]=true,[2]=true})
+	if hit then
+		addp(hit.x, hit.y, hit.z, 0, 0, 0, 100000, 13)
+	end
+end
+
 function unitic.update(draw_portal,p_id)
 	--writing all polygons in unitic.poly
 	unitic.poly = { v = {}, f = {}, sp = {} }
@@ -2424,7 +2583,7 @@ function unitic.draw()
 				local color = unitic.p[i][5]
 				local color1= color % 4
 				local color2= color //4
-				local size = 1/unitic.p[i][6]*2.4*unitic.fov
+				local size = max(1, 1/unitic.p[i][6]*2.4*unitic.fov)
 
 				local z0 = unitic.p[i][3]
 
@@ -2445,62 +2604,6 @@ function unitic.draw()
 					25 + color1*2,248 + color2*2,
 					0,-1,z0,z0,z0)
 			end
-		end
-	end
-end
-
-local function portalcenter(i)
-	local x, y, z = table.unpack(draw.p[i])
-	if draw.p[i][4] == 3 then
-		x = x + 0.5
-	else
-		z = z + 0.5
-	end
-	y = y + 0.5
-	return x, y, z
-end
-
-local function teleport(pid --[[portal id]],x,y,z,tx,ty)
-	local x1, y1, z1 = portalcenter(1)
-	local x2, y2, z2 = portalcenter(2)
-	
-	-- calculate portal offsets
-	local relx1 = x - 96 * x1
-	local rely1 = y - 128 * y1
-	local relz1 = z - 96 * z1
-	local relx2 = x - 96 * x2
-	local rely2 = y - 128 * y2
-	local relz2 = z - 96 * z2
-
-	-- calculate portal rotation
-	local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-	local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-	local rotd1 = (2 + rot2 - rot1) % 4
-	local rotd2 = (2 + rot1 - rot2) % 4
-
-	if     rotd1 == 0 then -- WTF do we need this for? 
-	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
-	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
-	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
-  	end
-
-	if     rotd2 == 0 then
-	elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
-	elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
-	elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
-  	end
-
-	if tx then
-		if pid==1 then
-			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1,tx,ty + math.pi * rotd1 / 2
-		elseif pid==2 then
-			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2,tx,ty + math.pi * rotd2 / 2
-		end
-	else
-		if pid==1 then
-			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1
-		elseif pid==2 then
-			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2
 		end
 	end
 end
@@ -4548,6 +4651,7 @@ function TIC()
 	-- game ------------------
 	--------------------------
 	if open=="game" then
+		nrdemo()
 		if stt~=120 then stt=stt+1 end
 		fps_.t1=time()
 		plr.cd2=max(plr.cd2-1,0)
