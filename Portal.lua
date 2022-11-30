@@ -2354,7 +2354,30 @@ local function to_next(val, interval, dir)
 	end
 end
 
+-- Check if a ray hits an object's colliders
+local function ray_object(x, y, z, rx, ry, rz, obj)
+	local nearest = 1/0
+	for _,collider in ipairs(model[obj.type].coll) do
+		local cx1, cy1, cz1 =
+			(obj.x + collider[1] - x) / rx, (obj.y + collider[2] - y) / ry, (obj.z + collider[3] - z) / rz
+		local cx2, cy2, cz2 =
+			(obj.x + collider[4] - x) / rx, (obj.y + collider[5] - y) / ry, (obj.z + collider[6] - z) / rz
+		if cx1 > cx2 then cx1, cx2 = cx2, cx1 end
+		if cy1 > cy2 then cy1, cy2 = cy2, cy1 end
+		if cz1 > cz2 then cz1, cz2 = cz2, cz1 end
+		local near, far = max(cx1, cy1, cz1), min(cx2, cy2, cz2)
+		if near > 0 and near <= far and near < nearest then nearest = near end
+	end
+	if nearest ~= 1/0 then
+		return nearest
+	end
+end
+
 local function new_raycast(x, y, z, rx, ry, rz, len, params)
+	-- current scan coordinates and remaining length
+	local cx, cy, cz = x, y, z
+	local remaining_len = len
+
 	-- normalised ray vector
 	local dist = math.sqrt(rx^2 + ry^2 + rz^2)
 	local nx, ny, nz = rx / dist, ry / dist, rz / dist
@@ -2362,34 +2385,34 @@ local function new_raycast(x, y, z, rx, ry, rz, len, params)
 	local newx, newy, newz, newrx, newrz
 	while true do
 		-- calculate the amount each component should step
-		local sx, sy, sz = to_next(x, 96, rx), to_next(y, 128, ry), to_next(z, 96, rz)
+		local sx, sy, sz = to_next(cx, 96, rx), to_next(cy, 128, ry), to_next(cz, 96, rz)
 		-- calculate the distance travelled by each component step
 		local lx, ly, lz = sx / nx, sy / ny, sz / nz
 		-- select the smallest as the next step
 		local lookup, axis
 		if lx < ly and lx < lz then
-			x, y, z = x + sx, y + lx * ny, z + lx * nz
-			len = len - lx
+			cx, cy, cz = cx + sx, cy + lx * ny, cz + lx * nz
+			remaining_len = remaining_len - lx
 			lookup, axis = params.walls, 1
 		elseif ly < lz then
-			x, y, z = x + ly * nx, y + sy, z + ly * nz
-			len = len - ly
+			cx, cy, cz = cx + ly * nx, cy + sy, cz + ly * nz
+			remaining_len = remaining_len - ly
 			lookup, axis = params.floors, 2
 		else
-			x, y, z = x + lz * nx, y + lz * ny, z + sz
-			len = len - lz
+			cx, cy, cz = cx + lz * nx, cy + lz * ny, cz + sz
+			remaining_len = remaining_len - lz
 			lookup, axis = params.walls, 3
 		end
 		-- stop if we've travelled far enough
 		if len < 0 then break end
 		-- fetch and check the current tile
-		local tx, ty, tz = x//96, y//128, z//96
+		local tx, ty, tz = cx//96, cy//128, cz//96
 		tile = get_tile(axis, tx, ty, tz)
 		if not tile then break end
 		if lookup[tile[2]] then
 			-- we hit a tile, break out of the loop and start testing objects
 			tilehit = {
-				x=x, y=y, z=z,
+				x=cx, y=cy, z=cz, len=len - remaining_len,
 				tx=tx, ty=ty, tz=tz,
 				axis=axis, tile=tile
 			}
@@ -2402,42 +2425,69 @@ local function new_raycast(x, y, z, rx, ry, rz, len, params)
 			local rotd1 = (2 + rot2 - rot1) % 4
 			local rotd2 = (2 + rot1 - rot2) % 4
 			if tile[2] == 5 then
-				newx, newy, newz = teleport(1, x, y, z)
+				newx, newy, newz = teleport(1, cx, cy, cz)
 				if     rotd1 == 0 then newrx,newrz=rx,rz
 				elseif rotd1 == 1 then newrx,newrz=rz,-rx
 				elseif rotd1 == 2 then newrx,newrz=-rx,-rz
 				elseif rotd1 == 3 then newrx,newrz=-rz,rx
 				end
+				break
 			end
 			if tile[2] == 6 then
-				newx, newy, newz = teleport(2, x, y, z)
+				newx, newy, newz = teleport(2, cx, cy, cz)
 				if     rotd2 == 0 then newrx,newrz=rx,rz
 				elseif rotd2 == 1 then newrx,newrz=rz,-rx
 				elseif rotd2 == 2 then newrx,newrz=-rx,-rz
 				elseif rotd2 == 3 then newrx,newrz=-rz,rx
 				end
+				break
 			end
 		end
 	end
-	-- TODO: object test code
-	if newx then
-		return new_raycast(newx, newy, newz, newrx, ry, newrz, len, params)
+	-- scan through all objects, find nearest intersection
+	local objhit
+	for _,ty in ipairs(params.objs) do
+		for _,obj in ipairs(draw.objects[ty]) do
+			local hit_len = ray_object(x, y, z, rx, ry, rz, obj)
+			if hit_len and hit_len * dist < len then
+				if not objhit or objhit.len > hit_len * dist then
+					objhit = {
+						x=x+rx*hit_len, y=y+ry*hit_len, z=z+rz*hit_len, len=hit_len*dist,
+						obj=obj,
+					}
+				end
+			end
+		end
 	end
-	return tilehit
+	-- we entered a portal, resume the raycast at the other end
+	if newx then
+		local hit = new_raycast(newx, newy, newz, newrx, ry, newrz, remaining_len, params)
+		if hit then
+			hit.len = hit.len + len - remaining_len
+		end
+		return hit
+	end
+	-- return the shortest found intersection
+	if not objhit or (tilehit and tilehit.len < objhit.len) then
+		return tilehit
+	else
+		return objhit
+	end
 end
 
 local democast = {
 	portals = true,
 	walls = {[1]=true,[2]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true},
 	floors = {[1]=true,[2]=true},
-	objs = {"c"},
+	objs = {"c", "cd", "l"},
 }
 local function nrdemo()
+	if key(7) then draw.pr = {} end
 	if not key(5) then return end
 	local rx=-math.sin(plr.ty)*math.cos(plr.tx)
 	local ry=-math.sin(plr.tx)
 	local rz=-math.cos(plr.ty)*math.cos(plr.tx)
-	local hit = new_raycast(plr.x, plr.y, plr.z, rx, ry, rz, 10000, democast)
+	local hit = new_raycast(plr.x, plr.y, plr.z, rx, ry, rz, 100000, democast)
 	if hit then
 		addp(hit.x, hit.y, hit.z, 0, 0, 0, 100000, 13)
 	end
