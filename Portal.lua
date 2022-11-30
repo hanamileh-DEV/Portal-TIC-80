@@ -2354,7 +2354,7 @@ local function to_next(val, interval, dir)
 	end
 end
 
-local function new_raycast(x, y, z, rx, ry, rz, len, portals, walls, floors)
+local function new_raycast(x, y, z, rx, ry, rz, len, params)
 	-- normalised ray vector
 	local dist = math.sqrt(rx^2 + ry^2 + rz^2)
 	local nx, ny, nz = rx / dist, ry / dist, rz / dist
@@ -2370,15 +2370,15 @@ local function new_raycast(x, y, z, rx, ry, rz, len, portals, walls, floors)
 		if lx < ly and lx < lz then
 			x, y, z = x + sx, y + lx * ny, z + lx * nz
 			len = len - lx
-			lookup, axis = walls, 1
+			lookup, axis = params.walls, 1
 		elseif ly < lz then
 			x, y, z = x + ly * nx, y + sy, z + ly * nz
 			len = len - ly
-			lookup, axis = floors, 2
+			lookup, axis = params.floors, 2
 		else
 			x, y, z = x + lz * nx, y + lz * ny, z + sz
 			len = len - lz
-			lookup, axis = walls, 3
+			lookup, axis = params.walls, 3
 		end
 		-- stop if we've travelled far enough
 		if len < 0 then break end
@@ -2396,7 +2396,7 @@ local function new_raycast(x, y, z, rx, ry, rz, len, portals, walls, floors)
 			break
 		end
 		-- Check for, and prepare to pass through portals (if enabled)
-		if portals and draw.p[1] and draw.p[2] then
+		if params.portals and draw.p[1] and draw.p[2] then
 			local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
 			local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
 			local rotd1 = (2 + rot2 - rot1) % 4
@@ -2421,17 +2421,23 @@ local function new_raycast(x, y, z, rx, ry, rz, len, portals, walls, floors)
 	end
 	-- TODO: object test code
 	if newx then
-		return new_raycast(newx, newy, newz, newrx, ry, newrz, len, portals, walls, floors)
+		return new_raycast(newx, newy, newz, newrx, ry, newrz, len, params)
 	end
 	return tilehit
 end
 
+local democast = {
+	portals = true,
+	walls = {[1]=true,[2]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true},
+	floors = {[1]=true,[2]=true},
+	objs = {"c"},
+}
 local function nrdemo()
 	if not key(5) then return end
 	local rx=-math.sin(plr.ty)*math.cos(plr.tx)
 	local ry=-math.sin(plr.tx)
 	local rz=-math.cos(plr.ty)*math.cos(plr.tx)
-	local hit = new_raycast(plr.x, plr.y, plr.z, rx, ry, rz, 10000, true, {[1]=true,[2]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true}, {[1]=true,[2]=true})
+	local hit = new_raycast(plr.x, plr.y, plr.z, rx, ry, rz, 10000, democast)
 	if hit then
 		addp(hit.x, hit.y, hit.z, 0, 0, 0, 100000, 13)
 	end
