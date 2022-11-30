@@ -1246,7 +1246,15 @@ local l_t2={
 	i=1,
 	t=0
 }
-
+--funcions
+local addwall, addobj, respal, updapal, darkpal
+--time
+local t1=0 --The start time of the frame drawing
+local t2=0 --The time for drawing the current frame
+local t=0 -- Global timer (+1 for each code call)
+local stt=0 --The timer of the start of the game
+--mouse
+local clp1,clp2 
 --sprite editor
 local function setpix(sx,sy,color)
 	local id=sx//8+sy//8*16
@@ -2366,6 +2374,7 @@ function unitic.update(draw_portal,p_id)
 	local tycos = math.cos(-cam.ty)
 
 	for ind = 1, #unitic.poly.v do
+		if unitic.poly.v[4]~=false then -- true or nil
 		local a1 = unitic.poly.v[ind][1] - cam.x
 		local b1 = unitic.poly.v[ind][2] - cam.y
 		local c1 = unitic.poly.v[ind][3] - cam.z
@@ -2386,8 +2395,10 @@ function unitic.update(draw_portal,p_id)
 		unitic.poly.v[ind][2]=y0
 		unitic.poly.v[ind][3]=-c4
 		unitic.poly.v[ind][4]=c3>0
+		end
 	end
 	--points for debug
+	--[[
 	for ind = 1, #draw.world.sp do
 		local a1 = draw.world.sp[ind][1] - cam.x
 		local b1 = draw.world.sp[ind][2] - cam.y
@@ -2401,7 +2412,8 @@ function unitic.update(draw_portal,p_id)
 		if c3>-0.001 then c3=-0.001 end
 
 		unitic.poly.sp[ind]={a3,b3,c3}
-	end
+	end]]
+
 	--particles
 	for ind = 1, #draw.pr do
 		local a1 = draw.pr[ind].x - cam.x
@@ -2414,7 +2426,7 @@ function unitic.update(draw_portal,p_id)
 		local y0 = b1 * txcos - c2 * txsin
 		local z0 = b1 * txsin + c2 * txcos
 
-		local dist=(x0^2+y0^2+z0^2)^0.5
+		local dist=math.sqrt(x0^2+y0^2+z0^2)
 
 		local draw_p=false
 		if z0<0 then draw_p=true end
@@ -3815,6 +3827,8 @@ function update_world()
 	draw.world_op.f={}
 	draw.pr_g={}
 
+	for i=0,(world_size[1]-1)*(world_size[2]-1)*(world_size[3]-1) do draw.world.v[i+1][4] = false end
+
 	for angle=1,3 do for x0=0,world_size[1]-1 do for y0=0,world_size[2]-1 do for z0=0,world_size[3]-1 do
 		local face = draw.map[angle][x0][y0][z0][1]
 		local type = draw.map[angle][x0][y0][z0][2]-1
@@ -3826,16 +3840,29 @@ function update_world()
 			if angle==1 then
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				--
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1][4]=true
 			end
 
 			if angle==2 then
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,0+type1*24,24+type1*24},y={152+type2*24,176+type2*24,152+type2*24}}})
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,24+type1*24,24+type1*24},y={176+type2*24,176+type2*24,152+type2*24}}})
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+2][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2][4]=true
 			end
 
 			if angle==3 then
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+2][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1][4]=true
 			end
 
 
@@ -4026,7 +4053,7 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 	}
 
 	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
-		table.insert(draw.world.v,{x*96,y*128,z*96})
+		table.insert(draw.world.v,{x*96,y*128,z*96,false}) --this boolead is resposible for whether the point needs to be updated or not
 	end end end
 
 	for i=1,3 do
@@ -4100,10 +4127,6 @@ end
 
 local avf={} --average frame
 local fr={0,0,0} --framerate
-t1=0 --The start time of the frame drawing
-t2=0 --The time for drawing the current frame
-t=0 -- Global timer (+1 for each code call)
-stt=0 --The timer of the start of the game
 --player speed
 local speed=4
 --init
@@ -4178,9 +4201,9 @@ function TIC()
 		else
 			print("The following recommended",47,5,7)
 			print("parameters were selected:",47,15,7)
-			local p=F(1/is.t1*200000) --points
-			local text_size=print("Evaluation result: "..p.." points.",240,0)
-			print("Evaluation result: "..p.." points.",120-text_size//2,105,2)
+			local pt=F(1/is.t1*200000) --points
+			local text_size=print("Evaluation result: "..pt.." points.",240,0)
+			print("Evaluation result: "..pt.." points.",120-text_size//2,105,2)
 			
 			rect(0,28,240,21,2)
 			if is.t1>300 then
