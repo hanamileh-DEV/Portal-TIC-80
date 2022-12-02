@@ -1247,14 +1247,14 @@ local l_t2={
 	t=0
 }
 --funcions
-local addwall, addobj, respal, updapal, darkpal
+local addwall, addobj, respal, updpal, darkpal
 --time
 local t1=0 --The start time of the frame drawing
 local t2=0 --The time for drawing the current frame
 local t=0 -- Global timer (+1 for each code call)
 local stt=0 --The timer of the start of the game
 --mouse
-local clp1,clp2 
+local clp1,clp2
 --sprite editor
 local function setpix(sx,sy,color)
 	local id=sx//8+sy//8*16
@@ -1366,8 +1366,8 @@ maps[1][1]={
 			addwall(4,0,2,1,1,5)
 			addwall(4,0,0,1,1,6)
 
-			draw.p[1]={4,0,2,1,1}
-			draw.p[2]={4,0,0,1,1}
+			draw.p[1]={4,0,2,1,1,0}
+			draw.p[2]={4,0,0,1,1,0}
 			update_world()
 		end
 
@@ -1485,8 +1485,8 @@ maps[1][2]={
 		if maps[1][2].t==1 then
 			addwall(2,1,0,3,1,5)
 			addwall(7,1,0,3,1,6)
-			draw.p[1]={2,1,0,3,1}
-			draw.p[2]={7,1,0,3,1}
+			draw.p[1]={2,1,0,3,1,0}
+			draw.p[2]={7,1,0,3,1,0}
 			draw.objects.cd[1].t=2
 			draw.objects.cd[1].ct=1
 			update_world()
@@ -1591,25 +1591,25 @@ maps[1][3]={
 	pg_lvl=0, --portal gun lvl
 	init=function()
 		l_t2={draw=false,pause=false,id=2,i=1,t=0}
-		draw.p[2]={5,0,0,3,1}
+		draw.p[2]={5,0,0,3,1,0}
 	end,
 	scripts=function()
 		if draw.objects.b[1].tick and draw.objects.b[1].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 			addwall(0,0,4,3,2,5)
-			draw.p[1]={0,0,4,3,2}
+			draw.p[1]={0,0,4,3,2,0}
 			update_world()
 		end
 		if draw.objects.b[2].tick and draw.objects.b[2].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 			addwall(8,0,3,1,1,5)
-			draw.p[1]={8,0,3,1,1}
+			draw.p[1]={8,0,3,1,1,0}
 			update_world()
 		end
 		if draw.objects.b[3].tick and draw.objects.b[3].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 			addwall(2,0,5,1,2,5)
-			draw.p[1]={2,0,5,1,2}
+			draw.p[1]={2,0,5,1,2,0}
 			update_world()
 		end
 		if draw.objects.fb[1].tick then
@@ -1694,7 +1694,7 @@ maps[1][4]={
 		end
 		if l_t2.i==2 then plr.pg_lvl=1 end
 		if stt==85 or (draw.objects.b[1].tick and draw.objects.b[1].s) then
-			draw.p[2]={0,0,5,3,2}
+			draw.p[2]={0,0,5,3,2,0}
 			addwall(0,0,5,3,2,6)
 			update_world()
 		end
@@ -1800,7 +1800,7 @@ maps[1][5]={
 		if stt==50 then
 			addwall(1,2,6,3,1,6)
 			update_world()
-			draw.p[2]={1,2,6,3,1}
+			draw.p[2]={1,2,6,3,1,0}
 		end
 		if draw.objects.fb[1].tick then
 			if draw.objects.fb[1].s then
@@ -3706,12 +3706,12 @@ local function portal_gun()
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 and plr.pg_lvl>0 then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
-			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1]}
+			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1],0}
 			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
 			update_world()
 		elseif clp2 and plr.pg_lvl>1 then
 			if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) end
-			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1]}
+			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1],0}
 			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
 			update_world()
 		end
@@ -3738,6 +3738,38 @@ local function portal_gun()
 	end
 
 	if p_g.t1>0 then p_g.x=p_g.x+5 p_g.y=p_g.y+5 end
+
+	if draw.p[1] then draw.p[1][6] = draw.p[1][6] + 1 end
+	if draw.p[2] then draw.p[2][6] = draw.p[2][6] + 1 end
+
+	--updating textures
+	for i = 1,2 do
+		local x,y,sc --set color
+		--Blue(95; 0) Orange(0; 32)
+		if i==1 then x,y = 95,0 sc=11 else x,y = 0,32 sc=14 end
+		--
+		if draw.p[i] and draw.p[i][6]<6 then
+			for x2=0,23 do for y2=0,31 do
+				x1,y1 = x+x2, y+y2
+				local uv_x=(x2 - 12) / 12
+				local uv_y=(y2 - 16) / 16
+
+				local color=getpix(x1,y1)
+				if (color==0 or color==14 or color==11) then
+					if draw.p[i][6]==1 then
+						setpix(x1,y1,sc)
+					else
+						local pt=draw.p[i][6]/5
+						if uv_x*uv_x + uv_y*uv_y < pt*pt then
+							setpix(x1,y1,0)
+						else
+							setpix(x1,y1,sc)
+						end
+					end
+				end
+			end end
+		end
+	end
 end
 
 --map
@@ -4430,8 +4462,8 @@ function TIC()
 		sync(2,0,false)
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
-		save.lvl2=1
-		--save.lvl=4
+		save.lvl2=0
+		save.lvl=2
 		pmem(4,save.ct)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
@@ -4553,8 +4585,20 @@ function TIC()
 			print("Your current game will not be saved",4,55,7)
 			print("Accept",4+(1-p.t1)*20,85,7)
 			print("Back"  ,4+(1-p.t2)*20,105,7)
-			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(0,1) end else p.t1=min(p.t1+0.05,1) end
-			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)                                  end else p.t2=min(p.t2+0.05,1) end
+			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1
+				if clp1 then
+					open="main"
+					poke(0x7FC3F,1,0)
+					music(2)
+					load_world(0,1)
+					plr.x=32
+					plr.y=64
+					plr.z=32
+					plr.tx=0
+					plr.ty=0
+				end
+			else p.t1=min(p.t1+0.05,1)end
+			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)end else p.t2=min(p.t2+0.05,1) end
 		end
 
 		--Resume
