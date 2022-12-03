@@ -49,7 +49,7 @@ sfx   =true,
 
 local save={ --saving the game
 i=pmem(0)==0, --How for the first time the player went into the game
-lvl=5,--pmem(0),
+lvl=pmem(0),
 lvl2=0, --ID set of levels
 st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
 --pmem(2) not used
@@ -2475,24 +2475,6 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 	end
 end
 
-local democast = {
-	portals = true,
-	walls = {[1]=true,[2]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true},
-	floors = {[1]=true,[2]=true},
-	objs = {"c", "cd", "l"},
-}
-local function nrdemo()
-	if key(7) then draw.pr = {} end
-	if not key(5) then return end
-	local rx=-math.sin(plr.ty)*math.cos(plr.tx)
-	local ry=-math.sin(plr.tx)
-	local rz=-math.cos(plr.ty)*math.cos(plr.tx)
-	local hit = raycast(plr.x, plr.y, plr.z, rx, ry, rz, 100000, democast)
-	if hit then
-		addp(hit.x, hit.y, hit.z, 0, 0, 0, 100000, 13)
-	end
-end
-
 function unitic.update(draw_portal,p_id)
 	--writing all polygons in unitic.poly
 	unitic.poly = { v = {}, f = {}, sp = {} }
@@ -2718,7 +2700,7 @@ function unitic.draw()
 				local color = unitic.p[i][5]
 				local color1= color % 4
 				local color2= color //4
-				local size = max(1, 1/unitic.p[i][6]*2.4*unitic.fov)
+				local size = 1/unitic.p[i][6]*2.4*unitic.fov
 
 				local z0 = unitic.p[i][3]
 
@@ -4674,7 +4656,6 @@ function TIC()
 	-- game ------------------
 	--------------------------
 	if open=="game" then
-		nrdemo()
 		if stt~=120 then stt=stt+1 end
 		fps_.t1=time()
 		plr.cd2=max(plr.cd2-1,0)
