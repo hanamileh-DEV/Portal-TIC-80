@@ -3320,7 +3320,7 @@ function unitic.render() --------
 		local y0 = b3 * z0
 
 		dist12d=(x0^2 + y0^2)^0.5
-		dist13d=((x1-plr.x)^2 + (y1-plr.y)^2 + (z1-plr.z)^2)^0.5
+		dist13d=(a1^2 + b1^2 + c1^2)^0.5
 	end
 
 	if draw.p[2] then
@@ -3343,7 +3343,7 @@ function unitic.render() --------
 		local y0 = b3 * z0
 
 		dist22d=(x0^2 + y0^2)^0.5
-		dist23d=((x2-plr.x)^2 + (y2-plr.y)^2 + (z2-plr.z)^2)^0.5
+		dist23d=(a1^2 + b1^2 + c1^2)^0.5
 		dist2d = true
 		dist3d = true
 	end
