@@ -2144,9 +2144,14 @@ local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
 end
 
-local b_f={} --Texture for the blue field (It is necessary for optimization)
+--Texture cache
+
+local b_f={} --Texture for the blue field
+local p_t={{},{}} --portal texture
 for y0=0,31 do
 	b_f[y0]={}
+	p_t[1][y0]={} --blue portal
+	p_t[2][y0]={} --orange portal
 	local c=false
 	for x0=0,23 do
 		local color1=getpix(x0+24,y0+32)
@@ -2156,6 +2161,8 @@ for y0=0,31 do
 		if color1~=color2 then
 			if color1==15 then b_f[y0][1]=x0 else b_f[y0][2]=x0 end
 		end
+		p_t[1][y0][x0]=getpix(96+x0,0 +y0)
+		p_t[2][y0][x0]=getpix(0 +x0,32+y0)
 	end
 
 	b_f[y0].d=c
@@ -3706,28 +3713,30 @@ local function portal_gun()
 
 	--updating textures
 	for i = 1,2 do
-		local x,y,sc --set color
+		local px1,py1, px2, py2 ,sc --set color
 		--Blue(95; 0) Orange(0; 32)
-		if i==1 then x,y = 95,0 sc=11 else x,y = 0,32 sc=14 end
+		if i==1 then px,py = 96,0 sc=10 else px,py = 0,32 sc=13 end
 		--
-		if draw.p[i] and draw.p[i][6]<6 then
+		if draw.p[i] and draw.p[i][6]<5 then
 			for x2=0,23 do for y2=0,31 do
-				x1,y1 = x+x2, y+y2
-				local uv_x=(x2 - 12) / 12
-				local uv_y=(y2 - 16) / 16
+				dx,dy = px+x2, py+y2
 
-				local color=getpix(x1,y1)
-				if (color==0 or color==14 or color==11) then
-					if draw.p[i][6]==1 then
-						setpix(x1,y1,sc)
-					else
-						local pt=draw.p[i][6]/5
-						if uv_x*uv_x + uv_y*uv_y < pt*pt then
-							setpix(x1,y1,0)
-						else
-							setpix(x1,y1,sc)
-						end
+				local uv_x=(x2 - 11.5) / 12
+				local uv_y=(y2 - 15.5) / 16
+
+				if draw.p[i][6]==1 then
+					setpix(dx,dy, getpix(24+x2,y2))
+				elseif draw.p[i][6]~=4 then
+					local pt=draw.p[i][6]/4
+					local dist=math.sqrt(uv_x*uv_x + uv_y*uv_y)
+					if dist*1.2<pt then
+						setpix(dx,dy,0)
+					elseif dist<pt then
+						setpix(dx,dy,sc)
 					end
+					
+				else
+					setpix(dx,dy, p_t[i][y2][x2])
 				end
 			end end
 		end
