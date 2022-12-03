@@ -1246,7 +1246,15 @@ local l_t2={
 	i=1,
 	t=0
 }
-
+--funcions
+local addwall, addobj, respal, updpal, darkpal
+--time
+local t1=0 --The start time of the frame drawing
+local t2=0 --The time for drawing the current frame
+local t=0 -- Global timer (+1 for each code call)
+local stt=0 --The timer of the start of the game
+--mouse
+local clp1,clp2
 --sprite editor
 local function setpix(sx,sy,color)
 	local id=sx//8+sy//8*16
@@ -1358,8 +1366,8 @@ maps[1][1]={
 			addwall(4,0,2,1,1,5)
 			addwall(4,0,0,1,1,6)
 
-			draw.p[1]={4,0,2,1,1}
-			draw.p[2]={4,0,0,1,1}
+			draw.p[1]={4,0,2,1,1,0}
+			draw.p[2]={4,0,0,1,1,0}
 			update_world()
 		end
 
@@ -1477,8 +1485,8 @@ maps[1][2]={
 		if maps[1][2].t==1 then
 			addwall(2,1,0,3,1,5)
 			addwall(7,1,0,3,1,6)
-			draw.p[1]={2,1,0,3,1}
-			draw.p[2]={7,1,0,3,1}
+			draw.p[1]={2,1,0,3,1,0}
+			draw.p[2]={7,1,0,3,1,0}
 			draw.objects.cd[1].t=2
 			draw.objects.cd[1].ct=1
 			update_world()
@@ -1583,25 +1591,25 @@ maps[1][3]={
 	pg_lvl=0, --portal gun lvl
 	init=function()
 		l_t2={draw=false,pause=false,id=2,i=1,t=0}
-		draw.p[2]={5,0,0,3,1}
+		draw.p[2]={5,0,0,3,1,0}
 	end,
 	scripts=function()
 		if draw.objects.b[1].tick and draw.objects.b[1].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 			addwall(0,0,4,3,2,5)
-			draw.p[1]={0,0,4,3,2}
+			draw.p[1]={0,0,4,3,2,0}
 			update_world()
 		end
 		if draw.objects.b[2].tick and draw.objects.b[2].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 			addwall(8,0,3,1,1,5)
-			draw.p[1]={8,0,3,1,1}
+			draw.p[1]={8,0,3,1,1,0}
 			update_world()
 		end
 		if draw.objects.b[3].tick and draw.objects.b[3].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
 			addwall(2,0,5,1,2,5)
-			draw.p[1]={2,0,5,1,2}
+			draw.p[1]={2,0,5,1,2,0}
 			update_world()
 		end
 		if draw.objects.fb[1].tick then
@@ -1686,7 +1694,7 @@ maps[1][4]={
 		end
 		if l_t2.i==2 then plr.pg_lvl=1 end
 		if stt==85 or (draw.objects.b[1].tick and draw.objects.b[1].s) then
-			draw.p[2]={0,0,5,3,2}
+			draw.p[2]={0,0,5,3,2,0}
 			addwall(0,0,5,3,2,6)
 			update_world()
 		end
@@ -1792,7 +1800,7 @@ maps[1][5]={
 		if stt==50 then
 			addwall(1,2,6,3,1,6)
 			update_world()
-			draw.p[2]={1,2,6,3,1}
+			draw.p[2]={1,2,6,3,1,0}
 		end
 		if draw.objects.fb[1].tick then
 			if draw.objects.fb[1].s then
@@ -2136,9 +2144,14 @@ local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
 end
 
-local b_f={} --Texture for the blue field (It is necessary for optimization)
+--Texture cache
+
+local b_f={} --Texture for the blue field
+local p_t={{},{}} --portal texture
 for y0=0,31 do
 	b_f[y0]={}
+	p_t[1][y0]={} --blue portal
+	p_t[2][y0]={} --orange portal
 	local c=false
 	for x0=0,23 do
 		local color1=getpix(x0+24,y0+32)
@@ -2148,6 +2161,8 @@ for y0=0,31 do
 		if color1~=color2 then
 			if color1==15 then b_f[y0][1]=x0 else b_f[y0][2]=x0 end
 		end
+		p_t[1][y0][x0]=getpix(96+x0,0 +y0)
+		p_t[2][y0][x0]=getpix(0 +x0,32+y0)
 	end
 
 	b_f[y0].d=c
@@ -2563,6 +2578,7 @@ function unitic.update(draw_portal,p_id)
 	local tycos = math.cos(-cam.ty)
 
 	for ind = 1, #unitic.poly.v do
+		if unitic.poly.v[4]~=false then -- true or nil
 		local a1 = unitic.poly.v[ind][1] - cam.x
 		local b1 = unitic.poly.v[ind][2] - cam.y
 		local c1 = unitic.poly.v[ind][3] - cam.z
@@ -2583,8 +2599,10 @@ function unitic.update(draw_portal,p_id)
 		unitic.poly.v[ind][2]=y0
 		unitic.poly.v[ind][3]=-c4
 		unitic.poly.v[ind][4]=c3>0
+		end
 	end
 	--points for debug
+	--[[
 	for ind = 1, #draw.world.sp do
 		local a1 = draw.world.sp[ind][1] - cam.x
 		local b1 = draw.world.sp[ind][2] - cam.y
@@ -2598,7 +2616,8 @@ function unitic.update(draw_portal,p_id)
 		if c3>-0.001 then c3=-0.001 end
 
 		unitic.poly.sp[ind]={a3,b3,c3}
-	end
+	end]]
+
 	--particles
 	for ind = 1, #draw.pr do
 		local a1 = draw.pr[ind].x - cam.x
@@ -2611,7 +2630,7 @@ function unitic.update(draw_portal,p_id)
 		local y0 = b1 * txcos - c2 * txsin
 		local z0 = b1 * txsin + c2 * txcos
 
-		local dist=(x0^2+y0^2+z0^2)^0.5
+		local dist=math.sqrt(x0^2+y0^2+z0^2)
 
 		local draw_p=false
 		if z0<0 then draw_p=true end
@@ -3442,7 +3461,7 @@ function unitic.render() --------
 		local y0 = b3 * z0
 
 		dist12d=(x0^2 + y0^2)^0.5
-		dist13d=((x1-plr.x)^2 + (y1-plr.y)^2 + (z1-plr.z)^2)^0.5
+		dist13d=(a1^2 + b1^2 + c1^2)^0.5
 	end
 
 	if draw.p[2] then
@@ -3465,7 +3484,7 @@ function unitic.render() --------
 		local y0 = b3 * z0
 
 		dist22d=(x0^2 + y0^2)^0.5
-		dist23d=((x2-plr.x)^2 + (y2-plr.y)^2 + (z2-plr.z)^2)^0.5
+		dist23d=(a1^2 + b1^2 + c1^2)^0.5
 		dist2d = true
 		dist3d = true
 	end
@@ -3797,12 +3816,12 @@ local function portal_gun()
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 and plr.pg_lvl>0 then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
-			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1]}
+			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1],0}
 			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
 			update_world()
 		elseif clp2 and plr.pg_lvl>1 then
 			if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) end
-			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1]}
+			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1],0}
 			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
 			update_world()
 		end
@@ -3829,6 +3848,40 @@ local function portal_gun()
 	end
 
 	if p_g.t1>0 then p_g.x=p_g.x+5 p_g.y=p_g.y+5 end
+
+	if draw.p[1] then draw.p[1][6] = draw.p[1][6] + 1 end
+	if draw.p[2] then draw.p[2][6] = draw.p[2][6] + 1 end
+
+	--updating textures
+	for i = 1,2 do
+		local px1,py1, px2, py2 ,sc --set color
+		--Blue(95; 0) Orange(0; 32)
+		if i==1 then px,py = 96,0 sc=10 else px,py = 0,32 sc=13 end
+		--
+		if draw.p[i] and draw.p[i][6]<5 then
+			for x2=0,23 do for y2=0,31 do
+				dx,dy = px+x2, py+y2
+
+				local uv_x=(x2 - 11.5) / 12
+				local uv_y=(y2 - 15.5) / 16
+
+				if draw.p[i][6]==1 then
+					setpix(dx,dy, getpix(24+x2,y2))
+				elseif draw.p[i][6]~=4 then
+					local pt=draw.p[i][6]/4
+					local dist=math.sqrt(uv_x*uv_x + uv_y*uv_y)
+					if dist*1.2<pt then
+						setpix(dx,dy,0)
+					elseif dist<pt then
+						setpix(dx,dy,sc)
+					end
+					
+				else
+					setpix(dx,dy, p_t[i][y2][x2])
+				end
+			end end
+		end
+	end
 end
 
 --map
@@ -3918,6 +3971,8 @@ function update_world()
 	draw.world_op.f={}
 	draw.pr_g={}
 
+	for i=0,(world_size[1]-1)*(world_size[2]-1)*(world_size[3]-1) do draw.world.v[i+1][4] = false end
+
 	for angle=1,3 do for x0=0,world_size[1]-1 do for y0=0,world_size[2]-1 do for z0=0,world_size[3]-1 do
 		local face = draw.map[angle][x0][y0][z0][1]
 		local type = draw.map[angle][x0][y0][z0][2]-1
@@ -3929,16 +3984,29 @@ function update_world()
 			if angle==1 then
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				--
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1][4]=true
 			end
 
 			if angle==2 then
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,0+type1*24,24+type1*24},y={152+type2*24,176+type2*24,152+type2*24}}})
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,24+type1*24,24+type1*24},y={176+type2*24,176+type2*24,152+type2*24}}})
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+2][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2][4]=true
 			end
 
 			if angle==3 then
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
 				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+2][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2][4]=true
+				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1][4]=true
 			end
 
 
@@ -4129,7 +4197,7 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 	}
 
 	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
-		table.insert(draw.world.v,{x*96,y*128,z*96})
+		table.insert(draw.world.v,{x*96,y*128,z*96,false}) --this boolead is resposible for whether the point needs to be updated or not
 	end end end
 
 	for i=1,3 do
@@ -4203,10 +4271,6 @@ end
 
 local avf={} --average frame
 local fr={0,0,0} --framerate
-t1=0 --The start time of the frame drawing
-t2=0 --The time for drawing the current frame
-t=0 -- Global timer (+1 for each code call)
-stt=0 --The timer of the start of the game
 --player speed
 local speed=4
 --init
@@ -4281,9 +4345,9 @@ function TIC()
 		else
 			print("The following recommended",47,5,7)
 			print("parameters were selected:",47,15,7)
-			local p=F(1/is.t1*200000) --points
-			local text_size=print("Evaluation result: "..p.." points.",240,0)
-			print("Evaluation result: "..p.." points.",120-text_size//2,105,2)
+			local pt=F(1/is.t1*200000) --points
+			local text_size=print("Evaluation result: "..pt.." points.",240,0)
+			print("Evaluation result: "..pt.." points.",120-text_size//2,105,2)
 			
 			rect(0,28,240,21,2)
 			if is.t1>300 then
@@ -4510,8 +4574,8 @@ function TIC()
 		sync(2,0,false)
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
-		save.lvl2=1
-		--save.lvl=4
+		save.lvl2=0
+		save.lvl=2
 		pmem(4,save.ct)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
@@ -4633,8 +4697,20 @@ function TIC()
 			print("Your current game will not be saved",4,55,7)
 			print("Accept",4+(1-p.t1)*20,85,7)
 			print("Back"  ,4+(1-p.t2)*20,105,7)
-			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1 if clp1 then open="main" poke(0x7FC3F,1,0) music(2) load_world(0,1) end else p.t1=min(p.t1+0.05,1) end
-			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)                                  end else p.t2=min(p.t2+0.05,1) end
+			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1
+				if clp1 then
+					open="main"
+					poke(0x7FC3F,1,0)
+					music(2)
+					load_world(0,1)
+					plr.x=32
+					plr.y=64
+					plr.z=32
+					plr.tx=0
+					plr.ty=0
+				end
+			else p.t1=min(p.t1+0.05,1)end
+			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)end else p.t2=min(p.t2+0.05,1) end
 		end
 
 		--Resume
