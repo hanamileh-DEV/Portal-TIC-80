@@ -2189,7 +2189,7 @@ local function coll_shift(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, axis)
 	end
 end
 
-local function raycast(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk along a segment, checking whether it collides with the walls
+local function raycast_legacy(x1,y1,z1, x2,y2,z2, hitwalls,hitfloors, precise) -- walk along a segment, checking whether it collides with the walls
 	-- convert to tile space
 	x1, y1, z1, x2, y2, z2 = x1 / 96, y1 / 128, z1 / 96, x2 / 96, y2 / 128, z2 / 96
 	-- DDA, loosely based on https://lodev.org/cgtutor/raycasting.html
@@ -2373,7 +2373,7 @@ local function ray_object(x, y, z, rx, ry, rz, obj)
 	end
 end
 
-local function new_raycast(x, y, z, rx, ry, rz, len, params)
+local function raycast(x, y, z, rx, ry, rz, len, params)
 	-- current scan coordinates and remaining length
 	local cx, cy, cz = x, y, z
 	local remaining_len = len
@@ -2461,7 +2461,7 @@ local function new_raycast(x, y, z, rx, ry, rz, len, params)
 	end
 	-- we entered a portal, resume the raycast at the other end
 	if newx then
-		local hit = new_raycast(newx, newy, newz, newrx, ry, newrz, remaining_len, params)
+		local hit = raycast(newx, newy, newz, newrx, ry, newrz, remaining_len, params)
 		if hit then
 			hit.len = hit.len + len - remaining_len
 		end
@@ -2487,7 +2487,7 @@ local function nrdemo()
 	local rx=-math.sin(plr.ty)*math.cos(plr.tx)
 	local ry=-math.sin(plr.tx)
 	local rz=-math.cos(plr.ty)*math.cos(plr.tx)
-	local hit = new_raycast(plr.x, plr.y, plr.z, rx, ry, rz, 100000, democast)
+	local hit = raycast(plr.x, plr.y, plr.z, rx, ry, rz, 100000, democast)
 	if hit then
 		addp(hit.x, hit.y, hit.z, 0, 0, 0, 100000, 13)
 	end
@@ -2908,7 +2908,7 @@ end
 local function cube_interact(cube,p)
 	if plr.holding and not cube.held then return false end
 
-	local rc=raycast(
+	local rc=raycast_legacy(
 		plr.x,plr.y,plr.z,
 		cube.x,cube.y,cube.z,
 		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
@@ -2983,7 +2983,7 @@ function unitic.cube_update() --all physics related to cubes
 					local inbp=false
 					local inop=false
 
-					local x,y,z,f=raycast(ps.x,ps.y,ps.z,pf.x,pf.y,pf.z,
+					local x,y,z,f=raycast_legacy(ps.x,ps.y,ps.z,pf.x,pf.y,pf.z,
 					{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
 					{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
 					if not x then break end
@@ -3713,7 +3713,7 @@ function unitic.turret_update()
 		local ang=math.atan(x0-plr.x,z0-plr.z)-t_ang
 
 		if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
-			local x=raycast(x0,y0+35,z0,plr.x,plr.y,plr.z,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+			local x=raycast_legacy(x0,y0+35,z0,plr.x,plr.y,plr.z,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
 			if not x then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
 				if draw.objects.t[i].cd>40 then
 					plr.hp=plr.hp-R(1,2)
@@ -3754,7 +3754,7 @@ function unitic.button_update()
 		end
 
 		local dist=((draw.objects.b[i].x-plr.x)^2 + (draw.objects.b[i].y-plr.y)^2 + (draw.objects.b[i].z-plr.z)^2) ^ 0.5
-		local rc=raycast(
+		local rc=raycast_legacy(
 			draw.objects.b[i].x,draw.objects.b[i].y+26,draw.objects.b[i].z,
 			plr.x,plr.y,plr.z,
 			{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
@@ -3808,7 +3808,7 @@ local function portal_gun()
 	local y2=y1-math.sin(plr.tx)*10000
 	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
-	local x,y,z,f=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+	local x,y,z,f=raycast_legacy(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
 	if clp1 and plr.pg_lvl>0 then p_g.c=1 p_g.t2=1 end
 	if clp2 and plr.pg_lvl>1 then p_g.c=2 p_g.t2=1 end
 
@@ -3825,7 +3825,7 @@ local function portal_gun()
 			update_world()
 		end
 	elseif x and (clp1 or clp2) then
-		local x1,y1,z1=raycast(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true},true)
+		local x1,y1,z1=raycast_legacy(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true},true)
 		if clp1 and plr.pg_lvl>0 then
 			for i=0,99 do addp(x1,y1,z1,(R()-0.5)*5,(R()-0.5)*5,(R()-0.5)*5,R(5,25),R(10,11)) end
 		elseif clp2 and plr.pg_lvl>1 then
