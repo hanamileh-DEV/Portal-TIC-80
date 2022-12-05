@@ -2398,6 +2398,10 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 	local nx, ny, nz = rx / dist, ry / dist, rz / dist
 	local tilehit
 	local newx, newy, newz, newrx, newrz
+
+	-- allow passing an end point instead
+	len = len or dist
+
 	while true do
 		-- calculate the amount each component should step
 		local sx, sy, sz = to_next(cx, 96, rx), to_next(cy, 128, ry), to_next(cz, 96, rz)
