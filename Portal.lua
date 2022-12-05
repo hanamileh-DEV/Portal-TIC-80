@@ -1200,7 +1200,7 @@ local draw={
 
 local fps_={t1=0,t2=0,t3=0,t4=0,t5=0,t6=0,t7=0,t8=0,t9=0}
 
-local p_g={x=0,y=0,c=1,t1=0,t2=0}
+local p_g={x=0,y=0,c=1,t1=0,t2=0, cd1=0, cd2=0}
 
 --Text for levels
 local l_t={
@@ -2942,6 +2942,7 @@ local function cube_interact(cube,p)
 end
 local cht=0
 
+
 function unitic.cube_update() --all physics related to cubes
 	-- dispensers
 	for i=1,#draw.objects.cd do
@@ -3309,8 +3310,10 @@ function unitic.portal_collision()
 	if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
 	--teleporting
 	if bp and op==false then
+		--p_g.cd1=15
 		plr.x,plr.y,plr.z,plr.tx,plr.ty=teleport(1,plr.x,plr.y,plr.z,plr.tx,plr.ty)
 	elseif op and bp==false then
+		--p_g.cd2=15
 		plr.x,plr.y,plr.z,plr.tx,plr.ty=teleport(2,plr.x,plr.y,plr.z,plr.tx,plr.ty)
 	end
 end
@@ -3813,13 +3816,18 @@ local function portal_gun()
 	if clp1 and plr.pg_lvl>0 then p_g.c=1 p_g.t2=1 end
 	if clp2 and plr.pg_lvl>1 then p_g.c=2 p_g.t2=1 end
 
+	p_g.cd1=max(p_g.cd1-1,0)
+	p_g.cd2=max(p_g.cd2-1,0)
+
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 and plr.pg_lvl>0 then
+			p_g.cd1=10
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
 			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1],0}
 			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
 			update_world()
 		elseif clp2 and plr.pg_lvl>1 then
+			p_g.cd2=10
 			if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) end
 			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1],0}
 			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
@@ -3854,7 +3862,7 @@ local function portal_gun()
 
 	--updating textures
 	for i = 1,2 do
-		local px1,py1, px2, py2 ,sc --set color
+		local px,py ,sc --set color
 		--Blue(95; 0) Orange(0; 32)
 		if i==1 then px,py = 96,0 sc=10 else px,py = 0,32 sc=13 end
 		--
@@ -4253,13 +4261,13 @@ function respal()
 	for i=1,#pal,2 do
 		poke(0x3FC0+i//6*3+i//2%3,tonumber(pal:sub(i,i+1),16))
 	end
-end
+end    
 
 function updpal(r,g,b)
 	for i=0,47,3 do
 		poke(0x03FC0+i,peek(0x03FC0+i)*r) --RLUE
-		poke(0x03FC1+i,peek(0x03FC1+i)*b) --BREEN
-		poke(0x03FC2+i,peek(0x03FC2+i)*g) --GED
+		poke(0x03FC1+i,peek(0x03FC1+i)*g) --BREEN
+		poke(0x03FC2+i,peek(0x03FC2+i)*b) --GED
 	end
 end
 
@@ -4770,9 +4778,21 @@ function TIC()
 			if plr.hp<40 then
 				updpal(1,max(abs(math.sin(time()/200))*0.7+0.3,plr.hp/50),max(abs(math.sin(time()/200))*0.7+0.3,plr.hp/50))
 			end
+			--
 			if plr.cd2>0 then
 				updpal((10-plr.cd2)/10*0.7+0.3,1,1)
 			end
+			--portal gun
+			if p_g.cd1>0 then
+				local val=(10-p_g.cd1)/10*0.5+0.5
+				updpal(val, 1, 1)
+			end
+			if p_g.cd2>0 then
+				local val=(10-p_g.cd2)/10*0.5+0.5
+				updpal(1,0.5 + val*0.5, val)
+			end
+			--updpal(1, 0.5, 0)
+			--
 			if plr.cd3>0 then
 				updpal(1,0.2*(3-plr.cd3*0.2),0.2*(3-plr.cd3*0.2))
 			end
@@ -5252,8 +5272,9 @@ function BDR(scn_y) scn_y=scn_y-4
 	end
 
 	if open=="game" then
-		vbank(0) poke(0x03FF9,256+R(-1,1)*R(0,F(plr.cd2/2)))
-		vbank(1) poke(0x03FF9,256+R(-1,1)*R(0,F(plr.cd2/2)))
+		local val=256 +R(-1,1) * R(0, F(plr.cd2/2 + F(p_g.cd1/10+0.99) + F(p_g.cd2/10+0.99)) )
+		vbank(0) poke(0x03FF9,val)
+		vbank(1) poke(0x03FF9,val)
 	end
 end
 
