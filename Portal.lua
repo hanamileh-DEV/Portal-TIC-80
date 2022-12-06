@@ -2910,14 +2910,19 @@ function unitic.player_collision()
 	plr.xy=coly
 end
 
+local cube_params={
+	portals = true,
+	walls = {[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
+	floors = {[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true},
+	objs = {"c","b","lb","t","l"}
+}
+--[[
 local function cube_interact(cube,p)
 	if plr.holding and not cube.held then return false end
 
-	local rc=raycast_legacy(
+	local rc=raycast(
 		plr.x,plr.y,plr.z,
-		cube.x,cube.y,cube.z,
-		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
-		{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+		cube.x,cube.y,cube.z,cube_params)
 	if p then rc=nil end
 
 	local txsin = math.sin(plr.tx)
@@ -2943,7 +2948,8 @@ local function cube_interact(cube,p)
 	else
 		return keyp(5) and dist < 150 and not rc and cosang > 0.95
 	end
-end
+end]]
+
 local cht=0
 
 
@@ -2958,6 +2964,23 @@ function unitic.cube_update() --all physics related to cubes
 	--cubes
 	local i=0
 	if #draw.objects.c==0 then return end
+	if not plr.holding and keyp(5) then
+		local rx=-math.sin(plr.ty)*math.cos(plr.tx)
+		local ry=-math.sin(plr.tx)
+		local rz=-math.cos(plr.ty)*math.cos(plr.tx)
+		local hit = raycast(plr.x, plr.y, plr.z, rx, ry, rz, 100, cube_params)
+
+		if hit and hit.obj then
+			draw.objects.c[hit.obj.id].held = true
+			plr.holding = true
+		end
+	elseif keyp(5) then
+		for i=1,#draw.objects.c do
+			draw.objects.c[i].held = false
+		end
+		plr.holding = false
+	end
+
 	repeat
 		i=i+1
 
@@ -3060,10 +3083,10 @@ function unitic.cube_update() --all physics related to cubes
 			draw.objects.c[i].vz=min(max(draw.objects.c[i].vz*0.9,-20),20)
 		end
 		
-		if cube_interact(draw.objects.c[i],portal) then
-			draw.objects.c[i].held = not draw.objects.c[i].held
-			plr.holding = not plr.holding
-		end
+		-- if cube_interact(draw.objects.c[i],portal) then
+		-- 	draw.objects.c[i].held = not draw.objects.c[i].held
+		-- 	plr.holding = not plr.holding
+		-- end
 
 		local bf = false --is the cube in the blue field
 
@@ -3905,6 +3928,7 @@ function addobj(x, y, z, type,t1) --objects
 	if type==1 or type==2 then --cubes
 		draw.objects.c[#draw.objects.c+1]=
 		{type=type, --type
+		id=#draw.objects.c+1, --id
 		x=x,y=y,z=z, --object coordinates
 		x1=0,y1=0,z1=0, --Coordinates relative to the portal
 		inp=false, --whether the cube is located in the portal
@@ -3930,6 +3954,7 @@ function addobj(x, y, z, type,t1) --objects
 	elseif type==3 then --cube dispenser
 		draw.objects.cd[#draw.objects.cd+1]=
 		{type=type,
+		id=#draw.objects.cd+1,
 		x=x,y=y,z=z,
 		draw=true,
 		t=0,ct=0, --cube type
@@ -3937,12 +3962,14 @@ function addobj(x, y, z, type,t1) --objects
 	elseif type==4 or type==5 or type==6 or type==7 then --light bridges
 		draw.objects.lb[#draw.objects.lb+1]=
 		{type=type,
+		id=#draw.objects.lb+1,
 		x=x,y=y,z=z,
 		draw=true,
 		model=model[type]}
 	elseif type==8 or type==9 or type==10 or type==11 then --buttons
 		draw.objects.b[#draw.objects.b+1]=
 		{type=type,
+		id=#draw.objects.b+1,
 		x=x,y=y,z=z,
 		t=t1 or (math.huge), --button press time (math.huge for a constant signal, -1 to switch the signal)
 		t1=0,
@@ -3952,12 +3979,14 @@ function addobj(x, y, z, type,t1) --objects
 	elseif type==12 or type==13 or type==14 or type==15 then --turrets
 		draw.objects.t[#draw.objects.t+1]=
 		{type=type,
+		id=#draw.objects.t+1,
 		x=x,y=y,z=z,
 		cd=0,
 		draw=true,model=model[type]}
 	elseif type==16 then --floor button
 		draw.objects.fb[#draw.objects.t+1]=
 		{type=type,
+		id=#draw.objects.fb+1,
 		x=x,y=y,z=z,
 		tick=false,
 		s=false,
@@ -3965,11 +3994,13 @@ function addobj(x, y, z, type,t1) --objects
 	elseif type==17 or type==18 or type==19 or type==20 then --lifts
 		draw.objects.l[#draw.objects.l+1]=
 		{type=type,
+		id=#draw.objects.l+1,
 		x=x,y=y,z=z,
 		draw=true,model=model[type]}
 	elseif type==21 or type==22 or type==23 or type==24 then --display
 		draw.objects.d[#draw.objects.d+1]=
 		{type=type,
+		id=#draw.objects.d+1,
 		x=x,y=y,z=z,
 		s=false, --signal
 		draw=true,model={v=model[type].v,f=model[type].f}}
@@ -4602,8 +4633,8 @@ function TIC()
 		sync(2,0,false)
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
-		save.lvl2=0
-		save.lvl=2
+		save.lvl2=1
+		save.lvl=6
 		pmem(4,save.ct)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
