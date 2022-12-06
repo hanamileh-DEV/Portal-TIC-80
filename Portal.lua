@@ -4257,11 +4257,27 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 end
 --palette
 local pal="0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6faff8d18ffbe3cff00ff"
+
+function savepal()
+	local pal_1={}
+	for i=0,48 do
+		local val=peek(0x3FC0+i)
+		pal_1[i]=val
+	end
+	return pal_1
+end
+
+function loadpal(pal_1)
+	for i=0,48 do
+		poke(0x3FC0+i,pal_1[i])
+	end
+end
+
 function respal()
 	for i=1,#pal,2 do
 		poke(0x3FC0+i//6*3+i//2%3,tonumber(pal:sub(i,i+1),16))
 	end
-end    
+end
 
 function updpal(r,g,b)
 	for i=0,47,3 do
@@ -4782,16 +4798,6 @@ function TIC()
 			if plr.cd2>0 then
 				updpal((10-plr.cd2)/10*0.7+0.3,1,1)
 			end
-			--portal gun
-			if p_g.cd1>0 then
-				local val=(10-p_g.cd1)/10*0.5+0.5
-				updpal(val, 1, 1)
-			end
-			if p_g.cd2>0 then
-				local val=(10-p_g.cd2)/10*0.5+0.5
-				updpal(1,0.5 + val*0.5, val)
-			end
-			--updpal(1, 0.5, 0)
 			--
 			if plr.cd3>0 then
 				updpal(1,0.2*(3-plr.cd3*0.2),0.2*(3-plr.cd3*0.2))
@@ -5194,6 +5200,7 @@ function TIC()
 	fr[1]=fr[1]/#avf
 end
 
+local game_pal={[0]="",[1]=""}
 
 function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
@@ -5272,9 +5279,30 @@ function BDR(scn_y) scn_y=scn_y-4
 	end
 
 	if open=="game" then
-		local val=256 +R(-1,1) * R(0, F(plr.cd2/2 + F(p_g.cd1/10+0.99) + F(p_g.cd2/10+0.99)) )
-		vbank(0) poke(0x03FF9,val)
-		vbank(1) poke(0x03FF9,val)
+		local disp=256 +R(-1,1) * R(0, plr.cd2//2)
+		for vb=0,1 do
+			vbank(vb)
+
+			if scn_y==-4 then game_pal[vb]=savepal() end
+			loadpal(game_pal[vb])
+
+			if R()>0.4 then
+				if p_g.cd1>0 then
+					local val=(10-p_g.cd1)/10*0.5+0.5
+					updpal(val, 1, 1)
+				end
+				if p_g.cd2>0 then
+					local val=(10-p_g.cd2)/10*0.5+0.5
+					updpal(1,0.5 + val*0.5, val)
+				end
+			end
+			if R()>0.8 then
+				if p_g.cd1>0 or p_g.cd2>0 then
+					disp=disp+R(-1,1)
+				end
+			end
+			poke(0x03FF9,disp)
+		end
 	end
 end
 
