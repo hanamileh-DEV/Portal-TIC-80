@@ -2916,43 +2916,8 @@ local cube_params={
 	floors = {[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true},
 	objs = {"c","b","lb","t","l"}
 }
---[[
-local function cube_interact(cube,p)
-	if plr.holding and not cube.held then return false end
-
-	local rc=raycast(
-		plr.x,plr.y,plr.z,
-		cube.x,cube.y,cube.z,cube_params)
-	if p then rc=nil end
-
-	local txsin = math.sin(plr.tx)
-	local txcos = math.cos(plr.tx)
-	local tysin = math.sin(-plr.ty)
-	local tycos = math.cos(-plr.ty)
-
-	local vx = tysin * txcos
-	local vy = -txsin
-	local vz = -tycos * txcos
-
-	local dx = cube.x-plr.x
-	local dy = cube.y-plr.y
-	local dz = cube.z-plr.z
-
-	local dist = (dx^2 + dy^2 + dz^2)^0.5
-	local dot = dx * vx + dy * vy + dz * vz
-
-	local cosang = dot / dist
-
-	if cube.held then
-		return keyp(5) or rc
-	else
-		return keyp(5) and dist < 150 and not rc and cosang > 0.95
-	end
-end]]
 
 local cht=0
-
-
 function unitic.cube_update() --all physics related to cubes
 	-- dispensers
 	for i=1,#draw.objects.cd do
@@ -3730,43 +3695,64 @@ function unitic.render() --------
 	fps_.t9=time()
 end
 
+local turrets_params={
+	portals = false,
+	walls = {[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},
+	floors = {[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true},
+	objs = {"c","b","lb","l"}
+}
 function unitic.turret_update()
 	for i=1,#draw.objects.t do
-		local t_ang=0
-		if     draw.objects.t[i].type==12 then t_ang=pi2
-		elseif draw.objects.t[i].type==13 then t_ang=-pi2
-		elseif draw.objects.t[i].type==14 then t_ang=0
-		elseif draw.objects.t[i].type==15 then t_ang=-math.pi end
+		local t_ang = 0
+		if     draw.objects.t[i].type == 12 then t_ang=pi2
+		elseif draw.objects.t[i].type == 13 then t_ang=-pi2
+		elseif draw.objects.t[i].type == 14 then t_ang=0
+		elseif draw.objects.t[i].type == 15 then t_ang=-math.pi end
 
-		local x0=draw.objects.t[i].x
-		local y0=draw.objects.t[i].y
-		local z0=draw.objects.t[i].z
-		local ang=math.atan(x0-plr.x,z0-plr.z)-t_ang
+		local x0 = draw.objects.t[i].x
+		local y0 = draw.objects.t[i].y
+		local z0 = draw.objects.t[i].z
 
-		if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
-			local x=raycast_legacy(x0,y0+35,z0,plr.x,plr.y,plr.z,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
-			if not x then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
-				if draw.objects.t[i].cd>40 then
-					plr.hp=plr.hp-R(1,2)
-					if plr.cd3<2 then plr.cd3=5 sfx_(4,"C-3",-1,1) end
-					if draw.objects.t[i].type==14 or draw.objects.t[i].type==15 then
-						for _=1,2 do
-							addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-							addp(x0+16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-							addp(x0-16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-							addp(x0-16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-						end
-					else
-						for _=1,2 do
-							addp(x0,y0+32,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-							addp(x0,y0+48,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-							addp(x0,y0+32,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-							addp(x0,y0+48,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-						end
+		local hits = false --did at least one ray hit the player
+
+		local v={
+			{plr.x, plr.y, plr.z}
+		}
+
+		if draw.p[1] and draw.p[2] then
+			v[2]=table.pack(teleport(1,plr.x,plr.y,plr.z))
+			v[3]=table.pack(teleport(2,plr.x,plr.y,plr.z))
+		end
+
+		for i2=1,#v do
+			local dist = 1/0
+			local ang = math.atan(x0-v[i2][1], z0-v[i2][3])-t_ang
+
+			if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
+				local hit = raycast(x0,y0+35,z0, v[i2][1]-x0,v[i2][2]-(y0+35),v[i2][3]-z0, dist, turrets_params)
+				if hit and hit.plr then hits = true end
+			end
+		end
+
+		if hits then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
+			if draw.objects.t[i].cd>40 then
+				plr.hp=plr.hp-R(1,2)
+				if plr.cd3<2 then plr.cd3=5 sfx_(4,"C-3",-1,1) end
+				if draw.objects.t[i].type==14 or draw.objects.t[i].type==15 then
+					for _=1,2 do
+						addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						addp(x0+16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						addp(x0-16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						addp(x0-16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+					end
+				else
+					for _=1,2 do
+						addp(x0,y0+32,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						addp(x0,y0+48,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						addp(x0,y0+32,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						addp(x0,y0+48,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
 					end
 				end
-			else
-				draw.objects.t[i].cd=max(draw.objects.t[i].cd-1,0)
 			end
 		else
 			draw.objects.t[i].cd=max(draw.objects.t[i].cd-1,0)
