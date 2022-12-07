@@ -2428,15 +2428,6 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 		local tx, ty, tz = cx//96, cy//128, cz//96
 		tile = get_tile(axis, tx, ty, tz)
 		if not tile then break end
-		if lookup[tile[2]] then
-			-- we hit a tile, break out of the loop and start testing objects
-			tilehit = {
-				x=cx, y=cy, z=cz, len=len - remaining_len,
-				tx=tx, ty=ty, tz=tz,
-				axis=axis, tile=tile
-			}
-			break
-		end
 		-- Check for, and prepare to pass through portals (if enabled)
 		if params.portals and draw.p[1] and draw.p[2] then
 			local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
@@ -2461,6 +2452,15 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 				end
 				break
 			end
+		end
+		if lookup[tile[2]] then
+			-- we hit a tile, break out of the loop and start testing objects
+			tilehit = {
+				x=cx, y=cy, z=cz, len=len - remaining_len,
+				tx=tx, ty=ty, tz=tz,
+				axis=axis, tile=tile
+			}
+			break
 		end
 	end
 	-- scan through all objects, find nearest intersection
