@@ -3,9 +3,9 @@
 -- desc:   version 1.0 (powered by UniTIC v 1.3)
 -- script: lua
 -- saveid: portal3d_unitic
-
+-- enigma: toqmekyfrisbwvuhqabropjymqtupobpvfcwdhbmxdddjgcavylgigcrlmimjwqktqkkza
 local debug=true
-local version="DEV 0.4.0"
+local version="DEV 0.5.0"
 
 --[[
 license:
@@ -4314,6 +4314,180 @@ function darkpal(c)
 	end
 end
 
+--[[
+	The text to decrypt this enigma
+	is hidden throughout the code
+	(you will have to crack the
+	Enigma configuration yourself)
+]]
+
+function enigma(input)
+	local const={--constants
+		rotors={
+			"EKMFLGDQVZNTOWYHXUSPAIBRCJ", --(1) rotor I
+			"AJDKSIRUXBLHWTMCQGZNPYFVOE", --(2) rotor II
+			"BDFHJLCPRTXVZNYEIWGAKMUSQO", --(3) rotor III
+			"ESOVPZJAYQUIRHXLNFTGKDCMWB", --(4) rotor IV
+			"VZBRGITYUPSDNHLXAWMJQOFECK", --(5) rotor V
+			"JPGVOUMFYQBENHZRDKASXLICTW", --(6) rotor VI
+			"NZJHGRCXMYSWBOUFAIVLPEKQDT", --(7) rotor VII
+			"FKQHTLXOCBJSPDZRAMEWNIUYGV"  --(8) rotor VIII
+		},
+		reflectors={
+			"EJMZALYXVBWFCRQUONTSPIKHGD", --reflector A
+			"YRUHQSLDPXNGOKMIEBFZCWVJAT", --reflector B
+			"FVPJIAOYEDRZXWGCTKUQSBNMHL"  --reflector C
+		}
+	}
+
+	--configuration of the Enigma
+	local config={
+		rotors={ --rotor table, current position [1;26], ledge position [1;26]
+			{const.rotors[1],1, 1},
+			{const.rotors[2],1, 1},
+			{const.rotors[3],1, 1}
+
+		},
+		reflector=const.reflectors[1], --reflector table
+
+		plugboard={
+		--"AB",
+		--"CD",
+		-- etc.
+		}
+	}
+
+	local text=input
+
+	--foolproof
+	do
+		--rotors
+		if #config.rotors~=3 then error("the number of rotors should be equal to 3") end
+		for i=1,3 do
+			local rotor = config.rotors[i]
+			local err_text = "rotor "..i.." is not configured correctly"
+			if #rotor~=3 then error(err_text) end
+
+			local match = false
+			for i2=1,8 do
+				if rotor[1]==const.rotors[i2] then match = true end
+			end
+			if not match then error(err_text) end
+
+			if type(rotor[2])~="number" then error(err_text) end
+			if type(rotor[3])~="number" then error(err_text) end
+			
+			if rotor[2]~=rotor[2]//1 then error(err_text) end
+			if rotor[3]~=rotor[3]//1 then error(err_text) end
+
+			if rotor[2]>26 then error(err_text) end
+			if rotor[3]>26 then error(err_text) end
+
+			if rotor[2]<1 then error(err_text) end
+			if rotor[3]<1 then error(err_text) end
+		end
+		--reflector
+		local match = false
+		for i=1,3 do
+			if config.reflector == const.reflectors[i] then match=true end
+		end
+
+		if not match then error("the reflector is not configured correctly") end
+		--plugboard
+		if #config.plugboard>10 then error("No more than 10 plugs") end
+		for i=1,#config.plugboard do
+			local v = config.plugboard[i]
+			if type(v)~="string" then error("the plug must be a string") end
+			if #v~=2 or v:sub(1,1)==v:sub(2,2) then error("the plug must have 2 different letters") end
+
+			for i2=1,2 do
+				local val=string.byte(v:sub(i2,i2):upper())
+				if val<65 or val>90 then error("Each character must be a letter of the aplabet") end
+			end
+
+			for i2=1,#config.plugboard do
+				local v2 = config.plugboard[i2]
+				if (v:sub(1,1)==v2:sub(1,1) and i~=i2)
+				or (v:sub(2,2)==v2:sub(2,2) and i~=i2)
+				or v:sub(1,1)==v2:sub(2,2)
+				or v:sub(2,2)==v2:sub(1,1)
+				then
+					error("Each letter should not be repeated more than 1 time")
+				end
+			end
+		end
+		--input
+		if type(text)~="string" then error("The text must be a string!") end
+	end
+	
+	--enigma magic
+	do
+		text = text:upper()
+		for i = 1,#text do
+			local c = text:sub(i,i) --character
+
+			if string.byte(c)<65 or string.byte(c)>90 then error("only alphabetic characters are allowed (without spaces)") end
+
+
+			--plugboard (1)
+			for i2 = 1,#config.plugboard do
+				if c == config.plugboard[i2]:sub(1,1) then c = config.plugboard[i2]:sub(2,2) break end
+				if c == config.plugboard[i2]:sub(2,2) then c = config.plugboard[i2]:sub(1,1) break end
+			end
+
+			--rotors (1)
+			for i2 = 1,3 do
+				local rotor = config.rotors[i2][1]
+				local ind = string.byte(c)-64 --ind = [1; 26]
+				ind = (ind + config.rotors[i2][2] -1)%26 + 1 -- [1; 26]
+
+				c = rotor:sub(ind,ind)
+			end
+
+			--reflector
+			local ind = string.byte(c)-64
+			c = config.reflector:sub(ind,ind)
+
+			--rotors (2)
+			for i2 = 3,1,-1 do
+				local rotor = config.rotors[i2][1]
+				for i3=1,26 do
+					if rotor:sub(i3,i3)==c then
+						local val = (i3 - config.rotors[i2][2] -1)%26 + 1
+						c=string.char(val+64)
+						break
+					end
+				end
+			end
+			
+			--plugboard (2)
+			for i2 = 1,#config.plugboard do
+				if c == config.plugboard[i2]:sub(1,1) then c = config.plugboard[i2]:sub(2,2) break end
+				if c == config.plugboard[i2]:sub(2,2) then c = config.plugboard[i2]:sub(1,1) break end
+			end
+
+			--rotation of rotors
+			config.rotors[1][2] = config.rotors[1][2]%26 + 1
+			config.rotors[1][3] = config.rotors[1][3]%26 + 1
+			
+			if config.rotors[2][2] == config.rotors[1][3] then
+				config.rotors[2][2] = config.rotors[2][2]%26+1
+				config.rotors[2][3] = config.rotors[2][3]%26+1
+			end
+			
+			if config.rotors[3][2] == config.rotors[3][3] then
+				config.rotors[3][2] = config.rotors[3][2]%26+1
+				config.rotors[3][3] = config.rotors[3][3]%26+1
+			end
+			--output
+			output =output .. c:lower()
+		end
+		
+		return output
+	end
+end
+--lucsxtcpvzrcvd
+
 local avf={} --average frame
 local fr={0,0,0} --framerate
 --player speed
@@ -5259,6 +5433,8 @@ function TIC()
 				Who will crack this, write to me on my
 				mail [hanamileh@gmail.com] how did you do it,
 				it will be interesting for me to read. :)
+
+				uiciegadehtawadjvrqmotzkdymgxjhrjugvepezwgpkekwghkrrjdywtvgbo
 			]]
 
 			--foolproof
@@ -6204,10 +6380,10 @@ end
 -- </PATTERNS>
 
 -- <PATTERNS1>
--- 000:900014000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
--- 001:400014000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
--- 002:000000000000900006000000000000000000c00006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
--- 003:000000000000000000000000b00006000000000000000000e00006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- 000:9fd114000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- 001:4ce114000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- 002:0000000000009cf106000000000000000000cdf106000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- 003:000000000000000000000000bfe106000000000000000000eda106000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- </PATTERNS1>
 
 -- <TRACKS>
