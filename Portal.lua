@@ -2467,7 +2467,8 @@ end
 -- Check if a ray hits an object's colliders
 local function ray_object(x, y, z, rx, ry, rz, obj)
 	local nearest = 1/0
-	for _,collider in ipairs(model[obj.type].coll) do
+	local colliders = obj.coll or model[obj.type].coll
+	for _,collider in ipairs(colliders) do
 		local cx1, cy1, cz1 =
 			(obj.x + collider[1] - x) / rx, (obj.y + collider[2] - y) / ry, (obj.z + collider[3] - z) / rz
 		local cx2, cy2, cz2 =
@@ -2570,6 +2571,21 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 						obj=obj,
 					}
 				end
+			end
+		end
+	end
+	-- same for player
+	if params.player then
+		hit_len = ray_object(x, y, z, rx, ry, rz, {
+			x=plr.x, y=plr.y, z=plr.z,
+			coll={{-16,-64,-16,16,16,16}},
+		})
+		if hit_len and hit_len * dist < len then
+			if not objhit or objhit.len > hit_len * dist then
+				objhit = {
+					x=x+rx*hit_len, y=y+ry*hit_len, z=z+rz*hit_len, len=hit_len*dist,
+					player=true,
+				}
 			end
 		end
 	end
