@@ -73,6 +73,7 @@ local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
 local plr = { x = 0, y = 64, z = 0, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 0, cd3 = 0, holding = false, pg_lvl = 2 --[[portal gun level]]}
 
+plr.godmode = true
 --engine settings:
 local unitic = {
 	version = 1.3, --engine version
@@ -3807,10 +3808,11 @@ function unitic.render() --------
 end
 
 local turrets_params={
-	portals = false,
+	portals = true,
 	walls = {[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},
 	floors = {[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true},
-	objs = {"c","b","lb","l"}
+	objs = {"c","b","lb","l"},
+	player = true
 }
 function unitic.turret_update()
 	for i=1,#draw.objects.t do
@@ -3841,7 +3843,7 @@ function unitic.turret_update()
 
 			if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
 				local hit = raycast(x0,y0+35,z0, v[i2][1]-x0,v[i2][2]-(y0+35),v[i2][3]-z0, dist, turrets_params)
-				if hit and hit.plr then hits = true end
+				if hit and hit.player then hits = true end
 			end
 		end
 
@@ -4929,7 +4931,6 @@ function TIC()
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
 		save.lvl2=1
-		save.lvl=6
 		pmem(4,save.ct)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
