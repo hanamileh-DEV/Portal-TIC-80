@@ -2486,10 +2486,6 @@ local function ray_object(x, y, z, rx, ry, rz, obj)
 end
 
 local function raycast(x, y, z, rx, ry, rz, len, params)
-	-- current scan coordinates and remaining length
-	local cx, cy, cz = x, y, z
-	local remaining_len = len
-
 	-- normalised ray vector
 	local dist = math.sqrt(rx^2 + ry^2 + rz^2)
 	local nx, ny, nz = rx / dist, ry / dist, rz / dist
@@ -2498,6 +2494,10 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 
 	-- allow passing an end point instead
 	len = len or dist
+
+	-- current scan coordinates and remaining length
+	local cx, cy, cz = x, y, z
+	local remaining_len = len
 
 	while true do
 		-- calculate the amount each component should step
@@ -3842,7 +3842,7 @@ function unitic.turret_update()
 			local ang = math.atan(x0-v[i2][1], z0-v[i2][3])-t_ang
 
 			if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
-				local hit = raycast(x0,y0+35,z0, v[i2][1]-x0,v[i2][2]-(y0+35),v[i2][3]-z0, dist, turrets_params)
+				local hit = raycast(x0,y0+35,z0, v[i2][1]-x0,v[i2][2]-(y0+35),v[i2][3]-z0, nil, turrets_params)
 				if hit and hit.player then hits = true end
 			end
 		end
