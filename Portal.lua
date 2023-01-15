@@ -3044,8 +3044,8 @@ function unitic.cube_update() --all physics related to cubes
 			plr.holding = true
 		end
 	elseif keyp(5) then
-		for i=1,#draw.objects.c do
-			draw.objects.c[i].held = false
+		for i2=1,#draw.objects.c do
+			draw.objects.c[i2].held = false
 		end
 		plr.holding = false
 	end
@@ -3061,6 +3061,7 @@ function unitic.cube_update() --all physics related to cubes
 		local cy=draw.objects.c[i].y
 		local cz=draw.objects.c[i].z
 		local portal
+
 		if draw.objects.c[i].held then
 			portal=false
 			local p={{}} --All points {x, y, z, dx, dy, dz, dist}
@@ -3144,31 +3145,48 @@ function unitic.cube_update() --all physics related to cubes
 				plr.holding=false
 			end
 		else
-			cx=cx+draw.objects.c[i].vx
-			cy=cy+draw.objects.c[i].vy
-			cz=cz+draw.objects.c[i].vz
-			draw.objects.c[i].vx=min(max(draw.objects.c[i].vx*0.9,-20),20)
-			draw.objects.c[i].vy=min(max(draw.objects.c[i].vy-0.5,-20),20)
-			draw.objects.c[i].vz=min(max(draw.objects.c[i].vz*0.9,-20),20)
+			cx=cx + draw.objects.c[i].vx
+			cy=cy + draw.objects.c[i].vy
+			cz=cz + draw.objects.c[i].vz
+
+			draw.objects.c[i].vx=draw.objects.c[i].vx*0.9
+			draw.objects.c[i].vy=draw.objects.c[i].vy-0.5
+			draw.objects.c[i].vz=draw.objects.c[i].vz*0.9
+
+			if     draw.objects.c[i].vx<-20 then draw.objects.c[i].vx=-20
+			elseif draw.objects.c[i].vx> 20 then draw.objects.c[i].vx= 20 end
+			
+			if     draw.objects.c[i].vy<-20 then draw.objects.c[i].vy=-20
+			elseif draw.objects.c[i].vy> 20 then draw.objects.c[i].vy= 20 end
+			
+			if     draw.objects.c[i].vz<-20 then draw.objects.c[i].vz=-20
+			elseif draw.objects.c[i].vz> 20 then draw.objects.c[i].vz= 20 end
+
+
 		end
 		
-		-- if cube_interact(draw.objects.c[i],portal) then
-		-- 	draw.objects.c[i].held = not draw.objects.c[i].held
-		-- 	plr.holding = not plr.holding
-		-- end
-
 		local bf = false --is the cube in the blue field
 
-		local x1=max((cx-25)//96,0)
-		local y1=max((cy-25)//128,0)
-		local z1=max((cz-25)//96,0)
+		local x1=(cx-25)//96
+		local y1=(cy-25)//128
+		local z1=(cz-25)//96
 
-		local x2=min((cx+25)//96,world_size[1]-1)
-		local y2=min((cy+25)//128,world_size[2]-1)
-		local z2=min((cz+25)//96,world_size[3]-1)
+		if x1<0 then x1 = 0 end
+		if y1<0 then y1 = 0 end
+		if z1<0 then z1 = 0 end
+
+		local x2=(cx+25)//96
+		local y2=(cy+25)//128
+		local z2=(cz+25)//96
+
+		if x2>world_size[1]-1 then x2 = world_size[1]-1 end
+		if y2>world_size[2]-1 then y2 = world_size[2]-1 end
+		if z2>world_size[3]-1 then z2 = world_size[3]-1 end
 
 		local function collide(x3, y3, z3, x4, y4, z4)
 			-- try moving the current amount in each axis, partially cancelling if needed
+			if not coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x3, y3, z3, x4, y4, z4) then return end
+			
 			local sx = coll_shift(
 				cx - 24, cly - 24, clz - 24, cx + 24, cly + 24, clz + 24,
 				x3, y3, z3, x4, y4, z4, 1
@@ -3257,9 +3275,9 @@ function unitic.cube_update() --all physics related to cubes
 				local z0=draw.objects.c[i2].z
 				obj_collide(1, x0, y0, z0)
 				if draw.objects.c[i2].inp and draw.p[1] and draw.p[2] then
-					local x0=draw.objects.c[i].x1
-					local y0=draw.objects.c[i].y1
-					local z0=draw.objects.c[i].z1
+					x0=draw.objects.c[i].x1
+					y0=draw.objects.c[i].y1
+					z0=draw.objects.c[i].z1
 					obj_collide(1, x0, y0, z0)
 				end
 			end
@@ -3305,60 +3323,62 @@ function unitic.cube_update() --all physics related to cubes
 			elseif inop and inbp==false then
 				draw.objects.c[i].x1,draw.objects.c[i].y1,draw.objects.c[i].z1=teleport(2,cx,cy,cz)
 			end
-		end
-		--We move the cube through the portal (not to be confused with duplication of the visual and physical shell)
-		--I would be glad if I didn’t have to do the same thing twice, but let it be a separate block
-		local bp,op = false, false
-		if draw.p[1] and draw.p[2] then
-			--Note that we work with a half of the cube collision (having collapsed one of the coordinates from 24 to 0) so that the cube is not in a quantum superposition while in 2 portals at the same time
-			if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx     , cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
-			if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz     , cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
-			if draw.p[1][4]==1 and draw.p[1][5]==2 and coll(cx     , cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
-			if draw.p[1][4]==3 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz     , draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
-						
-			if draw.p[2][4]==1 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx     , cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
-			if draw.p[2][4]==3 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz     , cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
-			if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(cx     , cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
-			if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz     , draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
-			
-			--teleporting
-			local x1, y1, z1 = portalcenter(1)
-			local x2, y2, z2 = portalcenter(2)
 
-			-- calculate portal offsets
-			local relx1 = cx - 96 * x1
-			local rely1 = cy - 128 * y1
-			local relz1 = cz - 96 * z1
-			local relx2 = cx - 96 * x2
-			local rely2 = cy - 128 * y2
-			local relz2 = cz - 96 * z2
+			--We move the cube through the portal (not to be confused with duplication of the visual and physical shell)
+			--I would be glad if I didn’t have to do the same thing twice, but let it be a separate block
+			local bp,op = false, false
 
-			-- calculate portal rotation
-			local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-			local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-			local rotd1 = (2 + rot2 - rot1) % 4
-			local rotd2 = (2 + rot1 - rot2) % 4
+			if draw.objects.c[i].inp then
+				--Note that we work with a half of the cube collision (having collapsed one of the coordinates from 24 to 0) so that the cube is not in a quantum superposition while in 2 portals at the same time
+				if draw.p[1][4]==1 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx     , cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
+				if draw.p[1][4]==3 and draw.p[1][5]==1 and coll(cx - 24, cy - 24, cz     , cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
+				if draw.p[1][4]==1 and draw.p[1][5]==2 and coll(cx     , cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94) then bp=true end
+				if draw.p[1][4]==3 and draw.p[1][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz     , draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96) then bp=true end
+							
+				if draw.p[2][4]==1 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz - 24, cx     , cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
+				if draw.p[2][4]==3 and draw.p[2][5]==1 and coll(cx - 24, cy - 24, cz     , cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
+				if draw.p[2][4]==1 and draw.p[2][5]==2 and coll(cx     , cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94) then op=true end
+				if draw.p[2][4]==3 and draw.p[2][5]==2 and coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz     , draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96) then op=true end
+				
+				--teleporting
+				local x1, y1, z1 = portalcenter(1)
+				local x2, y2, z2 = portalcenter(2)
 
-			if bp then
-				if     rotd1 == 0 then
-				elseif rotd1 == 1 then relx1,relz1=relz1,-relx1  draw.objects.c[i].vx,draw.objects.c[i].vz=draw.objects.c[i].vz,-draw.objects.c[i].vx
-				elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1 draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vx,-draw.objects.c[i].vz
-				elseif rotd1 == 3 then relx1,relz1=-relz1,relx1  draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vz,draw.objects.c[i].vx
+				-- calculate portal offsets
+				local relx1 = cx - 96 * x1
+				local rely1 = cy - 128 * y1
+				local relz1 = cz - 96 * z1
+				local relx2 = cx - 96 * x2
+				local rely2 = cy - 128 * y2
+				local relz2 = cz - 96 * z2
+
+				-- calculate portal rotation
+				local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+				local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+				local rotd1 = (2 + rot2 - rot1) % 4
+				local rotd2 = (2 + rot1 - rot2) % 4
+
+				if bp then
+					if     rotd1 == 0 then
+					elseif rotd1 == 1 then relx1,relz1=relz1,-relx1  draw.objects.c[i].vx,draw.objects.c[i].vz=draw.objects.c[i].vz,-draw.objects.c[i].vx
+					elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1 draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vx,-draw.objects.c[i].vz
+					elseif rotd1 == 3 then relx1,relz1=-relz1,relx1  draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vz,draw.objects.c[i].vx
+					end
+
+					cx = 96*x2 + relx1
+					cy = 128*y2 + rely1
+					cz = 96*z2 + relz1
+				elseif op then
+					if     rotd2 == 0 then
+					elseif rotd2 == 1 then relx2,relz2=relz2,-relx2  draw.objects.c[i].vx,draw.objects.c[i].vz=draw.objects.c[i].vz,-draw.objects.c[i].vx
+					elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2 draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vx,-draw.objects.c[i].vz
+					elseif rotd2 == 3 then relx2,relz2=-relz2,relx2  draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vz,draw.objects.c[i].vx
+					end
+
+					cx = 96*x1 + relx2
+					cy = 128*y1 + rely2
+					cz = 96*z1 + relz2
 				end
-
-				cx = 96*x2 + relx1
-				cy = 128*y2 + rely1
-				cz = 96*z2 + relz1
-			elseif op then
-				if     rotd2 == 0 then
-				elseif rotd2 == 1 then relx2,relz2=relz2,-relx2  draw.objects.c[i].vx,draw.objects.c[i].vz=draw.objects.c[i].vz,-draw.objects.c[i].vx
-				elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2 draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vx,-draw.objects.c[i].vz
-				elseif rotd2 == 3 then relx2,relz2=-relz2,relx2  draw.objects.c[i].vx,draw.objects.c[i].vz=-draw.objects.c[i].vz,draw.objects.c[i].vx
-				end
-
-				cx = 96*x1 + relx2
-				cy = 128*y1 + rely2
-				cz = 96*z1 + relz2
 			end
 		end
 		--
