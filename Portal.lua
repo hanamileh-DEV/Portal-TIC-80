@@ -2779,54 +2779,46 @@ end
 
 function unitic.draw()
 	for i = 1, #unitic.poly.f do
+		local poly = unitic.poly.f[i]
 
+		local uv = poly.uv
+		
 		local p2d = {
-			x = { unitic.poly.v[unitic.poly.f[i][1]][1], unitic.poly.v[unitic.poly.f[i][2]][1], unitic.poly.v[unitic.poly.f[i][3]][1] },
-			y = { unitic.poly.v[unitic.poly.f[i][1]][2], unitic.poly.v[unitic.poly.f[i][2]][2], unitic.poly.v[unitic.poly.f[i][3]][2] }
+			x = { unitic.poly.v[poly[1]][1], unitic.poly.v[poly[2]][1], unitic.poly.v[poly[3]][1] },
+			y = { unitic.poly.v[poly[1]][2], unitic.poly.v[poly[2]][2], unitic.poly.v[poly[3]][2] }
 		}
 
 		--we discard those polygons that will not be visible
-		local tri_face
-		if unitic.poly.f[i].f~=0 and unitic.poly.f[i].f~=3 then
-			tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
-		end
-
-		if unitic.poly.f[i].f~=0
-		and not (tri_face and unitic.poly.f[i].f==1)
-		and not (not tri_face and unitic.poly.f[i].f==2)
-		and not (unitic.poly.v[unitic.poly.f[i][1]][4] and unitic.poly.v[unitic.poly.f[i][2]][4] and unitic.poly.v[unitic.poly.f[i][3]][4])
+		if poly.f~=0
+		and not (unitic.poly.v[poly[1]][4] and unitic.poly.v[poly[2]][4] and unitic.poly.v[poly[3]][4])
 		and not (p2d.x[1]<0 and p2d.x[2]<0 and p2d.x[3]<0)
 		and not (p2d.y[1]<0 and p2d.y[2]<0 and p2d.y[3]<0)
 		and not (p2d.x[1]>239 and p2d.x[2]>239 and p2d.x[3]>239)
 		and not (p2d.y[1]>135 and p2d.y[2]>135 and p2d.y[3]>135)
 		then
-			ttri(
-				p2d.x[1], p2d.y[1],
-				p2d.x[2], p2d.y[2],
-				p2d.x[3], p2d.y[3],
-				unitic.poly.f[i].uv.x[1], unitic.poly.f[i].uv.y[1],
-				unitic.poly.f[i].uv.x[2], unitic.poly.f[i].uv.y[2],
-				unitic.poly.f[i].uv.x[3], unitic.poly.f[i].uv.y[3], 0, 15,
-				unitic.poly.v[unitic.poly.f[i][1]][3],
-				unitic.poly.v[unitic.poly.f[i][2]][3],
-				unitic.poly.v[unitic.poly.f[i][3]][3])
+
+			local tri_face
+			if  poly.f~=3 then
+				tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
+			end
+
+			if not (tri_face and poly.f==1)
+			and not (not tri_face and poly.f==2)
+			then
+				ttri(
+					p2d.x[1], p2d.y[1],
+					p2d.x[2], p2d.y[2],
+					p2d.x[3], p2d.y[3],
+					uv.x[1], uv.y[1],
+					uv.x[2], uv.y[2],
+					uv.x[3], uv.y[3], 0, 15,
+					unitic.poly.v[poly[1]][3],
+					unitic.poly.v[poly[2]][3],
+					unitic.poly.v[poly[3]][3])
+			end
 		end
 	end
-	for i = 1, #unitic.poly.sp do
-		local p2d = {}
 
-		local x0 = unitic.poly.sp[i][1]
-		local y0 = unitic.poly.sp[i][2]
-		local z0 = unitic.poly.sp[i][3]
-
-		p2d.x = unitic.fov * x0 / z0 + 120
-		p2d.y = unitic.fov * y0 / z0 + 68
-
-		if z0 < -1 then
-			pix(p2d.x, p2d.y, 0)
-			print(i, p2d.x, p2d.y, 7)
-		end
-	end
 	if #unitic.p~=0 and st.p then
 		for i = 1, #unitic.p do
 			if unitic.p[i][4] then
