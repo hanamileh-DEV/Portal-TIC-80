@@ -3186,7 +3186,7 @@ function unitic.cube_update() --all physics related to cubes
 		local function collide(x3, y3, z3, x4, y4, z4)
 			-- try moving the current amount in each axis, partially cancelling if needed
 			if not coll(cx - 24, cy - 24, cz - 24, cx + 24, cy + 24, cz + 24, x3, y3, z3, x4, y4, z4) then return end
-			
+
 			local sx = coll_shift(
 				cx - 24, cly - 24, clz - 24, cx + 24, cly + 24, clz + 24,
 				x3, y3, z3, x4, y4, z4, 1
@@ -3850,7 +3850,6 @@ function unitic.turret_update()
 		end
 
 		for i2=1,#v do
-			local dist = 1/0
 			local ang = math.atan(x0-v[i2][1], z0-v[i2][3])-t_ang
 
 			if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
@@ -3865,17 +3864,17 @@ function unitic.turret_update()
 				if plr.cd3<2 then plr.cd3=5 sfx_(4,"C-3",-1,1) end
 				if draw.objects.t[i].type==14 or draw.objects.t[i].type==15 then
 					for _=1,2 do
-						addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-						addp(x0+16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-						addp(x0-16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-						addp(x0-16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						if R()>0.75 then addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
+						if R()>0.75 then addp(x0+16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
+						if R()>0.75 then addp(x0-16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
+						if R()>0.75 then addp(x0-16,y0+48,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
 					end
 				else
 					for _=1,2 do
-						addp(x0,y0+32,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-						addp(x0,y0+48,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-						addp(x0,y0+32,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
-						addp(x0,y0+48,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1))
+						if R()>0.75 then addp(x0,y0+32,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
+						if R()>0.75 then addp(x0,y0+48,z0+16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
+						if R()>0.75 then addp(x0,y0+32,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
+						if R()>0.75 then addp(x0,y0+48,z0-16,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
 					end
 				end
 			end
@@ -5105,19 +5104,19 @@ function TIC()
 		plr.cd3=max(plr.cd3-1,0)
 	 --W A S D
 		lx, ly, lz = plr.x, plr.y, plr.z
-		if (plr.cd3==0 or R()>0.05) and not plr.d then
+		if (plr.cd3==0 or R()>0.05 or plr.godmode) and not plr.d then
 			if key(23) then plr.z = plr.z - math.cos(plr.ty) * speed plr.x = plr.x - math.sin(plr.ty) * speed end
 			if key(19) then plr.z = plr.z + math.cos(plr.ty) * speed plr.x = plr.x + math.sin(plr.ty) * speed end
 			if key(1) then plr.z = plr.z - math.cos(plr.ty - pi2) * speed plr.x = plr.x - math.sin(plr.ty - pi2) * speed end
 			if key(4) then plr.z = plr.z + math.cos(plr.ty - pi2) * speed plr.x = plr.x + math.sin(plr.ty - pi2) * speed end
 		end
 
-		if plr.cd3==0 and key(64) then speed = 8 else speed = 4 end
+		if (plr.cd3==0 or plr.godmode) and key(64) then speed = 8 else speed = 4 end
 		if plr.noclip then speed=12 end
 		if keyp(57) or keyp(22) then plr.noclip = not plr.noclip end
 		if keyp(2) then plr.godmode = not plr.godmode end
 	--zoom
-	if key(65) then unitic.fov=min(unitic.fov*1.2,800) else unitic.fov=max(unitic.fov/1.2,80) end
+		if key(65) then unitic.fov=min(unitic.fov*1.2,800) else unitic.fov=max(unitic.fov/1.2,80) end
 	--jump
 		if plr.noclip and not plr.d then
 			if key(48) then plr.y = plr.y + 8 end
@@ -5131,20 +5130,38 @@ function TIC()
 			plr.vy=max(plr.vy-0.5,-20)
 		end
 	 --palette
-		for i=0,1 do
-		vbank(i)
+		local r = 1
+		local g = 1
+		local b = 1
+
+		if plr.hp<40 then
+			local val = max(abs(math.sin(time()/200))*0.7+0.3,plr.hp/50)
+			r = r
+			g = g * val
+			b = b * val
+		end
+		--
+		if plr.cd2>0 then
+			r = r * (10-plr.cd2)/10*0.7+0.3
+			g = g
+			b = b
+		end
+		--
+		if plr.cd3>0 and not plr.godmode then
+			local val = 0.2*(3-plr.cd3*0.2)
+			r = r
+			g = g * val
+			b = b * val
+		end
+		
+		r = max(min(r, 1 ), 0)
+		g = max(min(g, 1 ), 0)
+		b = max(min(b, 1 ), 0)
+		
+		for i = 0,1 do
+			vbank(i)
 			respal()
-			if plr.hp<40 then
-				updpal(1,max(abs(math.sin(time()/200))*0.7+0.3,plr.hp/50),max(abs(math.sin(time()/200))*0.7+0.3,plr.hp/50))
-			end
-			--
-			if plr.cd2>0 then
-				updpal((10-plr.cd2)/10*0.7+0.3,1,1)
-			end
-			--
-			if plr.cd3>0 then
-				updpal(1,0.2*(3-plr.cd3*0.2),0.2*(3-plr.cd3*0.2))
-			end
+			updpal(r,g,b)
 		end
 	 --camera rotation
 	 	if p.t==0 and stt>2 then
@@ -5220,7 +5237,7 @@ function TIC()
 		end
 	 --render
 		unitic.render()
-		if plr.pg_lvl>0 then unitic.draw_portalgun() end
+		if plr.pg_lvl>0 and not plr.d then unitic.draw_portalgun() end
 	 --achievement
 		if ach.t>0 then
 			ach.t=ach.t+1
@@ -5342,10 +5359,10 @@ function TIC()
 			darkpal(1-(stt-120)/30)
 			if stt>150 then
 				plr.x,plr.y,plr.z=0,64,0
-				if     maps[save.lvl2][save.lvl].lift[2][4]==0 then plr.x=plr.x+144 plr.ty=pi2
-				elseif maps[save.lvl2][save.lvl].lift[2][4]==1 then plr.x=plr.x-144 plr.ty=-pi2
-				elseif maps[save.lvl2][save.lvl].lift[2][4]==2 then plr.z=plr.z-144 plr.ty=0
-				elseif maps[save.lvl2][save.lvl].lift[2][4]==3 then plr.z=plr.z+144 plr.ty=-math.pi end
+				if     maps[save.lvl2][save.lvl].lift[2][4]==0 then plr.ty=pi2
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==1 then plr.ty=-pi2
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==2 then plr.ty=0
+				elseif maps[save.lvl2][save.lvl].lift[2][4]==3 then plr.ty=-math.pi end
 
 				open="load lvl"
 			end
@@ -5410,7 +5427,7 @@ function TIC()
 				print(debug_text[plr.dt][i], 1, 1+7*(i-1), 7)
 			end
 		end
-			if plr.godmode then print("Godmode" ,1,130,7) else print("HP: "..plr.hp,1,130,7) end
+			if plr.godmode then print("Godmode" ,1,130,7) else print("HP: "..max(plr.hp ,0),1,130,7) end
 			if plr.noclip then print("Noclip", 104, 85, 7) end
 		vbank(0)
 	end
