@@ -4682,7 +4682,7 @@ function TIC()
 			vbank(0) respal()
 			vbank(1) respal() cls()
 			load_world(0,1)
-			if save.st&2^31==0 then open="init setting" else open="main" music(2) end
+			if save.st&2^31==0 or true then open="init setting" else open="main" music(2) end
 		end
 	end
 	--------------------------
@@ -4701,35 +4701,60 @@ function TIC()
 				cam.ty=R(-99,99)
 				unitic.update()
 				unitic.draw()
-				if time()-is.t1>2000 then is.t1=is.t1-5000 break end
+				if time()-is.t1>4000 then is.t1=is.t1 - 5000 break end
 			end
 			is.t1=time()-is.t1
 		end
-		cls(1)
 		if is.t<3 then
-			print("perfomance evaluation",60,113,7)
-			print("please wait...",86,103,7)
+			cls(0)
+			print("please wait...",1,1,2)
+			l_.p={}
 		else
+			vbank(0)
+			respal()
+			darkpal(0.6)
+			cls(1)
+			vbank(1)
+			cls(0)
+			
+			--particles
+			if t%2==0 then
+				l_.p[#l_.p+1]={x=R(-120,239), y=135, v=R()+0.5} --X, Y, velocity
+				if l_.p[1].y<0 then table.remove(l_.p,1) end
+			end
+
+			for i = 1,#l_.p do
+				l_.p[i].x = l_.p[i].x + l_.p[i].v
+				l_.p[i].y = l_.p[i].y - l_.p[i].v*0.9
+
+				pix(l_.p[i].x,l_.p[i].y, max(7*l_.p[i].y/135, 1) )
+			end
+			--
 			print("The following recommended",47,5,7)
 			print("parameters were selected:",47,15,7)
 			local pt=F(1/is.t1*200000) --points
-			local text_size=print("Evaluation result: "..pt.." points.",240,0)
-			print("Evaluation result: "..pt.." points.",120-text_size//2,105,2)
+			local text_size=print("Your result: "..pt.." points.",240,0)
+			-- print("Your result: "..pt.." points.",120-text_size//2,105,2)
 			
-			rect(0,28,240,21,2)
-			if is.t1>300 then
+			rect(0,28,240,21,1)
+			if pt>250 then
 				print("Rendering of both portals is chosen",23,36,0)
 				print("Rendering of both portals is chosen",23,35,7)
 				st.d_r=true
 				st.r_both=true
-			elseif is.t1>180 then
+			elseif pt>165 then
 				print("Rendering of one portal is chosen",30,36,0)
 				print("Rendering of one portal is chosen",30,35,7)
 				st.d_r=true
 				st.r_both=false
-			else
+			elseif pt>45 then
 				print("The rendering of portals is disabled",23,36,0)
 				print("The rendering of portals is disabled",23,35,7)
+				st.d_r=false
+				st.r_both=false
+			else
+				print("You have a potato pc",63,36,0)
+				print("You have a potato pc",63,35,7)
 				st.d_r=false
 				st.r_both=false
 			end
@@ -4737,9 +4762,11 @@ function TIC()
 			print("You can always configure this",41,65,4)
 			print("later in the settings menu",49,75,4)
 
-			rect(94,122,41,8,2)
+			rect(94,122,41,9,2)
+			print("Accept",97,124,0)
 			print("Accept",97,123,7)
-			if mx>93 and my>122 and mx<134 and my<131 then cid=1 if clp1 then music(2) open="main" clp1=false end end
+			vbank(0)
+			if mx>93 and my>121 and mx<135 and my<131 then cid=1 if clp1 then music(2) open="main" clp1=false end end
 		end
 	end
 	--------------------------
