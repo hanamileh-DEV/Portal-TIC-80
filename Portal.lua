@@ -4680,7 +4680,7 @@ function TIC()
 		if l_.t>=140 or (keyp() and l_.t>10) then
 			sync(25,0,false)
 			vbank(0) respal()
-			vbank(1) respal()
+			vbank(1) respal() cls()
 			load_world(0,1)
 			if save.st&2^31==0 then open="init setting" else open="main" music(2) end
 		end
@@ -4689,6 +4689,7 @@ function TIC()
 	-- Initial setting -------
 	--------------------------
 	if open=="init setting" then respal()
+		vbank(0)
 		is.t=is.t+1
 		if is.t==2 then
 			is.t1=time()
