@@ -4620,54 +4620,52 @@ local speed=4
 --init
 local open
 local tm1,tm2 = 0,0
-local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --pause
+local p={t=0} --pause
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local ach={t=0,y=0,t2=0} --achievement (easter egg)
 local d_t=0 --darkening
 local l_={t=0,p={}} --logo
-local ms={t=0,b={}} --main screen
+local ms={t=0,b={}} --main screen | Table with current buttons
+
 --buttons
-local ms_b, mn_b, ma_b, s_b, p_b, pa_b
+local menu_options --It must be separate, otherwise local variables inside this table may not see each other
 
-ms_b = { --main screen
-	{draw = true , y = 65, t=1, text = "Continue", func = function() vbank(0)cls(0)vbank(1)cls(0) open="load lvl" save.lvl2=1 end},
-	{draw = true , y = 75, t=1, text = "New game", func = function() if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" ms.b = mn_b sfx_(16) end end},
-	{draw = true , y = 95, t=1, text = "Settings", func = function() open="main|settings" sfx_(16) ms.b = s_b end},
-	{draw = true , y =105, t=1, text = "Authors" , func = function() open="main|authors" ms.b = ma_b sfx_(16) end},
-	{draw = true , y =125, t=1, text = "Exit"    , func = function() exit() end},
-}
-mn_b = { --main | newgame
-{draw = true, y = 85, t=1, text = "Accept", func = function() open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end},
-{draw = true, y =105, t=1, text = "Cancel", func = function() sfx_(17) open="main" ms.b = ms_b end},
-}
-
-ma_b = { --main|authors
-	{draw = true, y=115, t=1, text = "Back", func = function() sfx_(17) open="main" ms.b = ms_b end}
-}
-
-s_b = { --settings
-	{draw = true, y = 25, t=1, text="", func = function() sfx_(18) if open=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end},
-	{draw = true, y = 35, t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
-	{draw = true, y = 45, t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
-	{draw = true, y = 55, t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
-	{draw = true, y = 65, t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
-	{draw = true, y = 75, t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
-	{draw = true, y = 85, t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
-	{draw = true, y = 105, t=1, text="", func = function() sfx_(16) music(3,7,0)open="calibration" end},
-	{draw = true, y = 125, t=1, text="", func = function() sfx_(17) if open=="main|settings" then open="main" ms.b = ms_b else open="pause" ms.b = p_b end end},
-}
-
-p_b = { --pause
-	{draw = true, y = 65, t=1, text = "Resume"       , func = function() open="game" sfx_(17) poke(0x7FC3F,1,1) if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end lctp=ctp or 0 ctp=0 st_t=tstamp() end},
-	{draw = true, y = 75, t=1, text = "Restart level", func = function() open="load lvl" if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 for x=0,19 do for y=0,28 do setpix(93-x,y+99,5) end end end},
-	{draw = true, y = 95, t=1, text = "Settings"     , func = function() open="pause|settings" sfx_(16) ms.b = s_b end},
-	{draw = true, y =125, t=1, text = "Exit"         , func = function() open="pause|accept" sfx_(16) ms.b = pa_b end},
-
-}
-
-pa_b = { --pause|accept
-	{draw = true, y = 85, t=1, text = "Accept", func = function() open="main" ms.b=ms_b poke(0x7FC3F,1,0) music(2) load_world(0,1) plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 end},
-	{draw = true, y =105, t=1, text = "Back"  , func = function() open="pause" sfx_(17) ms.b = p_b end},
+menu_options = {
+	ms = { --main screen
+		{draw = true , y = 65, t=1, text = "Continue", func = function() vbank(0)cls(0)vbank(1)cls(0) open="load lvl" save.lvl2=1 end},
+		{draw = true , y = 75, t=1, text = "New game", func = function() if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" ms.b = menu_options.mn sfx_(16) end end},
+		{draw = true , y = 95, t=1, text = "Settings", func = function() open="main|settings" sfx_(16) ms.b = menu_options.s end},
+		{draw = true , y =105, t=1, text = "Authors" , func = function() open="main|authors" ms.b = menu_options.ma sfx_(16) end},
+		{draw = true , y =125, t=1, text = "Exit"    , func = function() exit() end},
+	},
+	mn = { --main | newgame
+		{draw = true, y = 85, t=1, text = "Accept", func = function() open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end},
+		{draw = true, y =105, t=1, text = "Cancel", func = function() sfx_(17) open="main" ms.b = menu_options.ms end},
+	},
+	ma = { --main|authors
+		{draw = true, y=115, t=1, text = "Back", func = function() sfx_(17) open="main" ms.b = menu_options.ms end}
+	},
+	s = { --settings
+		{draw = true, y = 25, t=1, text="", func = function() sfx_(18) if open=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end},
+		{draw = true, y = 35, t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
+		{draw = true, y = 45, t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
+		{draw = true, y = 55, t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
+		{draw = true, y = 65, t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
+		{draw = true, y = 75, t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
+		{draw = true, y = 85, t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+		{draw = true, y = 105, t=1, text="", func = function() sfx_(16) music(3,7,0)open="calibration" end},
+		{draw = true, y = 125, t=1, text="", func = function() sfx_(17) if open=="main|settings" then open="main" ms.b = menu_options.ms else open="pause" ms.b = menu_options.p end end},
+	},
+	p = { --pause
+		{draw = true, y = 65, t=1, text = "Resume"       , func = function() open="game" sfx_(17) poke(0x7FC3F,1,1) if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end lctp=ctp or 0 ctp=0 st_t=tstamp() end},
+		{draw = true, y = 75, t=1, text = "Restart level", func = function() open="load lvl" if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 for x=0,19 do for y=0,28 do setpix(93-x,y+99,5) end end end},
+		{draw = true, y = 95, t=1, text = "Settings"     , func = function() open="pause|settings" sfx_(16) ms.b = menu_options.s end},
+		{draw = true, y =125, t=1, text = "Exit"         , func = function() open="pause|accept" sfx_(16) ms.b = menu_options.pa end},
+	},
+	pa = { --pause|accept
+		{draw = true, y = 85, t=1, text = "Accept", func = function() open="main" ms.b=menu_options.ms poke(0x7FC3F,1,0) music(2) load_world(0,1) plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 end},
+		{draw = true, y =105, t=1, text = "Back"  , func = function() open="pause" sfx_(17) ms.b = menu_options.p end},
+	},
 }
 
 local function upd_buttons()
@@ -4770,7 +4768,7 @@ function TIC()
 				open="main"
 				music(2)
 				--buttons
-				ms.b = ms_b
+				ms.b = menu_options.ms
 			end
 		end
 	end
@@ -4878,7 +4876,7 @@ function TIC()
 		if open~="main|settings" then spr(256,min(-104+ms.t*6,8),4,0,1,0,0,13,3) upd_buttons() end
 
 		if open=="main" then
-			ms_b[1].draw = not save.i
+			menu_options.ms[1].draw = not save.i
 			--nothing
 		elseif open=="main|newgame" then
 			print("Warning",4,35,8)
@@ -5447,7 +5445,7 @@ function TIC()
 	 --
 		pmem(4,save.ct+(tstamp()-st_t))
 	 --pause
-		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" ms.b = p_b for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
+		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" ms.b = menu_options.p for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
 		p.t=0
 	 --debug
 	 	local debug_text={
@@ -5514,7 +5512,7 @@ function TIC()
 
 		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
 
-		s_b[8].draw = open=="main|settings" --calibration button
+		menu_options.s[8].draw = open=="main|settings" --calibration button
 		--saving the settings
 		save.st=0
 		if st.r_p    then save.st=save.st+2^0 end
