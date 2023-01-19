@@ -1257,6 +1257,8 @@ local t=0 -- Global timer (+1 for each code call)
 local stt=0 --The timer of the start of the game
 --mouse
 local clp1,clp2
+local mx, my, cl1, _, cl2
+local cid
 --sprite editor
 local function setpix(sx,sy,color)
 	local id=sx//8+sy//8*16
@@ -4616,26 +4618,108 @@ local fr={0,0,0} --framerate
 --player speed
 local speed=4
 --init
+local open
 local tm1,tm2 = 0,0
 local p={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1} --pause
 local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
 local ach={t=0,y=0,t2=0} --achievement (easter egg)
 local d_t=0 --darkening
 local l_={t=0,p={}} --logo
-local ms={t=0,t1=1,t2=1,t3=1,t4=1,t5=1,t6=1,t7=1,t8=1,t9=1} --main screen
+local ms={t=0,b={}} --main screen
+--buttons
+local ms_b, mn_b, ma_b, s_b, p_b, pa_b
+
+ms_b = { --main screen
+	{draw = true , y = 65, t=1, text = "Continue", func = function() vbank(0)cls(0)vbank(1)cls(0) open="load lvl" save.lvl2=1 end},
+	{draw = true , y = 75, t=1, text = "New game", func = function() if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" ms.b = mn_b sfx_(16) end end},
+	{draw = true , y = 95, t=1, text = "Settings", func = function() open="main|settings" sfx_(16) ms.b = s_b end},
+	{draw = true , y =105, t=1, text = "Authors" , func = function() open="main|authors" ms.b = ma_b sfx_(16) end},
+	{draw = true , y =125, t=1, text = "Exit"    , func = function() exit() end},
+}
+mn_b = { --main | newgame
+{draw = true, y = 85, t=1, text = "Accept", func = function() open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end},
+{draw = true, y =105, t=1, text = "Cancel", func = function() sfx_(17) open="main" ms.b = ms_b end},
+}
+
+ma_b = { --main|authors
+	{draw = true, y=115, t=1, text = "Back", func = function() sfx_(17) open="main" ms.b = ms_b end}
+}
+
+s_b = { --settings
+	{draw = true, y = 25, t=1, text="", func = function() sfx_(18) if open=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end},
+	{draw = true, y = 35, t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
+	{draw = true, y = 45, t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
+	{draw = true, y = 55, t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
+	{draw = true, y = 65, t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
+	{draw = true, y = 75, t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
+	{draw = true, y = 85, t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+	{draw = true, y = 105, t=1, text="", func = function() sfx_(16) music(3,7,0)open="calibration" end},
+	{draw = true, y = 125, t=1, text="", func = function() sfx_(17) if open=="main|settings" then open="main" ms.b = ms_b else open="pause" ms.b = p_b end end},
+}
+
+p_b = { --pause
+	{draw = true, y = 65, t=1, text = "Resume"       , func = function() open="game" sfx_(17) poke(0x7FC3F,1,1) if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end lctp=ctp or 0 ctp=0 st_t=tstamp() end},
+	{draw = true, y = 75, t=1, text = "Restart level", func = function() open="load lvl" if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 for x=0,19 do for y=0,28 do setpix(93-x,y+99,5) end end end},
+	{draw = true, y = 95, t=1, text = "Settings"     , func = function() open="pause|settings" sfx_(16) ms.b = s_b end},
+	{draw = true, y =125, t=1, text = "Exit"         , func = function() open="pause|accept" sfx_(16) ms.b = pa_b end},
+
+}
+
+pa_b = { --pause|accept
+	{draw = true, y = 85, t=1, text = "Accept", func = function() open="main" ms.b=ms_b poke(0x7FC3F,1,0) music(2) load_world(0,1) plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 end},
+	{draw = true, y =105, t=1, text = "Back"  , func = function() open="pause" sfx_(17) ms.b = p_b end},
+}
+
+local function upd_buttons()
+	for i = 1, #ms.b do
+		local b = ms.b[i]
+		if b.draw then
+			print(b.text, min(min(ms.t*2-20,4)+(1-b.t)*20), b.y, 7)
+			if my> b.y - 3 and my < b.y + 8 then
+				b.t = max(b.t-0.05,0.5)
+				cid = 1
+				if clp1 then b.func() break end
+			else
+				b.t = min(1,b.t+0.05)
+			end
+		end
+	end
+end
+
+local function upd_buttons_bdr(bdr_y,orig_pal)
+	if bdr_y == 0 then
+		orig_pal()
+	end
+	for i = 1, #ms.b + 1 do
+		local b
+		local lb
+		if i<=#ms.b then b = ms.b[i] end
+		if i>1 then lb = ms.b[i-1] end
+
+		if lb and lb.draw and lb.y == bdr_y - 8 then
+			orig_pal()
+		end
+		
+		if b and b.draw and b.y == bdr_y + 2 then
+			darkpal(b.t)
+		end
+
+	end
+end
+
 local is={t=0,t1=0,t2=0} --init setting
 local sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 local sn_k={19,14,1,11,5}
 
-local open="logo" sync(25 ,1,false) music(0)
+open="logo" sync(25 ,1,false) music(0)
 
 function TIC()
 	--fps counter
 	t1 = time()
 	t = t + 1
 	--mouse
-	local mx, my, cl1, _, cl2 = mouse()
-	local cid=0 --cursor id
+	mx, my, cl1, _, cl2 = mouse()
+	cid=0 --cursor id
 
 	if cl1 then tm1 = tm1 + 1 else tm1 = 0 end
 	if cl2 then tm2 = tm2 + 1 else tm2 = 0 end
@@ -4682,7 +4766,12 @@ function TIC()
 			vbank(0) respal()
 			vbank(1) respal() cls()
 			load_world(0,1)
-			if save.st&2^31==0 or true then open="init setting" else open="main" music(2) end
+			if save.st&2^31==0 then open="init setting" else
+				open="main"
+				music(2)
+				--buttons
+				ms.b = ms_b
+			end
 		end
 	end
 	--------------------------
@@ -4786,46 +4875,22 @@ function TIC()
 
 		--GUI
 		vbank(1) cls(0)
-		if open~="main|settings" then spr(256,min(-104+ms.t*6,8),4,0,1,0,0,13,3) end
+		if open~="main|settings" then spr(256,min(-104+ms.t*6,8),4,0,1,0,0,13,3) upd_buttons() end
 
 		if open=="main" then
-			if not save.i then print("Continue"  ,min(ms.t*2-10,4)+(1-ms.t1)*20, 65,7) end
-			print("New game"  ,min(ms.t*2-20,4)+(1-ms.t2)*20, 75,7)
-			print("Settings"  ,min(ms.t*2-40,4)+(1-ms.t4)*20, 95,7)
-			print("Authors"   ,min(ms.t*2-50,4)+(1-ms.t5)*20,105,7)
-			print("Exit"      ,min(ms.t*2-60,4)+(1-ms.t6)*20,125,7)
-			--version
-			-- local text_size=print("version "..version,240,0)
-			-- print("version "..version,238-text_size,130,7)
-			vbank(0)
-			--buttons
- 			if my>62  and my<73  and not save.i then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl2=1 end else ms.t1=min(1,ms.t1+0.05) end
-
-			if my>72  and my<83  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then if save.i then open="load lvl" save.lvl2=1 music() else open="main|newgame" sfx_(16) ms.t1=1 ms.t2=1 end end else ms.t2=min(1,ms.t2+0.05) end
-
-
-			if my>92  and my<103 then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then open="main|settings" sfx_(16) ms.t1=1 end else ms.t4=min(1,ms.t4+0.05) end
-			if my>102 and my<113 then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then open="main|authors" sfx_(16) ms.t1=1 end else ms.t5=min(1,ms.t5+0.05) end
-			if my>122 and my<133 then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then exit() end else ms.t6=min(1,ms.t6+0.05) end
-
+			ms_b[1].draw = not save.i
+			--nothing
 		elseif open=="main|newgame" then
 			print("Warning",4,35,8)
 			print("Your current save",4,45,7)
 			print("will be removed.",4,55,7)
 			print("Continue?",4,65,7)
-
-			print("Accept",4+(1-ms.t1)*20,85,7)
-			print("Cancel",4+(1-ms.t2)*20,105,7)
-			if my>82  and my<93  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then open="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end else ms.t1=min(1,ms.t1+0.05) end
-			if my>102 and my<113 then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx_(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t2=min(1,ms.t2+0.05) end
 		elseif open=="main|authors" then
 			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
 			print("Author of the engine: HanamileH"         ,1,55,7)
 			print("Coders:             HanamileH & soxfox42",1,75,7)
 			print("Level designers: HanamileH"              ,1,85,7)
 			print("Testers:            BuoYancy_dabl"       ,1,95,7)
-			print("Back",4+(1-ms.t1)*20,115,7)
-			if my>112 and my<123 then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx_(17) open="main" ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 end else ms.t1=min(1,ms.t1+0.05) end
 		end
 	end
 	--------------------------
@@ -5059,52 +5124,12 @@ function TIC()
 		if open~="pause|settings" then spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3) end
 
 		if open=="pause" then
-			print("Pause"        ,min(p.t*2,37), 35,7)
-			print("Resume"       ,4+(1-p.t1)*20, 55,7)
-			print("Restart level",4+(1-p.t2)*20, 65,7)
-			print("Settings"     ,4+(1-p.t3)*20, 85,7)
-			print("Exit"         ,4+(1-p.t4)*20,125,7)
-			--buttons
-			if my>52  and my<63  then p.t1=max(p.t1-0.05,0.5) cid=1 else p.t1=min(p.t1+0.05,1) end
-
-			if my>62  and my<73  then p.t2=max(p.t2-0.05,0.5) cid=1
-				if clp1 then
-					open="load lvl"
-					if s.n[1]~=255 then
-						music(s.n[1],s.n[2],s.n[3])
-					elseif st.music then
-						music(maps[save.lvl2][save.lvl].music)
-					end
-					plr.x=0
-					plr.y=64
-					plr.z=0
-					plr.tx=0
-					plr.ty=0
-					for x=0,19 do for y=0,28 do
-						setpix(93-x,y+99,5)
-					end end
-				end else p.t2=min(p.t2+0.05,1) end
-			if my>82  and my<93  then p.t3=max(p.t3-0.05,0.5) cid=1 if clp1 then open="pause|settings" sfx_(16) clp1=false end else p.t3=min(p.t3+0.05,1) end
-			if my>122 and my<133 then p.t4=max(p.t4-0.05,0.5) cid=1 if clp1 then open="pause|accept" sfx_(16)              end else p.t4=min(p.t4+0.05,1) end
+			print("Pause",min(p.t*2,37),35,7)
+			upd_buttons()
 		elseif open=="pause|accept" then
 			print("Do you really want to leave the game?",4,45,7)
 			print("Your current game will not be saved",4,55,7)
-			print("Accept",4+(1-p.t1)*20,85,7)
-			print("Back"  ,4+(1-p.t2)*20,105,7)
-			if my>82  and my<93  then p.t1=max(p.t1-0.05,0.5) cid=1
-				if clp1 then
-					open="main"
-					poke(0x7FC3F,1,0)
-					music(2)
-					load_world(0,1)
-					plr.x=32
-					plr.y=64
-					plr.z=32
-					plr.tx=0
-					plr.ty=0
-				end
-			else p.t1=min(p.t1+0.05,1)end
-			if my>102 and my<113 then p.t2=max(p.t2-0.05,0.5) cid=1 if clp1 then open="pause" sfx_(17)end else p.t2=min(p.t2+0.05,1) end
+			upd_buttons()
 		end
 
 		--Resume
@@ -5422,7 +5447,7 @@ function TIC()
 	 --
 		pmem(4,save.ct+(tstamp()-st_t))
 	 --pause
-		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
+		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) open="pause" ms.b = p_b for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
 		p.t=0
 	 --debug
 	 	local debug_text={
@@ -5464,15 +5489,15 @@ function TIC()
 	--------------------------
 	if open=="main|settings" or open=="pause|settings" then vbank(1) cls(0)
 		print("Mouse sensitivity: "..F(st.m_s),4,5,7)
-		print("Music: "                  ,4,25,7)
-		print("Sfx: "                    ,4,35,7)
-		print("Rendering portals: "      ,4,45,7)
-		print("High quality portals: "   ,4,55,7)
-		print("Render both poratls:  "   ,4,65,7)
-		print("Particles:  "             ,4,75,7)
-		print("Dynamic textures:  "      ,4,85,7)
+		print("Music: "               ,4,25,7)
+		print("Sfx: "                 ,4,35,7)
+		print("Rendering portals: "   ,4,45,7)
+		print("High quality portals: ",4,55,7)
+		print("Render both poratls:  ",4,65,7)
+		print("Particles:  "          ,4,75,7)
+		print("Dynamic textures:  "   ,4,85,7)
 
-		print("Back"                     ,4,125,7)
+		print("Back",4,125,7)
 
 		if open=="main|settings" then print("Calibration",4,105,7) end
 		--on / off
@@ -5488,22 +5513,8 @@ function TIC()
 		rect(4+st.m_s-20,43-30,2,6,6)
 
 		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
-		--buttons
-		if my>22  and my<33  then cid=1 ms.t1=max(ms.t1-0.05,0.5) if clp1 then sfx_(18) if open=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end else ms.t1=min(1,ms.t1+0.05) end
-		if my>32  and my<43  then cid=1 ms.t2=max(ms.t2-0.05,0.5) if clp1 then sfx_(18) st.sfx   =not st.sfx           end else ms.t2=min(1,ms.t2+0.05) end
-		if my>42  and my<53  then cid=1 ms.t3=max(ms.t3-0.05,0.5) if clp1 then sfx_(18) st.r_p   =not st.r_p           end else ms.t3=min(1,ms.t3+0.05) end
-		if my>52  and my<63  then cid=1 ms.t4=max(ms.t4-0.05,0.5) if clp1 then sfx_(18) st.h_q_p =not st.h_q_p         end else ms.t4=min(1,ms.t4+0.05) end
-		if my>62  and my<73  then cid=1 ms.t5=max(ms.t5-0.05,0.5) if clp1 then sfx_(18) st.r_both=not st.r_both        end else ms.t5=min(1,ms.t5+0.05) end
-		if my>72  and my<83  then cid=1 ms.t6=max(ms.t6-0.05,0.5) if clp1 then sfx_(18) st.p     =not st.p             end else ms.t6=min(1,ms.t6+0.05) end
-		if my>82  and my<93  then cid=1 ms.t7=max(ms.t7-0.05,0.5) if clp1 then sfx_(18) st.d_t   =not st.d_t           end else ms.t7=min(1,ms.t7+0.05) end
 
-		if my>102 and my<113 and open=="main|settings" then cid=1 ms.t8=max(ms.t8-0.05,0.5) if clp1 then sfx_(16) music(3,7,0)open="calibration" end else ms.t8=min(1,ms.t8+0.05) end
-
-		if my>122 and my<133 then cid=1 ms.t9=max(ms.t9-0.05,0.5)
-			if clp1 then sfx_(17)
-				if open=="main|settings" then open="main" else open="pause" end
-				ms.t1=1 ms.t2=1 ms.t3=1 ms.t4=1 ms.t5=1 ms.t6=1 ms.t7=1 ms.t8=1 ms.t9=1 end
-		else ms.t9=min(1,ms.t9+0.05) end
+		s_b[8].draw = open=="main|settings" --calibration button
 		--saving the settings
 		save.st=0
 		if st.r_p    then save.st=save.st+2^0 end
@@ -5515,6 +5526,9 @@ function TIC()
 		if st.d_t    then save.st=save.st+2^6 end
 		save.st=save.st+2^31
 		pmem(1,save.st)
+		upd_buttons()
+
+
 	end
 	--------------------------
 	-- darkening -------------
@@ -5710,94 +5724,46 @@ function TIC()
 	--cursor id
 	poke4(0x07FF6,cid)
 	--fps (2)
-	avf[t%60]=t2
-	t2 = time() - t1
-	fr={0,math.huge,0}
-	for i=1,#avf do
-		fr[1]=fr[1]+avf[i]
-		if avf[i]<fr[2] then fr[2]=avf[i] end
-		if avf[i]>fr[3] then fr[3]=avf[i] end
+	do
+		avf[t%60]=t2
+		t2 = time() - t1
+		fr = {0,math.huge,0}
+		for i=1,#avf do
+			fr[1]=fr[1]+avf[i]
+			if avf[i]<fr[2] then fr[2]=avf[i] end
+			if avf[i]>fr[3] then fr[3]=avf[i] end
+		end
+		fr[1]=fr[1]/#avf
 	end
-	fr[1]=fr[1]/#avf
 end
 
 local game_pal={[0]="",[1]=""}
 
 function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
-	if open=="pause" then vbank(1)poke(0x03FF9,0)respal()vbank(0)poke(0x03FF9,0)
-		if scn_y==0 or scn_y==63 or scn_y==73 or scn_y==93 or scn_y==133 then
-			respal()
-			darkpal(max(1-p.t/30,0.4))
-			if stt<60 then
-				darkpal(stt/60)
-			end
-		end
-		if scn_y==53  then darkpal(p.t1) end
-		if scn_y==63  then darkpal(p.t2) end
-		if scn_y==83  then darkpal(p.t3) end
-		if scn_y==123 then darkpal(p.t4) end
+	if open=="pause" then
+		vbank(1)poke(0x03FF9,0)respal()vbank(0)poke(0x03FF9,0)
+		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-p.t/30,0.4))if stt<60 then darkpal(stt/60)end end)
 	end
 
 	if open=="pause|accept" then
-		if scn_y==0 or scn_y==93 or scn_y==113 then
-			respal()
-			darkpal(0.2)
-			if stt<60 then
-				darkpal(stt/60)
-			end
-		end
-		if scn_y==83  then darkpal(p.t1) end
-		if scn_y==103 then darkpal(p.t2) end
+		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2)if stt<60 then darkpal(stt/60)end end)
 	end
 
 	if open=="main" then
-		if scn_y==0 or scn_y==73 or scn_y==83 or scn_y==103 or scn_y==113 or scn_y==133 then
-			respal()
-			darkpal(min(ms.t/60,0.5))
-		end
-		if scn_y==63  then darkpal(ms.t1) end
-		if scn_y==73  then darkpal(ms.t2) end
-		if scn_y==93  then darkpal(ms.t4) end
-		if scn_y==103 then darkpal(ms.t5) end
-		if scn_y==123 then darkpal(ms.t6) end
+		upd_buttons_bdr(scn_y, function()respal()darkpal(min(ms.t/60,0.5)) end)
 	end
-
 	if open=="main|newgame" then
-		if scn_y==0 or scn_y==93 or scn_y==113 then
-			respal()
-			darkpal(0.2)
-		end
-		if scn_y==83 then darkpal(ms.t1) end
-		if scn_y==103 then darkpal(ms.t2) end
+		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2) end)
 	end
-
 	if open=="main|authors" then
-		if scn_y==0 or scn_y==123 then
-			respal()
-			darkpal(0.2)
-		end
-		if scn_y==113 then
-			darkpal(ms.t1)
-		end
+		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2) end)
 	end
 
 	if open=="main|settings" or open=="pause|settings" then
-		if scn_y==0 or (scn_y-3)%10==0 then
-			respal()
-			darkpal(0.2)
-			if open=="pause|settings" and stt<60 then darkpal(stt/60) end
-		end
-		if scn_y==23  then darkpal(ms.t1) end
-		if scn_y==33  then darkpal(ms.t2) end
-		if scn_y==43  then darkpal(ms.t3) end
-		if scn_y==53  then darkpal(ms.t4) end
-		if scn_y==63  then darkpal(ms.t5) end
-		if scn_y==73  then darkpal(ms.t6) end
-		if scn_y==83  then darkpal(ms.t7) end
-		if scn_y==103 then darkpal(ms.t8) end
-		if scn_y==123 then darkpal(ms.t9) end
+		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2)if open=="pause|settings" and stt<60 then darkpal(stt/60) end end)
 	end
+	
 
 	if open=="game" then
 		local disp=256 +R(-1,1) * R(0, plr.cd2//2)
