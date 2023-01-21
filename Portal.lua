@@ -46,6 +46,9 @@ p     =true, --particles
 d_t   =true, --dynamic textures
 music =true,
 sfx   =true,
+pcm   =true,
+scr   =30,
+vx    =40,
 }
 
 local save={ --saving the game
@@ -66,6 +69,7 @@ if save.st&2^31~=0 then
 	st.r_both=save.st&2^4 ~=0
 	st.p     =save.st&2^5 ~=0
 	st.d_t   =save.st&2^6 ~=0
+	st.pcm   =save.st&2^7 ~=0
 end
 
 --camera
@@ -1257,7 +1261,7 @@ local t=0 -- Global timer (+1 for each code call)
 local stt=0 --The timer of the start of the game
 --mouse
 local clp1,clp2
-local mx, my, cl1, _, cl2
+local mx, my, cl1, cl2, whl
 local cid
 --sprite editor
 local function setpix(sx,sy,color)
@@ -4648,12 +4652,19 @@ menu_options = {
 	s = { --settings
 		{draw = true, y = 25, t=1, text="", func = function() sfx_(18) if open=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end},
 		{draw = true, y = 35, t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
-		{draw = true, y = 45, t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
-		{draw = true, y = 55, t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
-		{draw = true, y = 65, t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
-		{draw = true, y = 75, t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
-		{draw = true, y = 85, t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
-		{draw = true, y = 105, t=1, text="", func = function() sfx_(16) music(3,7,0)open="calibration" end},
+		{draw = true, y = 45, t=1, text="", func = function() sfx_(18) st.pcm   =not st.pcm    end},
+		{draw = true, y = 55, t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
+		{draw = true, y = 65, t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
+		{draw = true, y = 75, t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
+		{draw = true, y = 85, t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
+		{draw = true, y = 95, t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+
+		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) end},
+		{draw = true, y = 115, t=1, text="", func = function() sfx_(18) end},
+		{draw = true, y = 125, t=1, text="", func = function() sfx_(18) end},
+		{draw = true, y = 135, t=1, text="", func = function() sfx_(18) end},
+
+		{draw = true, y = 115, t=1, text="", func = function() sfx_(16) music(3,7,0)open="calibration" end},
 		{draw = true, y = 125, t=1, text="", func = function() sfx_(17) if open=="main|settings" then open="main" ms.b = menu_options.ms else open="pause" ms.b = menu_options.p end end},
 	},
 	p = { --pause
@@ -4673,10 +4684,15 @@ local function upd_buttons()
 		local b = ms.b[i]
 		if b.draw then
 			print(b.text, min(min(ms.t*2-20,4)+(1-b.t)*20), b.y, 7)
-			if my> b.y - 3 and my < b.y + 8 then
-				b.t = max(b.t-0.05,0.5)
-				cid = 1
-				if clp1 then b.func() break end
+
+			if my > b.y - 3 and my < b.y + 8 then
+				if not (open=="main|settings" or open=="pause|settings") or (i<13 and my<110 and my>19) or i>=13 then
+					b.t = max(b.t-0.05,0.5)
+					cid = 1
+					if clp1 then b.func() break end
+				else
+					b.t = min(1,b.t+0.05)
+				end
 			else
 				b.t = min(1,b.t+0.05)
 			end
@@ -4716,7 +4732,7 @@ function TIC()
 	t1 = time()
 	t = t + 1
 	--mouse
-	mx, my, cl1, _, cl2 = mouse()
+	mx, my, cl1, _, cl2, _, whl = mouse()
 	cid=0 --cursor id
 
 	if cl1 then tm1 = tm1 + 1 else tm1 = 0 end
@@ -5486,33 +5502,80 @@ function TIC()
 	-- settings menu ---------
 	--------------------------
 	if open=="main|settings" or open=="pause|settings" then vbank(1) cls(0)
-		print("Mouse sensitivity: "..F(st.m_s),4,5,7)
-		print("Music: "               ,4,25,7)
-		print("Sfx: "                 ,4,35,7)
-		print("Rendering portals: "   ,4,45,7)
-		print("High quality portals: ",4,55,7)
-		print("Render both poratls:  ",4,65,7)
-		print("Particles:  "          ,4,75,7)
-		print("Dynamic textures:  "   ,4,85,7)
+		--scrolling
+		if btn(0) or key(54) or key(58) or key(23) then whl = 1 end
+		if btn(1) or key(55) or key(59) or key(19) then whl =-1 end
 
+		if whl~=0 then st.vx = whl * 3 else st.vx = st.vx * 0.8 end
+
+		st.scr = st.scr - min(max(st.vx, -3),3)
+
+		local max_y = 12 * 10 - 90 --constant
+
+		if st.scr<0 then st.scr = max(min(st.scr+1.1 ,0),-10) end
+		
+		if st.scr> max_y then st.scr = min(max(st.scr-1.1 ,max_y),max_y+10) end
+
+		for i = 1, 12 do
+			menu_options.s[i].y = 12 + i * 10 - F(st.scr)
+		end
+		
+		--GUI
+		--slider
+		rect(239, 21, 1, 88, 1)
+		clip(239,21,1,88)
+		rect(239, 21 + max(st.scr/max_y*68, -15) , 1, 20, 7)
+		clip()
+		--buttons
 		print("Back",4,125,7)
+		if open=="main|settings" then print("Calibration",4,115,7) end
+		print("Mouse sensitivity: "..F(st.m_s),4,5,7)
+		
+		clip(0,20, 240, 90)
 
-		if open=="main|settings" then print("Calibration",4,105,7) end
-		--on / off
-		if st.music  then print("On",117,25,13) else print("Off",117,25,11) end
-		if st.sfx    then print("On",117,35,13) else print("Off",117,35,11) end
-		if st.r_p    then print("On",117,45,13) else print("Off",117,45,11) end
-		if st.h_q_p  then print("On",117,55,13) else print("Off",117,55,11) end
-		if st.r_both then print("On",117,65,13) else print("Off",117,65,11) end
-		if st.p      then print("On",117,75,13) else print("Off",117,75,11) end
-		if st.d_t    then print("On",117,85,13) else print("Off",117,85,11) end
+		local texts = {
+			{"music" , "Music:"               },
+			{"sfx"   , "Sfx:"                 },
+			{"pcm"   , "PCM sample playback:" },
+
+			{"r_p"   , "Rendering portals: "  },
+			{"h_q_p" , "High quality portals:"},
+			{"r_both", "Render both poratls: "},
+			{"p"     , "Particles:"           },
+			{"d_t"   , "Dynamic textures:"    },
+			
+			{"","Test:"},
+			{"","Test:"},
+			{"","Test:"},
+			{"","Test:"},
+		}
+
+		for i = 1, #texts do
+			if not st.r_p and (i==5 or i==6) then
+				print(texts[i][2],4,12+i*10 - F(st.scr),3)
+				if st[texts[i][1]] then
+					print("On",140,12+i*10 - F(st.scr),4)
+				else
+					print("Off",140,12+i*10 - F(st.scr),4)
+				end
+			else
+				print(texts[i][2],4,12+i*10 - F(st.scr),7)
+				if st[texts[i][1]] then
+					print("On",140,12+i*10 - F(st.scr),13)
+				else
+					print("Off",140,12+i*10 - F(st.scr),11)
+				end
+			end
+		end
+
+		clip()
 		--mouse sensitivity slider
 		rect(4,45-30,100,2,3)
 		rect(4+st.m_s-20,43-30,2,6,6)
 
 		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
 
-		menu_options.s[8].draw = open=="main|settings" --calibration button
+		menu_options.s[13].draw = open=="main|settings" --calibration button
 		--saving the settings
 		save.st=0
 		if st.r_p    then save.st=save.st+2^0 end
@@ -5522,10 +5585,10 @@ function TIC()
 		if st.r_both then save.st=save.st+2^4 end
 		if st.p      then save.st=save.st+2^5 end
 		if st.d_t    then save.st=save.st+2^6 end
+		if st.pcm    then save.st=save.st+2^7 end
 		save.st=save.st+2^31
 		pmem(1,save.st)
 		upd_buttons()
-
 
 	end
 	--------------------------
@@ -5759,7 +5822,19 @@ function BDR(scn_y) scn_y=scn_y-4
 	end
 
 	if open=="main|settings" or open=="pause|settings" then
-		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2)if open=="pause|settings" and stt<60 then darkpal(stt/60) end end)
+		local function reset_pal()
+			respal()darkpal(0.2)if open=="pause|settings" and stt<60 then darkpal(stt/60) end
+		end
+
+		if scn_y==0 or scn_y==20 or scn_y==111 or scn_y==123 or scn_y==133 then reset_pal()end
+		if scn_y==19 or scn_y==110 then reset_pal() darkpal(0.7)end
+
+		for i = 1, 13 do
+			if scn_y==max(F(10 + i*10 - st.scr), 20) and scn_y<110 then reset_pal() if i<13 then darkpal(ms.b[i].t) end end
+		end
+
+		if scn_y==113 then darkpal(ms.b[13].t) end
+		if scn_y==123 then darkpal(ms.b[14].t) end
 	end
 	
 
@@ -6502,13 +6577,13 @@ end
 -- 041:9008d79008d79008c70000009008d79008d79008c7000000c008d7c008d7c008d7c008d7c008c7000000000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 042:9008d59008d59008c50000009008d59008d59008c5000000c008d5c008d5c008d5c008d5c008c5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- 043:9008c5902cc59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c59008c59028c59008c59008c59008c59008c59008c59008c54008c74008c74008c74008c7b008c5b008c5c008c5c008c55008c55008c55008c55008c55008c55008c55008c55008c57008c57008c57008c57008c58008c58008c58008c58008c5
--- 044:9428d79428c74008d94008c9c008d7c008c7e008d7e008c7b008d7b008c7c008d7c008c79008d79008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c75008d95008c9b008d7b008c7e008d7e008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c7b008d7b008c7c008d7c008c79008d79008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c75008d95008c9b008d7b008c7e008d7e008c78008d78008c7
+-- 044:9418d7905cc74008d94008c9c008d7c008c7e008d7e008c7b008d7b008c7c008d7c008c79008d79008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c75008d95008c9b008d7b008c7e008d7e008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c7b008d7b008c7c008d7c008c79008d79008c78008d78008c79008d79008c74008d94008c9c008d7c008c7e008d7e008c75008d95008c9b008d7b008c7e008d7e008c78008d78008c7
 -- 045:9028c3902cc39008c39008c39008c39008c39008c39008c34008c54008c54008c54008c5b008c3b008c3c008c3c008c35008c35008c35008c35008c35008c35008c35008c35008c37008c37008c37008c37008c38008c38008c38008c38008c39008c39028c39008c39008c39008c39008c39008c39008c34008c54008c54008c54008c5b008c3b008c3c008c3c008c35008c35008c35008c35008c35008c35008c35008c35008c37008c37008c37008c37008c38008c38008c38008c38008c3
--- 046:9428d59008c54008d74008c7c008d5c008c5e008d5e008c5b008d5b008c5c008d5c008c59008d59008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c55008d75008c7b008d5b008c5e008d5e008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c5b008d5b008c5c008d5c008c59008d59008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c55008d75008c7b008d5b008c5e008d5e008c58008d58008c5
--- 047:9428e79428f74008e94008f9c008e7c008f7e008e7e008f7b008e7b008f7c008e7c008f79008e79008f78008e78008f79008e79008f74008e94008f9c008e7c008f7e008e7e008f75008e95008f9b008e7b008f7e008e7e008f78008e78008f79008e79008f74008e94008f9c008e7c008f7e008e7e008f7b008e7b008f7c008e7c008f79008e79008f78008e78008f79008e79008f74008e94008f9c008e7c008f7e008e7e008f75008e95008f9b008e7b008f7e008e7e008f78008e78008f7
--- 048:9428e59428f54008e74008f7c008e5c008f5e008e5e008f5b008e5b008f5c008e5c008f59008e59008f58008e58008f59008e59008f54008e74008f7c008e5c008f5e008e5e008f55008e75008f7b008e5b008f5e008e5e008f58008e58008f59008e59008f54008e74008f7c008e5c008f5e008e5e008f5b008e5b008f5c008e5c008f59008e59008f58008e58008f59008e59008f54008e74008f7c008e5c008f5e008e5e008f55008e75008f7b008e5b008f5e008e5e008f58008e58008f5
+-- 046:9418d5905cc54008d74008c7c008d5c008c5e008d5e008c5b008d5b008c5c008d5c008c59008d59008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c55008d75008c7b008d5b008c5e008d5e008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c5b008d5b008c5c008d5c008c59008d59008c58008d58008c59008d59008c54008d74008c7c008d5c008c5e008d5e008c55008d75008c7b008d5b008c5e008d5e008c58008d58008c5
+-- 047:9058e79428f74008e94008f9c008e7c008f7e008e7e008f7b008e7b008f7c008e7c008f79008e79008f78008e78008f79008e79008f74008e94008f9c008e7c008f7e008e7e008f75008e95008f9b008e7b008f7e008e7e008f78008e78008f79008e79008f74008e94008f9c008e7c008f7e008e7e008f7b008e7b008f7c008e7c008f79008e79008f78008e78008f79008e79008f74008e94008f9c008e7c008f7e008e7e008f75008e95008f9b008e7b008f7e008e7e008f78008e78008f7
+-- 048:9058e59428f54008e74008f7c008e5c008f5e008e5e008f5b008e5b008f5c008e5c008f59008e59008f58008e58008f59008e59008f54008e74008f7c008e5c008f5e008e5e008f55008e75008f7b008e5b008f5e008e5e008f58008e58008f59008e59008f54008e74008f7c008e5c008f5e008e5e008f5b008e5b008f5c008e5c008f59008e59008f58008e58008f59008e59008f54008e74008f7c008e5c008f5e008e5e008f55008e75008f7b008e5b008f5e008e5e008f58008e58008f5
 -- 049:9028b59028b59008b59008b59008b59008b59008b59008b54008b74008b74008b74008b7b008b5b008b5c008b5c008b55008b55008b55008b55008b55008b55008b55008b55008b57008b57008b57008b57008b58008b58008b58008b58008b59008b59028b59008b59008b59008b59008b59008b59008b54008b74008b74008b74008b7b008b5b008b5c008b5c008b55008b55008b55008b55008b55008b55008b55008b55008b57008b57008b57008b57008b58008b58008b58008b5870bb5
--- 050:9428b99428b94008bb4008bbc008b9c008b9e008b9e008b9b008b9b008b9c008b9c008b99008b99008b98008b98008b99008b99008b94008bb4008bbc008b9c008b9e008b9e008b95008bb5008bbb008b9b008b9e008b9e008b98008b98008b99008b99008b94008bb4008bbc008b9c008b9e008b9e008b9b008b9b008b9c008b9c008b99008b99008b98008b98008b99008b99008b94008bb4008bbc008b9c008b9e008b9e008b95008bb5008bbb008b9b008b9e008b9e008b98008b98008b9
+-- 050:9828b99028b94008bb4008bbc008b9c008b9e008b9e008b9b008b9b008b9c008b9c008b99008b99008b98008b98008b99008b99008b94008bb4008bbc008b9c008b9e008b9e008b95008bb5008bbb008b9b008b9e008b9e008b98008b98008b99008b99008b94008bb4008bbc008b9c008b9e008b9e008b9b008b9b008b9c008b9c008b99008b99008b98008b98008b99008b99008b94008bb4008bbc008b9c008b9e008b9e008b95008bb5008bbb008b9b008b9e008b9e008b98008b98008b9
 -- </PATTERNS>
 
 -- <PATTERNS1>
