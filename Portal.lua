@@ -3069,8 +3069,8 @@ function unitic.cube_update() --all physics related to cubes
 		local rz=-math.cos(plr.ty)*math.cos(plr.tx)
 		local hit = raycast(plr.x, plr.y, plr.z, rx, ry, rz, 100, cube_params)
 
-		if hit and hit.obj and hit.obj.id and draw.objects.c then
-			draw.objects.c[hit.obj.id].held = true
+		if hit and hit.obj and hit.obj.held~=nil then
+			hit.obj.held = true
 			plr.holding = true
 		end
 	elseif keyp(5) then
@@ -4072,6 +4072,7 @@ function addobj(x, y, z, type,t1) --objects
 		x=x,y=y,z=z, --object coordinates
 		x1=0,y1=0,z1=0, --Coordinates relative to the portal
 		inp=false, --whether the cube is located in the portal
+		held=false,
 		vx=0, vy=0, vz=0, --velocity
 		draw=true, --whether to display the model
 		disp=t1, -- cube dispenser ID
