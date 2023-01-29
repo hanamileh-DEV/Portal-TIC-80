@@ -241,27 +241,144 @@ local function save_settings()
 	pmem(1,save.st)
 end
 
+-- Replay support
+
 -- Set to false to disable replay recording (but not playback)
 local enable_replays = true
 local replay = {
 	mode = "off",
 	data = "",
 	index = 0,
-	check = 0,
-	save = -1
 }
 if enable_replays then
 	replay.mode = "rec"
 end
--- Random seed so that replays can use the same* random numbers
--- * When running on the same OS. Only Lua 5.4 has consistent RNG.
-local seed = tstamp()
-math.randomseed(seed)
--- Initial pmem data so replays can start from the same persistent state.
+-- Initial pmem data so replays can start from the same persistent state. (Except settings)
 local initialsave = {}
 for i = 0, 4 do
 	initialsave[i + 1] = pmem(i)
 end
+
+local inputaddrs = {
+	0xFF80,
+	0xFF84,
+	0xFF85,
+	0xFF86,
+	0xFF87,
+	0xFF88,
+	0xFF89,
+	0xFF8A,
+	0xFF8B,
+}
+local packstr = string.rep("B", #inputaddrs)
+
+local function saveinput()
+	local inputtab = {}
+	for i, a in ipairs(inputaddrs) do
+		inputtab[i] = peek(a)
+	end
+	local inputstr = string.pack(packstr, table.unpack(inputtab))
+	replay.data = replay.data .. inputstr
+end
+
+local prev = {}
+local keys = {}
+local holds = {}
+
+local function nextinput()
+	prev = keys
+	keys = {}
+	if replay.index >= #replay.data // #inputaddrs then
+		replay.mode = "off"
+		return
+	end
+	local data = {string.unpack(packstr, replay.data, replay.index * #inputaddrs + 1)}
+	replay.index = replay.index + 1
+	for i, a in ipairs(inputaddrs) do
+		poke(a, data[i])
+	end
+
+	local newholds = {}
+	for i = 6, 9 do
+		local k = data[i]
+		if k ~= 0 then
+			keys[k] = true
+			newholds[k] = (holds[k] or -1) + 1
+		end
+	end
+	holds = newholds
+end
+
+local function rpl_keyp(id, hold, period)
+	hold = hold or 0
+	period = period or 0
+	local prevdown = false
+	if hold == 0 or period == 0 or (holds[id] or 0) < hold then
+		prevdown = prev[id]
+	elseif period ~= 0 and holds[id] % period == 0 then
+		prevdown = prev[id]
+	end
+	return not prevdown and key(id)
+end
+
+local function save_replay()
+	local origmap = {}
+	for i = 0x8000, 0xFF7F do
+		origmap[i - 0x7FFF] = peek(i)
+	end
+
+	local uncompressed = string.pack("B", #initialsave)
+	for _, v in ipairs(initialsave) do
+		uncompressed = uncompressed .. string.pack("I4", v)
+	end
+	uncompressed = uncompressed .. replay.data
+	local compressed = compress(uncompressed)
+	if #compressed > 32636 then
+		trace("replay too large", 2)
+		return
+	end
+	poke(0x8000, 84)
+	poke(0x8001, 65)
+	poke(0x8002, 83)
+	poke(0x8003, 33)
+	for i = 1, #compressed do
+		poke(0x8003 + i, string.byte(compressed, i, i))
+	end
+	sync(4, 1, true)
+
+	for i = 0x8000, 0xFF7F do
+		poke(i, origmap[i - 0x7FFF])
+	end
+end
+
+local function load_replay()
+	sync(4, 1)
+	local magic = {84, 65, 83, 33}
+	local found = true
+	for i = 0, 3 do
+		if peek(0x8000 + i) ~= magic[i + 1] then
+			found = false
+		end
+	end
+	if found then
+		local data = {}
+		for i = 0x8004, 0xFF7F do
+			data[i - 0x8003] = string.char(peek(i))
+		end
+		local compressed = table.concat(data)
+		local uncompressed = decompress(compressed)
+		local pmemcount = string.unpack("B", uncompressed)
+		for i = 0, pmemcount - 1 do
+			local value = string.unpack("I4", uncompressed, 2 + 4 * i)
+			pmem(i, value)
+		end
+		load_save()
+		replay.data = uncompressed:sub(2 + 4 * pmemcount)
+		replay.mode = "play"
+		keyp = rpl_keyp
+	end
+end
+load_replay()
 
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
@@ -4896,7 +5013,6 @@ menu_options = {
 		{draw = true, y = 65, t=1, text = "Resume"       , func = function() open="game" sfx_(17) poke(0x7FC3F,1,1) if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end lctp=ctp or 0 ctp=0 st_t=tstamp() end},
 		{draw = true, y = 75, t=1, text = "Restart level", func = function() open="load lvl" if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 for x=0,19 do for y=0,28 do setpix(93-x,y+99,5) end end end},
 		{draw = true, y = 95, t=1, text = "Settings"     , func = function() open="pause|settings" sfx_(16) ms.b = menu_options.s end},
-		{draw = true, y = 105, t=1, text = "Save Replay" , func = function() replay.save = 0 end},
 		{draw = true, y =125, t=1, text = "Exit"         , func = function() open="pause|accept" sfx_(16) ms.b = menu_options.pa end},
 	},
 	pa = { --pause|accept
@@ -4904,10 +5020,6 @@ menu_options = {
 		{draw = true, y =105, t=1, text = "Back"  , func = function() open="pause" sfx_(17) ms.b = menu_options.p end},
 	},
 }
-
-if replay.mode ~= "rec" then
-	menu_options.p[4].draw = false
-end
 
 local function upd_buttons()
 	for i = 1, #ms.b do
@@ -4957,128 +5069,9 @@ local sn_k={19,14,1,11,5}
 
 open="logo" sync(25 ,1,false) music(0)
 
-local inputaddrs = {
-	0xFF80,
-	0xFF84,
-	0xFF85,
-	0xFF86,
-	0xFF87,
-	0xFF88,
-	0xFF89,
-	0xFF8A,
-	0xFF8B,
-}
-local packstr = string.rep("B", #inputaddrs)
-
-local function saveinput()
-	local inputtab = {}
-	for i, a in ipairs(inputaddrs) do
-		inputtab[i] = peek(a)
-	end
-	local inputstr = string.pack(packstr, table.unpack(inputtab))
-	replay.data = replay.data .. inputstr
-end
-
-local prev = {}
-local keys = {}
-local holds = {}
-
-local function nextinput()
-	prev = keys
-	keys = {}
-	if replay.index >= #replay.data // #inputaddrs then
-		replay.mode = "off"
-		return
-	end
-	local data = {string.unpack(packstr, replay.data, replay.index * #inputaddrs + 1)}
-	replay.index = replay.index + 1
-	for i, a in ipairs(inputaddrs) do
-		poke(a, data[i])
-	end
-
-	local newholds = {}
-	for i = 6, 9 do
-		local k = data[i]
-		if k ~= 0 then
-			keys[k] = true
-			newholds[k] = (holds[k] or -1) + 1
-		end
-	end
-	holds = newholds
-end
-
-local function rpl_keyp(id, hold, period)
-	hold = hold or 0
-	period = period or 0
-	local prevdown = false
-	if hold == 0 or period == 0 or (holds[id] or 0) < hold then
-		prevdown = prev[id]
-	elseif period ~= 0 and holds[id] % period == 0 then
-		prevdown = prev[id]
-	end
-	return not prevdown and key(id)
-end
-
 function TIC()
-	cls()
-	if replay.check == 0 then
-		sync(4, 1)
-		local magic = {84, 65, 83, 33}
-		local found = true
-		for i = 0, 3 do
-			if peek(0x8000 + i) ~= magic[i + 1] then
-				found = false
-			end
-		end
-		if found then
-			local data = {}
-			for i = 0x8004, 0xFF7F do
-				data[i - 0x8003] = string.char(peek(i))
-			end
-			local compressed = table.concat(data)
-			local uncompressed = decompress(compressed)
-			local pmemcount = string.unpack("B", uncompressed)
-			for i = 0, pmemcount - 1 do
-				local value = string.unpack("I4", uncompressed, 2 + 4 * i)
-				pmem(i, value)
-			end
-			load_save()
-			replay.data = uncompressed:sub(2 + 4 * pmemcount)
-			replay.mode = "play"
-			keyp = rpl_keyp
-			menu_options.p[4].draw = false
-		end
-		replay.check = 1
-		return
-	elseif replay.check == 1 then
-		sync(4, 0)
-		replay.check = -1
-	end
-
 	if keyp(38) and replay.mode == "rec" then -- "="
-		replay.save = 0
-	end
-	if replay.save == 0 then
-		local uncompressed = string.pack("B", #initialsave)
-		for _, v in ipairs(initialsave) do
-			uncompressed = uncompressed .. string.pack("I4", v)
-		end
-		uncompressed = uncompressed .. replay.data
-		local compressed = compress(uncompressed)
-		if #compressed > 32636 then
-			trace("replay too large", 2)
-			replay.save = 1
-			return
-		end
-		poke(0x8000, 84)
-		poke(0x8001, 65)
-		poke(0x8002, 83)
-		poke(0x8003, 33)
-		for i = 1, #compressed do
-			poke(0x8003 + i, string.byte(compressed, i, i))
-		end
-		sync(4, 1, true)
-		replay.save = -1
+		save_replay()
 	end
 
 	if replay.mode == "rec" then
