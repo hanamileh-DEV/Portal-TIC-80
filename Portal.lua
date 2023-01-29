@@ -205,14 +205,14 @@ vx    =40,
 local save
 function load_save()
 	save={ --saving the game
-	i=pmem(0)==0, --How for the first time the player went into the game
-	lvl=pmem(0),
-	lvl2=0, --ID set of levels
-	st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
-	--pmem(2) not used
-	d=pmem(3), --the number of player deaths (in the main game)
-	ct=pmem(4), --current time passing the main game
-}
+		i=pmem(0)==0, --How for the first time the player went into the game
+		lvl=pmem(0),
+		lvl2=0, --ID set of levels
+		st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
+		--pmem(2) not used
+		d=pmem(3), --the number of player deaths (in the main game)
+		ct=pmem(4), --current time passing the main game
+	}
 end
 load_save()
 
@@ -285,11 +285,13 @@ local prev = {}
 local keys = {}
 local holds = {}
 
+local _keyp = keyp
 local function nextinput()
 	prev = keys
 	keys = {}
 	if replay.index >= #replay.data // #inputaddrs then
 		replay.mode = "off"
+		keyp = _keyp
 		return
 	end
 	local data = {string.unpack(packstr, replay.data, replay.index * #inputaddrs + 1)}
