@@ -4010,8 +4010,41 @@ local function portal_gun()
 	end
 
 	if debug and (keyp(6) or (plr.cd2>1 and save.lvl~=3 and save.lvl2~=1)) then
-		if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
-		if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) draw.p[2]=nil update_world() end
+		if draw.p[1] then
+			if draw.p[1][4]==1 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[1][1] * 96, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96 + 2, draw.p[1][1] * 96, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96 + 94)
+			then
+				if draw.p[1][5]==1 then plr.x = draw.p[1][1] * 96 - 17 end
+				if draw.p[1][5]==2 then plr.x = draw.p[1][1] * 96 + 17 end
+			end
+			
+			if draw.p[1][4]==3 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[1][1] * 96 + 2, draw.p[1][2] * 128 + 2, draw.p[1][3] * 96, draw.p[1][1] * 96 + 94, draw.p[1][2] * 128 + 126, draw.p[1][3] * 96)
+			then
+				if draw.p[1][5]==1 then plr.z = draw.p[1][3] * 96 + 17 end
+				if draw.p[1][5]==2 then plr.z = draw.p[1][3] * 96 - 17 end
+			end
+			----
+			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
+			draw.p[1]=nil
+			update_world()
+		end
+		-----------------
+		if draw.p[2] then
+			if draw.p[2][4]==1 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96 + 2, draw.p[2][1] * 96, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96 + 94)
+			then
+				if draw.p[2][5]==1 then plr.x = draw.p[2][1] * 96 - 17 end
+				if draw.p[2][5]==2 then plr.x = draw.p[2][1] * 96 + 17 end
+			end
+			
+			if draw.p[2][4]==3 and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, draw.p[2][1] * 96 + 2, draw.p[2][2] * 128 + 2, draw.p[2][3] * 96, draw.p[2][1] * 96 + 94, draw.p[2][2] * 128 + 126, draw.p[2][3] * 96)
+			then
+				if draw.p[2][5]==1 then plr.z = draw.p[2][3] * 96 + 17 end
+				if draw.p[2][5]==2 then plr.z = draw.p[2][3] * 96 - 17 end
+			end
+			----
+			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
+			draw.p[2]=nil
+			update_world()
+		end
 	end
 	p_g.t2=max(p_g.t2-0.1,0)
 
