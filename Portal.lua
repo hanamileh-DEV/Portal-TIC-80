@@ -33,6 +33,158 @@ OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
 THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
+
+--- Compression routines - placed high as they may be used to compress various pieces of data in the source
+local function bitwriter()
+    return {
+        cur = 0,
+        bits = 0,
+        output = {},
+
+        write = function(self, val, bits)
+            self.cur = self.cur | (val << self.bits)
+            self.bits = self.bits + bits
+            self:flush()
+        end,
+        flush = function(self)
+            while self.bits >= 8 do
+                self.output[#self.output + 1] = string.char(self.cur & 0xFF)
+                self.bits = self.bits - 8
+                self.cur = self.cur >> 8
+            end
+        end,
+        finish = function(self)
+            self.output[#self.output + 1] = string.char(self.cur)
+            self.bits = 0
+            self.cur = 0
+            return table.concat(self.output)
+        end,
+    }
+end
+
+local function bitreader(data)
+    return {
+        data = data,
+        pos = 1,
+        bits = 0,
+
+        read = function(self, bits)
+            local value = 0
+            local cur = 0
+
+            if self.bits > 0 then
+                if bits >= (8 - self.bits) then
+                    value = self:byte() >> self.bits
+                    cur = 8 - self.bits
+                    self.bits = 0
+                    self.pos = self.pos + 1
+                else
+                    value = (self:byte() >> self.bits) & ((1 << bits) - 1)
+                    self.bits = self.bits + bits
+                    return value
+                end
+            end
+
+            while (cur + 8) <= bits do
+                value = value | (self:byte() << cur)
+                cur = cur + 8
+                self.pos = self.pos + 1
+            end
+
+            if cur < bits then
+                value = value | (self:byte() & ((1 << bits - cur) - 1)) << cur
+                self.bits = bits - cur
+            end
+
+            return value
+        end,
+        byte = function(self)
+            return string.byte(self.data, self.pos, self.pos)
+        end,
+    }
+end
+
+local function compress(str)
+    local writer = bitwriter()
+
+    local codes = {}
+    for i = 1, 256 do
+        codes[string.char(i - 1)] = i
+    end
+    local count = 256
+    local bits = 9
+    local inc = 512
+
+    local start = 1
+
+    while start <= #str do
+        for i = start, #str do
+            local cur = str:sub(start, i)
+            if i == #str then
+                writer:write(codes[cur], bits)
+                start = i + 1
+                break
+            end
+
+            local nxt = str:sub(start, i + 1)
+            if not codes[nxt] then
+                writer:write(codes[cur], bits)
+                count = count + 1
+                codes[nxt] = count
+                start = i + 1
+                break
+            end
+        end
+
+        if count == inc then
+            inc = inc * 2
+            bits = bits + 1
+        end
+    end
+
+    writer:write(0, bits)
+    return writer:finish()
+end
+
+local function decompress(str)
+    local reader = bitreader(str)
+
+    local codes = {}
+    for i = 1, 256 do
+        codes[i] = string.char(i - 1)
+    end
+    local bits = 9
+    local inc = 512
+
+    local result = {}
+    local prev
+
+    while true do
+        local code = reader:read(bits)
+        if code == 0 then
+            return table.concat(result)
+        end
+
+        if codes[code] then
+            result[#result + 1] = codes[code]
+            if prev then
+                codes[#codes + 1] = prev .. codes[code]:sub(1, 1)
+            end
+            prev = codes[code]
+        else
+            local new = prev .. prev:sub(1, 1)
+            result[#result + 1] = new
+            codes[#codes + 1] = new
+            prev = new
+        end
+
+        if #codes == inc - 1 then
+            inc = inc * 2
+            bits = bits + 1
+        end
+    end
+end
+
 local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.abs
 local pi2 = math.pi / 2
 
@@ -50,15 +202,19 @@ scr   =30,
 vx    =40,
 }
 
-local save={ --saving the game
-i=pmem(0)==0, --How for the first time the player went into the game
-lvl=pmem(0),
-lvl2=0, --ID set of levels
-st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
---pmem(2) not used
-d=pmem(3), --the number of player deaths (in the main game)
-ct=pmem(4), --current time passing the main game
+local save
+function load_save()
+	save={ --saving the game
+	i=pmem(0)==0, --How for the first time the player went into the game
+	lvl=pmem(0),
+	lvl2=0, --ID set of levels
+	st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
+	--pmem(2) not used
+	d=pmem(3), --the number of player deaths (in the main game)
+	ct=pmem(4), --current time passing the main game
 }
+end
+load_save()
 
 if save.st&2^31~=0 then
 	st.r_p   =save.st&2^0 ~=0
@@ -84,6 +240,29 @@ local function save_settings()
 	save.st=save.st+2^31
 	pmem(1,save.st)
 end
+
+-- Set to false to disable replay recording (but not playback)
+local enable_replays = true
+local replay = {
+	mode = "off",
+	data = "",
+	index = 0,
+	check = 0,
+	save = -1
+}
+if enable_replays then
+	replay.mode = "rec"
+end
+-- Random seed so that replays can use the same* random numbers
+-- * When running on the same OS. Only Lua 5.4 has consistent RNG.
+local seed = tstamp()
+math.randomseed(seed)
+-- Initial pmem data so replays can start from the same persistent state.
+local initialsave = {}
+for i = 0, 4 do
+	initialsave[i + 1] = pmem(i)
+end
+
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
 --player
@@ -2188,19 +2367,19 @@ init=function()end,
 scripts=function()end
 }
 
-for x=0,10 do
-	for y=0,2 do
-		maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,R(1,2)}
-		maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,R(1,2)}
-		maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,R(1,2)}
-		maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,R(1,2)}
-	end
-
-	for z=0,10 do
-		maps[0][2].w[#maps[0][2].w+1]={x,0,z,2,2,1}
-		if R()>0.5 then maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,R(1,5)} end
-	end
-end
+-- for x=0,10 do
+-- 	for y=0,2 do
+-- 		maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,R(1,2)}
+-- 		maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,R(1,2)}
+-- 		maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,R(1,2)}
+-- 		maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,R(1,2)}
+-- 	end
+-- 
+-- 	for z=0,10 do
+-- 		maps[0][2].w[#maps[0][2].w+1]={x,0,z,2,2,1}
+-- 		if R()>0.5 then maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,R(1,5)} end
+-- 	end
+-- end
 
 maps[0][2].w[#maps[0][2].w+1]={0,0,1,1,2,9}
 maps[0][2].w[#maps[0][2].w+1]={3,0,11,3,2,9}
@@ -4717,6 +4896,7 @@ menu_options = {
 		{draw = true, y = 65, t=1, text = "Resume"       , func = function() open="game" sfx_(17) poke(0x7FC3F,1,1) if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end lctp=ctp or 0 ctp=0 st_t=tstamp() end},
 		{draw = true, y = 75, t=1, text = "Restart level", func = function() open="load lvl" if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 for x=0,19 do for y=0,28 do setpix(93-x,y+99,5) end end end},
 		{draw = true, y = 95, t=1, text = "Settings"     , func = function() open="pause|settings" sfx_(16) ms.b = menu_options.s end},
+		{draw = true, y = 105, t=1, text = "Save Replay" , func = function() replay.save = 0 end},
 		{draw = true, y =125, t=1, text = "Exit"         , func = function() open="pause|accept" sfx_(16) ms.b = menu_options.pa end},
 	},
 	pa = { --pause|accept
@@ -4724,6 +4904,10 @@ menu_options = {
 		{draw = true, y =105, t=1, text = "Back"  , func = function() open="pause" sfx_(17) ms.b = menu_options.p end},
 	},
 }
+
+if replay.mode ~= "rec" then
+	menu_options.p[4].draw = false
+end
 
 local function upd_buttons()
 	for i = 1, #ms.b do
@@ -4773,7 +4957,136 @@ local sn_k={19,14,1,11,5}
 
 open="logo" sync(25 ,1,false) music(0)
 
+local inputaddrs = {
+	0xFF80,
+	0xFF84,
+	0xFF85,
+	0xFF86,
+	0xFF87,
+	0xFF88,
+	0xFF89,
+	0xFF8A,
+	0xFF8B,
+}
+local packstr = string.rep("B", #inputaddrs)
+
+local function saveinput()
+	local inputtab = {}
+	for i, a in ipairs(inputaddrs) do
+		inputtab[i] = peek(a)
+	end
+	local inputstr = string.pack(packstr, table.unpack(inputtab))
+	replay.data = replay.data .. inputstr
+end
+
+local prev = {}
+local keys = {}
+local holds = {}
+
+local function nextinput()
+	prev = keys
+	keys = {}
+	if replay.index >= #replay.data // #inputaddrs then
+		replay.mode = "off"
+		return
+	end
+	local data = {string.unpack(packstr, replay.data, replay.index * #inputaddrs + 1)}
+	replay.index = replay.index + 1
+	for i, a in ipairs(inputaddrs) do
+		poke(a, data[i])
+	end
+
+	local newholds = {}
+	for i = 6, 9 do
+		local k = data[i]
+		if k ~= 0 then
+			keys[k] = true
+			newholds[k] = (holds[k] or -1) + 1
+		end
+	end
+	holds = newholds
+end
+
+local function rpl_keyp(id, hold, period)
+	hold = hold or 0
+	period = period or 0
+	local prevdown = false
+	if hold == 0 or period == 0 or (holds[id] or 0) < hold then
+		prevdown = prev[id]
+	elseif period ~= 0 and holds[id] % period == 0 then
+		prevdown = prev[id]
+	end
+	return not prevdown and key(id)
+end
+
 function TIC()
+	cls()
+	if replay.check == 0 then
+		sync(4, 1)
+		local magic = {84, 65, 83, 33}
+		local found = true
+		for i = 0, 3 do
+			if peek(0x8000 + i) ~= magic[i + 1] then
+				found = false
+			end
+		end
+		if found then
+			local data = {}
+			for i = 0x8004, 0xFF7F do
+				data[i - 0x8003] = string.char(peek(i))
+			end
+			local compressed = table.concat(data)
+			local uncompressed = decompress(compressed)
+			local pmemcount = string.unpack("B", uncompressed)
+			for i = 0, pmemcount - 1 do
+				local value = string.unpack("I4", uncompressed, 2 + 4 * i)
+				pmem(i, value)
+			end
+			load_save()
+			replay.data = uncompressed:sub(2 + 4 * pmemcount)
+			replay.mode = "play"
+			keyp = rpl_keyp
+			menu_options.p[4].draw = false
+		end
+		replay.check = 1
+		return
+	elseif replay.check == 1 then
+		sync(4, 0)
+		replay.check = -1
+	end
+
+	if keyp(38) and replay.mode == "rec" then -- "="
+		replay.save = 0
+	end
+	if replay.save == 0 then
+		local uncompressed = string.pack("B", #initialsave)
+		for _, v in ipairs(initialsave) do
+			uncompressed = uncompressed .. string.pack("I4", v)
+		end
+		uncompressed = uncompressed .. replay.data
+		local compressed = compress(uncompressed)
+		if #compressed > 32636 then
+			trace("replay too large", 2)
+			replay.save = 1
+			return
+		end
+		poke(0x8000, 84)
+		poke(0x8001, 65)
+		poke(0x8002, 83)
+		poke(0x8003, 33)
+		for i = 1, #compressed do
+			poke(0x8003 + i, string.byte(compressed, i, i))
+		end
+		sync(4, 1, true)
+		replay.save = -1
+	end
+
+	if replay.mode == "rec" then
+		saveinput()
+	elseif replay.mode == "play" then
+		nextinput()
+	end
+
 	--fps counter
 	t1 = time()
 	t = t + 1
