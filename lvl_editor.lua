@@ -1322,6 +1322,7 @@ local draw={
 
 --funcions
 local addwall, addobj, respal, updpal, darkpal
+local menu
 --time
 local t1=0 --The start time of the frame drawing
 local t2=0 --The time for drawing the current frame
@@ -1331,6 +1332,7 @@ local stt=0 --The timer of the start of the game
 local clp1,clp2
 local mx, my, cl1, cl2, whl
 local cid
+local ins --is the curcos in the scene
 --sprite editor
 local function setpix(sx,sy,color)
 	local id=sx//8+sy//8*16
@@ -1665,35 +1667,30 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 	end
 end
 
-function unitic.update(draw_portal,p_id)
+function unitic.update()
 	--writing all polygons in unitic.poly
 	unitic.poly = { v = {}, f = {}, sp = {} }
 	unitic.obj  = {}
 	unitic.p    = {}
 	--world--
 	for ind = 1, #draw.world.v do
-		unitic.poly.v[ind] = { draw.world.v[ind][1], draw.world.v[ind][2], draw.world.v[ind][3] }
+		unitic.poly.v[ind] = {
+			draw.world.v[ind][1],
+			draw.world.v[ind][2],
+			draw.world.v[ind][3]
+		}
 	end
 	--faces
-	if draw_portal==nil then
-		for ind=1,#draw.world.f do unitic.poly.f[ind]={draw.world.f[ind][1],draw.world.f[ind][2],draw.world.f[ind][3],f=draw.world.f[ind].f,uv=draw.world.f[ind].uv} end
-	elseif draw_portal and p_id==1 then
-		for ind=1,#draw.world_bp.f do unitic.poly.f[ind]={draw.world_bp.f[ind][1],draw.world_bp.f[ind][2],draw.world_bp.f[ind][3],f=draw.world_bp.f[ind].f,uv=draw.world_bp.f[ind].uv} end
-	elseif draw_portal and p_id==2 then
-		for ind=1,#draw.world_op.f do unitic.poly.f[ind]={draw.world_op.f[ind][1],draw.world_op.f[ind][2],draw.world_op.f[ind][3],f=draw.world_op.f[ind].f,uv=draw.world_op.f[ind].uv} end
-	else
-		error("unknown function inputs | "..draw_portal.." "..p_id)
-	end
+	for ind=1,#draw.world.f do
+		unitic.poly.f[ind]={
+			draw.world.f[ind][1],
+			draw.world.f[ind][2],
+			draw.world.f[ind][3],
+			f=draw.world.f[ind].f,
+			uv=draw.world.f[ind].uv,
+			w=draw.world.f[ind].w
+		} end
 	--objects (1)--
-	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
-	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
-	
-	local f3={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{23,248},{29,247},{23,247},-1},f=1},{16,13,15,uv={{23,248},{29,247},{23,247},-1},f=1},{10,12,11,uv={{23,248},{29,248},{29,247},-1},f=1},{16,14,13,uv={{23,248},{29,248},{29,247},-1},f=1}}
-	local f4={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{16,248},{22,247},{16,247},-1},f=1},{16,13,15,uv={{16,248},{22,247},{16,247},-1},f=1},{10,12,11,uv={{16,248},{22,248},{22,247},-1},f=1},{16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1}}
-
-	local f5={{2,3,1,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{4,7,3,uv={{45+16,232},{32+16,245},{45+16,245},-1},f=2},{8,5,7,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{7,1,3,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{4,6,8,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{2,4,3,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{4,8,7,uv={{45+16,232},{32+16,232},{32+16,245},-1},f=2},{8,6,5,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{7,5,1,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{4,2,6,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2}}
-	local f6={{2,3,1,uv={{45,246},{32,245},{32,246},-1},f=2},{4,7,3,uv={{45,232},{32,245},{45,245},-1},f=2},{8,5,7,uv={{45,246},{32,245},{32,246},-1},f=2},{7,1,3,uv={{45,246},{32,245},{32,246},-1},f=2},{4,6,8,uv={{45,246},{32,245},{32,246},-1},f=2},{2,4,3,uv={{45,246},{45,245},{32,245},-1},f=2},{4,8,7,uv={{45,232},{32,232},{32,245},-1},f=2},{8,6,5,uv={{45,246},{45,245},{32,245},-1},f=2},{7,5,1,uv={{45,246},{45,245},{32,245},-1},f=2},{4,2,6,uv={{45,246},{45,245},{32,245},-1},f=2}}
-	
 	local i2=0
 	for i=1,#draw.objects.c  do
 		i2=i2+1 unitic.obj[i2]=draw.objects.c [i]
@@ -1715,19 +1712,10 @@ function unitic.update(draw_portal,p_id)
 	for i=1,#draw.objects.cd do i2=i2+1 unitic.obj[i2]=draw.objects.cd[i] end
 	for i=1,#draw.objects.lb do i2=i2+1 unitic.obj[i2]=draw.objects.lb[i] end
 	for i=1,#draw.objects.l  do i2=i2+1 unitic.obj[i2]=draw.objects.l [i] end
-	for i=1,#draw.objects.b  do
-		if draw.objects.b[i].s and draw.objects.b[i].tick then draw.objects.b[i].model.f=f2 elseif draw.objects.b[i].tick then draw.objects.b[i].model.f=f1 end
-		i2=i2+1 unitic.obj[i2]=draw.objects.b[i]
-	end
-	for i=1,#draw.objects.t do i2=i2+1 unitic.obj[i2]=draw.objects.t[i] end
-	for i=1,#draw.objects.fb do
-		if draw.objects.fb[i].s and draw.objects.fb[i].tick then draw.objects.fb[i].model.f=f3 elseif draw.objects.fb[i].tick then draw.objects.fb[i].model.f=f4 end
-		i2=i2+1 unitic.obj[i2]=draw.objects.fb[i]
-	end
-	for i=1,#draw.objects.d  do
-		if draw.objects.d[i].s then draw.objects.d[i].model.f=f5 else draw.objects.d[i].model.f=f6 end
-		i2=i2+1 unitic.obj[i2]=draw.objects.d[i]
-	end
+	for i=1,#draw.objects.b  do i2=i2+1 unitic.obj[i2]=draw.objects.b[i]  end
+	for i=1,#draw.objects.t  do i2=i2+1 unitic.obj[i2]=draw.objects.t[i]  end
+	for i=1,#draw.objects.fb do i2=i2+1 unitic.obj[i2]=draw.objects.fb[i] end
+	for i=1,#draw.objects.d  do i2=i2+1 unitic.obj[i2]=draw.objects.d[i]  end
 	--objects (2)--
 	local i2=#unitic.poly.f
 
@@ -1776,22 +1764,6 @@ function unitic.update(draw_portal,p_id)
 		unitic.poly.v[ind][4]=c3>0
 		end
 	end
-	--points for debug
-	--[[
-	for ind = 1, #draw.world.sp do
-		local a1 = draw.world.sp[ind][1] - cam.x
-		local b1 = draw.world.sp[ind][2] - cam.y
-		local c1 = draw.world.sp[ind][3] - cam.z
-
-		local c2 = c1 * tycos - a1 * tysin
-
-		local a3 = c1 * tysin + a1 * tycos
-		local b3 = b1 * txcos - c2 * txsin
-		local c3 = b1 * txsin + c2 * txcos
-		if c3>-0.001 then c3=-0.001 end
-
-		unitic.poly.sp[ind]={a3,b3,c3}
-	end]]
 
 	--particles
 	for ind = 1, #draw.pr do
@@ -1875,6 +1847,15 @@ function unitic.draw()
 					unitic.poly.v[poly[2]][3],
 					unitic.poly.v[poly[3]][3])
 			end
+			if poly.w[6] == menu.w.m_sel then
+				line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],13)
+				line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],13)
+				line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],13)
+			elseif poly.w[6] == menu.w.sel then
+				line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],7)
+				line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],7)
+				line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],7)
+			end
 		end
 	end
 
@@ -1887,7 +1868,7 @@ function unitic.draw()
 				local color1= color % 4
 				local color2= color //4
 				local size = 1/unitic.p[i][6]*2.4*unitic.fov
-
+				if color == 0 then size = 1 end
 				local z0 = unitic.p[i][3]
 
 				ttri(
@@ -2316,8 +2297,30 @@ function unitic.render() --------
 end
 
 --map
-function addwall(x, y, z, angle, face, type)
-	draw.map[angle][x][y][z]={face,type}
+local walls = {}
+
+function addwall(x, y, z, angle, face, type,i)
+	draw.map[angle][x][y][z]={face,type,i}
+end
+
+function upd_walls()
+	for i=1,3 do
+		draw.map[i]={}
+		for x=0,world_size[1]-1 do
+			draw.map[i][x]={}
+			for y=0,world_size[2]-1 do
+				draw.map[i][x][y]={}
+				for z=0,world_size[3]-1 do
+					draw.map[i][x][y][z]={0,0,0}
+				end
+			end
+		end
+	end
+
+	for i=1,#walls do
+		addwall(walls[i][1],walls[i][2],walls[i][3],walls[i][4],walls[i][5],walls[i][6],i)
+	end
+	update_world()
 end
 
 function addobj(x, y, z, type,t1) --objects
@@ -2411,14 +2414,14 @@ function update_world()
 	for angle=1,3 do for x0=0,world_size[1]-1 do for y0=0,world_size[2]-1 do for z0=0,world_size[3]-1 do
 		local face = draw.map[angle][x0][y0][z0][1]
 		local type = draw.map[angle][x0][y0][z0][2]-1
-
+		local id   = draw.map[angle][x0][y0][z0][3]
 		local type1 = type%5
 		local type2 = type//5
 		------
 		if type~=-1 then
 			if angle==1 then
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
 				--
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1][4]=true
@@ -2427,8 +2430,8 @@ function update_world()
 			end
 
 			if angle==2 then
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,0+type1*24,24+type1*24},y={152+type2*24,176+type2*24,152+type2*24}}})
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,24+type1*24,24+type1*24},y={176+type2*24,176+type2*24,152+type2*24}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,0+type1*24,24+type1*24},y={152+type2*24,176+type2*24,152+type2*24}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,24+type1*24,24+type1*24},y={176+type2*24,176+type2*24,152+type2*24}}})
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+2][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1][4]=true
@@ -2436,8 +2439,8 @@ function update_world()
 			end
 
 			if angle==3 then
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+2][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2][4]=true
@@ -2452,13 +2455,6 @@ function update_world()
 					draw.world.f[idx].uv.x[i] = (2 * type1 + 1) * 24 - draw.world.f[idx].uv.x[i]
 				end
 			end
-		end
-
-		local last = #draw.world.f
-		if type == 4 and angle ~= 2 then
-			draw.p_verts[1] = {draw.world.f[last - 1], draw.world.f[last]}
-		elseif type == 5 and angle ~= 2 then
-			draw.p_verts[2] = {draw.world.f[last - 1], draw.world.f[last]}
 		end
 		------
 	end end end end
@@ -2490,7 +2486,7 @@ function update_world()
 				or (vx==-1 and draw.map[1][lx+1][ly][lz  ][2]~=0 and draw.map[1][lx+1][ly][lz  ][2]~=3 and draw.map[1][lx+1][ly][lz  ][2]~=15)
 				or (vz==1  and draw.map[3][lx  ][ly][lz  ][2]~=0 and draw.map[3][lx  ][ly][lz  ][2]~=3 and draw.map[3][lx  ][ly][lz  ][2]~=15)
 				or (vz==-1 and draw.map[3][lx  ][ly][lz+1][2]~=0 and draw.map[3][lx  ][ly][lz+1][2]~=3 and draw.map[3][lx  ][ly][lz+1][2]~=15) then draw.pr_g[#draw.pr_g+1]={lx,ly,lz,vx,vz} break
-				end 
+				end
 			end
 		end
 	end
@@ -2515,24 +2511,21 @@ local function load_world() --Loads the world from ROM memory (from the 'Maps' t
 	}
 
 	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
-		table.insert(draw.world.v,{x*96,y*128,z*96,false}) --this boolead is resposible for whether the point needs to be updated or not
+		table.insert(draw.world.v,{x*96,y*128,z*96,false}) --this boolean is resposible for whether the point needs to be updated or not
 		addp(x*96,y*128,z*96,0,0,0, math.huge,0)
 	end end end
 
 	for i=1,3 do
-		q3={}
+		draw.map[i]={}
 		for x=0,world_size[1]-1 do
-			q2={}
+			draw.map[i][x]={}
 			for y=0,world_size[2]-1 do
-				q={}
+				draw.map[i][x][y]={}
 				for z=0,world_size[3]-1 do
-					q[z]={0,0}
+					draw.map[i][x][y][z]={0,0}
 				end
-				q2[y]=q
 			end
-			q3[x]=q2
 		end
-		draw.map[i]=q3
 	end
 
 	----
@@ -2581,7 +2574,6 @@ local avf={} --average frame
 local fr={0,0,0} --framerate
 
 local f_m = false --fixed mouse cursor
-local m_m = false
 local fmt = 0
 --player speed
 local speed=4
@@ -2643,28 +2635,32 @@ local function upd_buttons_bdr(bdr_y,orig_pal)
 	end
 end
 
-local function button(bx,by,bw,bh)
+local function button(bx,by,bw,bh,cursor)
 	if mx>=bx and my>=by and mx<bx+bw and my<by+bh then
 		-- rectb(bx,by,bw,bh,13)
-		cid=1
+		if cursor~=false then cid=1 end --true or nil
 		return true
 	end
 end
 
-local menu = {
+local function print_mid(text,x,y,color)
+	local text_size=print(text,240,0)
+	print(text,x - text_size//2, y, color)
+end
+
+menu = {
 	open = true,
 	type = 1,
 	w={ --walls editor
-		sel = 0 --select wall id
+		sel = 0, --select wall id
+		m_sel = -1, --mouse selection
+		sl = {id=0, val=0, val_2=0 , t=0, n= false} --slider
 	},
 	o={ --object editor
 
 	}
 }
 
-local walls = {
-
-}
 open="load lvl"
 
 function TIC()
@@ -2677,6 +2673,7 @@ function TIC()
 	cid=0 --cursor id
 
 	nclp2 = not clp2 and tm2~=0
+	ins = true --is the curcos in the scene
 
 	if cl1 then tm1 = tm1 + 1 else tm1 = 0 end
 	if cl2 then tm2 = tm2 + 1 else tm2 = 0 end
@@ -2768,11 +2765,12 @@ function TIC()
 
 		if cl2 then f_m = true
 		elseif nclp2 then f_m = false end
-
-		if f_m then
-			poke(0x7FC3F,1,1)
-		else 
-			poke(0x7FC3F,0,1)
+		if not menu.w.sl.n then
+			if f_m then
+				poke(0x7FC3F,1,1)
+			else
+				poke(0x7FC3F,0,1)
+			end
 		end
 
 	 	if p.t==0 and stt>2 and f_m and fmt>1 then
@@ -2811,6 +2809,7 @@ function TIC()
 
 		line(220,0,220,6,7)
 		line(230,0,230,6,7)
+		if my<7 or mx<0 or mx>239 or my>135 then ins = false end
 		if menu.open then
 			if menu.type==1 then
 				rect(220,0,10,7,7)
@@ -2847,10 +2846,13 @@ function TIC()
 			end
 		end
 		--right menu
-		if menu.open then
+		if menu.open and not f_m then
 			if menu.type==1 then
 				rect( 162,7,78,68,2)
 				rectb(162,7,78,68,1)
+
+				if button(162,7,78,68,false) then ins = false end
+
 				print("Walls: "..#walls,164,9,7)
 				print("Add",220,9,4)
 				if button(218,8,21,7) then
@@ -2859,29 +2861,78 @@ function TIC()
 					if clp1 then
 						walls[#walls+1] = {0,0,0,1,3,1}
 						menu.w.sel = #walls
+						upd_walls()
 					end
 				end
 
-				if menu.w.sel~=0 then
-					local wall =walls[menu.w.sel]
-					print("X:",164,19,11)
-					print("Y:",164,26,14)
-					print("Z:",164,33,9 )
-					
-					print("Angle:" ,164,43,7)
-					print("Normal:",164,50,7)
-					print("type:"  ,164,57,7)
 
-					print(wall[1],210,19,7)
-					print(wall[2],210,26,7)
-					print(wall[3],210,33,7)
+				if menu.w.sel~=0 then
+					if btnp(0,30,2) or btnp(2,30,2) then menu.w.sel = max(1, menu.w.sel-1) end
+					if btnp(1,30,2) or btnp(3,30,2) then menu.w.sel = min(#walls, menu.w.sel+1) end
+
+					local wall = walls[menu.w.sel]
+					print("X:",164,19,11)
+					print("Y:",164,27,14)
+					print("Z:",164,35,9 )
+					print("type:"  ,164,43,7)
+					print("Angle:" ,164,51,7)
+					print("Normal:",164,59,7)
+					--
+					local sl = menu.w.sl
+					--
+					local ind = {1,2,3,6}
+					local min_max={{0,10},{0,2},{0,10},{1,17}}
+					for i = 1,4 do
+						rect(204,10+i*8,15,7,1)
+						print_mid(wall[ind[i]],212,11+i*8,7)
+						if button(204,10+i*8,15,7) then
+							if clp1 then
+								sl.n = true
+								sl.id = i
+								sl.val = wall[ind[i]]
+								sl.val_2 = 0
+								sl.t = 0
+								mx = 0
+								poke(0x7FC3F,1,1)
+							end
+						end
+					end
+					--
+					if sl.n then
+						if cl1 then
+							sl.t = sl.t + 1
+							if sl.t>2 then
+								sl.val_2 = sl.val_2 + mx
+								if mx ~=0 then
+									upd_walls()
+								end
+								wall[ind[sl.id]] = sl.val + sl.val_2//30
+
+
+								if wall[ind[sl.id]]>min_max[sl.id][2] then
+									wall[ind[sl.id]]=min_max[sl.id][2]
+									sl.val_2 = 0
+									sl.val = wall[ind[sl.id]]
+								elseif wall[ind[sl.id]]<min_max[sl.id][1] then
+									wall[ind[sl.id]]=min_max[sl.id][1]
+									sl.val_2 = 0
+									sl.val = wall[ind[sl.id]]
+								end
+							end
+						elseif not cl1 then
+							sl.t = 0
+							poke(0x7FC3F,0,1)
+							sl.n = false
+						end
+					end
+					--
 					for vb = 0,1 do
 						vbank(vb)
-						spr(431 + wall[4],210,43,15)
-						spr(447 + wall[5],210,50,15)
+						spr(447 + wall[5],210,51,15)
+						spr(431 + wall[4],210,59,15)
 					end
-
-					if button(210,50,5,5) then
+					--normal
+					if button(210,51,5,5) then
 						local text={
 							"Only the front side is displayed",
 							"Only the back side is displayed",
@@ -2890,28 +2941,46 @@ function TIC()
 						top_text = text[wall[5]]
 						if clp1 then
 							wall[5] = wall[5]%3 + 1
+							upd_walls()
 						end
 					end
-					
-					if button(210,43,5,5) then
+
+					--rotation
+					if button(210,59,5,5) then
 						local text={
-							"Affects the rotation | XZ [wall]",
-							"Affects the rotation | YZ [floor]",
+							"Affects the rotation | YZ [wall]",
+							"Affects the rotation | XZ [floor]",
 							"Affects the rotation | XY [wall]",
 						}
 						top_text = text[wall[4]]
 						if clp1 then
 							wall[4] = wall[4]%3 + 1
+							upd_walls()
 						end
 					end
 
-					print(wall[6],210,57,7)
-
+					--delete button
 					print("Delete",203,67,13)
 					if button(203,67,35,5) then
 						print("Delete",203,67,7)
 						top_text = "Delete the current wall"
-						if clp1 then menu.w.sel = menu.w.sel - 1 table.remove(walls) end
+						if clp1 then
+							menu.w.sel = menu.w.sel - 1
+							table.remove(walls)
+							upd_walls()
+						end
+					end
+
+					--clone button
+					print("Clone",164,67,11)
+					if button(164,67,29,5) then
+						print("Clone",164,67,7)
+						top_text = "Clone the current wall"
+						if clp1 then
+							walls[#walls+1] = {wall[1],wall[2],wall[3],wall[4],wall[5],wall[6]}
+							menu.w.sel = #walls
+							upd_walls()
+						end
 					end
 				else
 					print([[Click "Add" to]],165,29,4)
@@ -2919,12 +2988,34 @@ function TIC()
 				end
 			end
 		end
+		--mouse selection
+			menu.w.m_sel = -1
+			if ins or cl2 then
+			  local x1 = plr.x
+			  local y1 = plr.y
+			  local z1 = plr.z
+			  
+			  local tx = plr.tx --some kind of math magic is needed here
+			  local ty = plr.ty
+  
+			  local x2 = plr.x - 100000 * math.sin(ty)*math.cos(tx)
+			  local y2 = plr.y - 100000 * math.sin(tx)
+			  local z2 = plr.z - 100000 * math.cos(ty)*math.cos(tx)
+			  
+			  local rc1 = {true,true,true,true,true,true,true,true,true,true,true,true}
+			  local rc2 = {true,true,true,true,true,true,true,true,true,true}
+			  --only for walls, ifnore objects
+			  local x3,y3,z3,angle = raycast_legacy(x1,y1,z1,x2,y2,z2,rc1,rc2,false)
+			  if x3 then
+				  menu.w.m_sel = draw.map[angle][x3][y3][z3][3]
+			  end
+		  end
 		--top debug panel (2)
 		print(top_text,1,1,7)
 	end
-	--------------------------
-	-- settings menu ---------
-	--------------------------
+	------------------
+	--- end ----------
+	------------------
 	--cursor id
 	vbank(0)
 	poke4(0x07FF6,cid)
@@ -2972,7 +3063,7 @@ end
 -- 012:666666666555555a656555aa65555aab6555aabb655aabbb65aabbbb65aabbbb
 -- 013:6aaaaaa6aaaaaaaaabbbbbbabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 014:66666665a5555554aa556554baa55554bbaa5454bbbaa554bbbbaa54bbbbaa54
--- 015:0000000000022000002220000003200000022000000220000002300000222200
+-- 015:0000000010101010000000001010101000000000101010100000000010101010
 -- 016:4333333343333333434333334333333343333333433333334343334343333333
 -- 017:3433343333333333333333333333333333343333333333333333333333333333
 -- 018:3332323233333332333333323333333232333332333323323333333233333332
@@ -2988,7 +3079,7 @@ end
 -- 028:65aabbbb6aabbbbb6aabbbbb6aabbbbbaabbbbbbaabbbbbbaabbbbbbaabbbbbb
 -- 029:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 030:bbbbaa54bbbbbaa4bbbbbaa4bbbbbaa4bbbbbbaabbbbbbaabbbbbbaabbbbbbaa
--- 031:0000000000056000005006000000050000005000000500000050000000556500
+-- 031:0000000010101010000000001010101000000000101010100000000010101010
 -- 032:4333333343333333434333334333333343333333433333334333433343333333
 -- 033:3433333333333233433333333333333333333233333333333323333333333333
 -- 034:3332333233333332333333323333333232333232333333323333333233333332
@@ -3004,7 +3095,7 @@ end
 -- 044:aabbbbbbaabbbbbbaabbbbbbaabbbbbb6aabbbbb6aabbbbb6aabbbbb65aabbbb
 -- 045:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 -- 046:bbbbbbaabbbbbbaabbbbbbaabbbbbbaabbbbbaa4bbbbbaa4bbbbbaa4bbbbaa54
--- 047:0000000000043000004003000000040000004000000004000030030000043000
+-- 047:0000000010101010000000001010101000000000101010100000000010101010
 -- 048:4333333343333333433333334333333343343333433333334333333332222222
 -- 049:3333333333333332233323333333333333333332333333333333333322222222
 -- 050:3332333233333332333333323333333233233232333333323333333222222222
@@ -3020,7 +3111,7 @@ end
 -- 060:65aabbbb65aabbbb655aabbb6555aabb65565aab655555aa6555555a54444444
 -- 061:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbabbbbbbaaaaaaaaa4aaaaaa4
 -- 062:bbbbaa54bbbbaa54bbbaa554bbaa5554baa55454aa555554a555555444444444
--- 063:0000000000c0070000b00b0000c00c00007bcc000000070000000b0000000c00
+-- 063:0000000010101010000000001010101000000000101010100000000010101010
 -- 064:666666666555555d656555dd65555dde6555ddee655ddeee65ddeeee65ddeeee
 -- 065:6dddddd6dddddddddeeeeeedeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 -- 066:66666665d5555554dd556554edd55554eedd5454eeedd554eeeedd54eeeedd54
@@ -3036,7 +3127,7 @@ end
 -- 076:6666666665671111656777776567711165671111656711776567117765671177
 -- 077:6666666611111111777777771177771111177111711771177117711771177117
 -- 078:6666666511117654777776541117765411117654771176547711765477117654
--- 079:0000000000aaba0000a0000000b0000000aaa00000000b0000a00a00000aa000
+-- 079:0000000010101010000000001010101000000000101010100000000010101010
 -- 080:65ddeeee6ddeeeee6ddeeeee6ddeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeee
 -- 081:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 -- 082:eeeedd54eeeeedd4eeeeedd4eeeeedd4eeeeeeddeeeeeeddeeeeeeddeeeeeedd
@@ -3052,7 +3143,7 @@ end
 -- 092:6567117765671177656711776567117765671111656771116567777765671111
 -- 093:7117711171177711711777777117711711177111117777117777777711111111
 -- 094:1111765411117654771176547711765411117654111776547777765411117654
--- 095:00000000000ded0000d0000000d0000000edd00000d00d0000d00d00000ed000
+-- 095:0000000010101010000000001010101000000000101010100000000010101010
 -- 096:ddeeeeeeddeeeeeeddeeeeeeddeeeeee6ddeeeee6ddeeeee6ddeeeee65ddeeee
 -- 097:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 -- 098:eeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeedd4eeeeedd4eeeeedd4eeeedd54
@@ -3068,7 +3159,7 @@ end
 -- 108:6567777765671717656717176567777765677117656771176567777765677117
 -- 109:7777777717177777171777777777777711733711117337117777777733733733
 -- 110:7777765477777654777776547777765473377654733776547777765471177654
--- 111:0000000000cbcc0000000b0000000c000000c0000000b000000b0000000c0000
+-- 111:0000000010101010000000001010101000000000101010100000000010101010
 -- 112:65ddeeee65ddeeee655ddeee6555ddee65565dde655555dd6555555d54444444
 -- 113:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedeeeeeeddddddddd4dddddd4
 -- 114:eeeedd54eeeedd54eeedd554eedd5554edd55454dd555554d555555444444444
@@ -3084,7 +3175,7 @@ end
 -- 124:6567711765677777656666666555555565565555655556556555555554444444
 -- 125:3373373377777777666666665555555555555554555545556555555544444444
 -- 126:7117765477777654666666545555555455455454455555545555555444444444
--- 127:0000000000056000005006000050050000055000005005000050050000056000
+-- 127:0000000010101010000000001010101000000000101010100000000010101010
 -- 128:6666666665555555656555556555555565555655655555556565556565555555
 -- 129:666666665555555565556555555555555655555655555552555555225555522f
 -- 130:666666655555555465552222552222222222ffff22ffffffffffffffffffffff
@@ -3100,7 +3191,7 @@ end
 -- 140:ffffffffff888ffffffffffffffffffffffffffffffffff8ffffffffffffffff
 -- 141:fffffffffffffffffffffff9ffffffffffffffff88fffffffffffffffffffff8
 -- 142:ffffffffffffffff99ffffffffffffffffffffffffffffffffffffff88ffffff
--- 143:0000000000043000004003000030040000034300000004000030030000043000
+-- 143:0000000010101010000000001010101000000000101010100000000010101010
 -- 144:6555555565555555656555556555555565555555655555556565556565555555
 -- 145:565522ff55522fff55222fff5522ffff522fffff522fffff22ffffff22ffffff
 -- 146:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -3116,7 +3207,7 @@ end
 -- 156:ffff999fffffffffffffffffffffffffffffffffffffffffffffffffff888fff
 -- 157:fffffffffffffffff999fffffffffffffffffffffffffff8999fffffffffffff
 -- 158:ffffffffffffffffffffffffffffffffffffffff88ffffffffffffffffffffff
--- 159:7777777777177111711771717717717177177171711171117777777777777777
+-- 159:0000000010101010000000001010101000000000101010100000000010101010
 -- 160:6555555565555555656555556555555265555552655555526555655265555552
 -- 161:22ffffff22ffffff22ffffff2fffffff2fffffff2fffffff2fffffff2fffffff
 -- 162:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -3132,7 +3223,7 @@ end
 -- 172:fffffffffffffffffffffffffff999ffffffffffffffffffffffffffffffff88
 -- 173:fffffffffffffffffff888fffffffffffffffff9ffffffffffffffff8fffffff
 -- 174:ffffffffffffffffffffffffffffffff99ffffffffffffffffffffffffffffff
--- 175:0000000000800899089008000090088800800009089808880000000000000000
+-- 175:0000000010101010000000001010101000000000101010100000000010101010
 -- 176:6555555265555552655555526555555265565555655555556555555554444444
 -- 177:2fffffff2fffffff2fffffff2fffffff22ffffff22ffffff22ffffff422fffff
 -- 178:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -3148,6 +3239,7 @@ end
 -- 188:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 -- 189:ffffffffffffffffffffff88fffffffff999ffffffffffffffffffffffffffff
 -- 190:ffffffffffffffff8ffffffffffffffffffffffff999ffffffffffffffffffff
+-- 191:0000000010101010000000001010101000000000101010100000000010101010
 -- 192:555555555ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc
 -- 193:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
 -- 194:55555555ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaacccccccc
@@ -3163,6 +3255,7 @@ end
 -- 204:4444444343333332433433324333323243433332433323324333333232222222
 -- 205:4444444343333332433433324333323243433332433323324333333232222222
 -- 206:4444444343333332433433324333323243433332433323324333333232222222
+-- 207:0000000010101010000000001010101000000000101010100000000010101010
 -- 208:5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa
 -- 209:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
 -- 210:bbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaa
@@ -3178,6 +3271,7 @@ end
 -- 220:4444444343333332433433324333323243433332433323324333333232222222
 -- 221:4444444343333332433433324333323243433332433323324333333232222222
 -- 222:4444444343333332433433324333323243433332433323324333333232222222
+-- 223:0000000010101010000000001010101000000000101010100000000010101010
 -- 224:5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb
 -- 225:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
 -- 226:ccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb
@@ -3193,6 +3287,7 @@ end
 -- 236:4444444343333332433433324333323243433332433323324333333232222222
 -- 237:4444444343333332433433324333323243433332433323324333333232222222
 -- 238:4444444343333332433433324333323243433332433323324333333232222222
+-- 239:0000000010101010000000001010101000000000101010100000000010101010
 -- 240:5aaaaaaa5ccccccc5bbbbbbb5aaaaaaa5ccccccc5bbbbbbb5555555554444444
 -- 241:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb5555555544444444
 -- 242:aaaaaaaaccccccccbbbbbbbbaaaaaaaaccccccccbbbbbbbb5555555544444444
@@ -3205,7 +3300,10 @@ end
 -- 249:2355555523555555235555552355555523555555235555552355555523555555
 -- 250:5555555555555555555555555555555555555555555555555555555555555555
 -- 251:5555553255555532555555325555553255555532555555325555553255555532
--- 255:ffff0000ffff0000ffff0000ffff00000000ffff0000ffff0000ffff0000ffff
+-- 252:0000000010101010000000001010101000000000101010100000000010101010
+-- 253:0000000010101010000000001010101000000000101010100000000010101010
+-- 254:0000000010101010000000001010101000000000101010100000000010101010
+-- 255:0000000010101010000000001010101000000000101010100000000010101010
 -- </TILES>
 
 -- <TILES1>
@@ -3418,9 +3516,9 @@ end
 -- 157:0000000010101010000000001010101000000000101010100000000010101010
 -- 158:0000000010101010000000001010101000000000101010100000000010101010
 -- 159:0000000010101010000000001010101000000000101010100000000010101010
--- 160:0000000010101010000000001010101000000000101010100000000010101010
--- 161:0000000010101010000000001010101000000000101010100000000010101010
--- 162:0000000010101010000000001010101000000000101010100000000010101010
+-- 160:a0a00000a0a000000a000000a0a00000a0a00000000000000000000000000000
+-- 161:d0d00000d0d000000dd0000000d00000dd000000000000000000000000000000
+-- 162:8880000000800000080000008000000088800000000000000000000000000000
 -- 163:0000000010101010000000001010101000000000101010100000000010101010
 -- 164:0000000010101010000000001010101000000000101010100000000010101010
 -- 165:0000000010101010000000001010101000000000101010100000000010101010
@@ -3434,9 +3532,9 @@ end
 -- 173:2222222233333333333333332222222211111111111111111111111111111111
 -- 174:2222222233333332333333322222233211112332111123321111233211112332
 -- 175:0000000010101010000000001010101000000000101010100000000010101010
--- 176:7aaaafff8fffafff8fffafff8fffafff88887fff00000fffffffffffffffffff
--- 177:78888fffdfff8fffdfff8fffdfff8fffdddd7fff00000fffffffffffffffffff
--- 178:7ddddfffafffdfffafffdfffafffdfffaaaa7fff00000fffffffffffffffffff
+-- 176:78888fffd0008fffdfff8fffdfff8fffdddd7fff00000fffffffffffffffffff
+-- 177:7aaaafff8000afff8fffafff8fffafff88887fff00000fffffffffffffffffff
+-- 178:7ddddfffa000dfffafffdfffafffdfffaaaa7fff00000fffffffffffffffffff
 -- 179:0000000010101010000000001010101000000000101010100000000010101010
 -- 180:0000000010101010000000001010101000000000101010100000000010101010
 -- 181:0000000010101010000000001010101000000000101010100000000010101010
