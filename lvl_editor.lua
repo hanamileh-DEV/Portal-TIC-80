@@ -1868,7 +1868,7 @@ function unitic.draw()
 				local color1= color % 4
 				local color2= color //4
 				local size = 1/unitic.p[i][6]*2.4*unitic.fov
-				if color == 0 then size = 1 end
+				size = 1
 				local z0 = unitic.p[i][3]
 
 				ttri(
@@ -2995,16 +2995,36 @@ function TIC()
 			  local y1 = plr.y
 			  local z1 = plr.z
 			  
-			  local tx = plr.tx --some kind of math magic is needed here
-			  local ty = plr.ty
-  
-			  local x2 = plr.x - 100000 * math.sin(ty)*math.cos(tx)
-			  local y2 = plr.y - 100000 * math.sin(tx)
-			  local z2 = plr.z - 100000 * math.cos(ty)*math.cos(tx)
+			  local x2 = (mx - 120) * 100 / unitic.fov
+			  local y2 = (my - 68 ) * 100 / unitic.fov
+
+			  if cl2 then x2,y2 = 0,0 end
+			  local z2 = - 100
 			  
+				local txsin = math.sin(-plr.tx)
+				local txcos = math.cos(-plr.tx)
+				local tysin = math.sin( plr.ty)
+				local tycos = math.cos( plr.ty)
+				
+				local a1 = x2
+				local b1 = y2
+				local c1 = z2
+
+				local c2 = c1 * tycos - a1 * tysin
+				
+				x2 = c1 * tysin + a1 * tycos + plr.x
+				y2 = b1 * txcos - c2 * txsin + plr.y
+				z2 = b1 * txsin + c2 * txcos + plr.z
+			  
+				--debug
+				draw.pr[1].x = x2
+				draw.pr[1].y = y2
+				draw.pr[1].z = z2
+				draw.pr[1].c = 13
+
 			  local rc1 = {true,true,true,true,true,true,true,true,true,true,true,true}
 			  local rc2 = {true,true,true,true,true,true,true,true,true,true}
-			  --only for walls, ifnore objects
+			  --only for walls, ignore objects
 			  local x3,y3,z3,angle = raycast_legacy(x1,y1,z1,x2,y2,z2,rc1,rc2,false)
 			  if x3 then
 				  menu.w.m_sel = draw.map[angle][x3][y3][z3][3]
