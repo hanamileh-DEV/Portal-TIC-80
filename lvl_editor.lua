@@ -5,7 +5,7 @@
 -- saveid: portal3d_unitic_lvl_editor
 
 local save_reminder = true
-
+local easter_eggs = true
 --[[
 Everything related to portals or other less important
 parts has been cut out in order to speed up the code
@@ -2582,7 +2582,13 @@ local open
 local tm1,tm2 = 0,0
 local p={t=0} --pause
 local ms={b={}} --main screen | Table with current buttons
-
+local ee={t=600, i=0, draw = false} --easter egg
+local ee_text = {
+	"The cake its a lie",
+	"Never gonna give you up",
+	"By HanamileH & soxfox42",
+	"Powered by UniTIC v1.3"
+}
 --buttons
 local menu_options --It must be separate, otherwise local variables inside this table may not see each other
 
@@ -2664,15 +2670,14 @@ menu = {
 open="load lvl"
 
 function TIC()
-
-	--fps counter
+	--counters
 	t1 = time()
 	t = t + 1
 	--mouse
 	mx, my, cl1, _, cl2, _, whl = mouse()
 	cid=0 --cursor id
 
-	nclp2 = not clp2 and tm2~=0
+	local nclp2 = not clp2 and tm2~=0
 	ins = true --is the curcos in the scene
 
 	if cl1 then tm1 = tm1 + 1 else tm1 = 0 end
@@ -2721,7 +2726,13 @@ function TIC()
 	-- game ------------------
 	--------------------------
 	if open=="edit" then
+	 --counters
 		if stt~=120 then stt=stt+1 end
+	 --easter egg
+		if easter_eggs then
+			ee.t = ee.t - 1
+			if ee.t==0 then ee.t = R(30*60, 120*60) ee.draw = not ee.draw ee.i = R(#ee_text) end
+		end
 	 --W A S D
 		lx, ly, lz = plr.x, plr.y, plr.z
 
@@ -2800,11 +2811,21 @@ function TIC()
 			"walls:"..#walls.." particles :"..#unitic.p.." objects:"..#unitic.obj,
 			"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 		}
-		--top debug panel
-		if keyp(49) then plr.dt=plr.dt%#debug_text+1 end
+	 --top debug panel
+		if keyp(49) then
+			if ee.draw then
+				ee.draw = false
+				ee.t = R(30*60, 120*60)
+				ee.i = R(#ee_text)
+			else
+				plr.dt=plr.dt%#debug_text+1
+			end
+		end
 		local top_text=debug_text[plr.dt]
 		vbank(1)
-		--bottom debug panel
+	 --easter egg (2)
+		if ee.draw then top_text = ee_text[ee.i] end
+	 --bottom debug panel
 		if plr.noclip then print("Noclip", 1, 130, 7) end
 
 		line(220,0,220,6,7)
