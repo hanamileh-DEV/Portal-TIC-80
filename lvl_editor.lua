@@ -2567,6 +2567,48 @@ function darkpal(c)
 	end
 end
 
+local x_p={x=0, y=8, mx=0, my=0, type=2, drag = false} --xyz pointer
+
+local function xyz_pointer(p_x,p_y, type)
+	if type == 0 then return end
+   local xyz2={{0,0,-1,1},{0,0,-1,2},{0,0,-1,3}} --2d coordinates, depth, color
+   local xyz3={{1,0,0,1},{0,1,0,2},{0,0,1,3}} --3d coordinates, color
+   --magic
+   for u=1,3 do
+      --rotate
+      local a1=xyz3[u][1]
+      local b1=xyz3[u][2]
+      local c1=xyz3[u][3]
+
+      local c2=c1*math.cos(-cam.ty)-a1*math.sin(-cam.ty)
+      local a2=c1*math.sin(-cam.ty)+a1*math.cos(-cam.ty)
+      local b2=b1
+
+      local b3=b2*math.cos(cam.tx)-c2*math.sin(cam.tx)
+      local c3=b2*math.sin(cam.tx)+c2*math.cos(cam.tx)
+      local a3=a2
+
+      xyz3[u][1]=a3
+      xyz3[u][2]=b3
+      xyz3[u][3]=min(c3,-1)
+
+      xyz2[u][1]=12*xyz3[u][1]/xyz3[u][3]+15+p_x
+      xyz2[u][2]=12*xyz3[u][2]/xyz3[u][3]+15+p_y
+      xyz2[u][3]=c3
+   end --the end of the magic
+	--sort
+	local function sort_p(a,b)
+		return a[3]<b[3]
+	end
+	table.sort(xyz2,sort_p)
+	--render
+	local colors = {10,13,8}
+	for i = 1,3 do
+		line(xyz2[i][1], xyz2[i][2], 15+p_x, 15+p_y, colors[xyz2[i][4]])
+		pix(15+p_x, 15+p_y,7)
+		if type==2 then spr(399+xyz2[i][4], xyz2[i][1]-2, xyz2[i][2]-3, 15) end
+	end
+end
 
 local avf={} --average frame
 local fr={0,0,0} --framerate
@@ -2652,6 +2694,9 @@ local function print_mid(text,x,y,color)
 	print(text,x - text_size//2, y, color)
 end
 
+local function clip(val, min_v,max_v)
+	return min(max(val,min_v),max_v)
+end
 menu = {
 	open = true,
 	type = 1,
@@ -2676,7 +2721,9 @@ function TIC()
 	cid=0 --cursor id
 
 	local nclp2 = not clp2 and tm2~=0
-	ins = true --is the curcos in the scene
+	ins = true --is the cursor in the scene
+
+	sc1 = tm1 < 10 and tm1>0 and not cl1 --short click
 
 	if cl1 then tm1 = tm1 + 1 else tm1 = 0 end
 	if cl2 then tm2 = tm2 + 1 else tm2 = 0 end
@@ -2870,6 +2917,35 @@ function TIC()
 				end
 			end
 		end
+		--xyz pointer
+		if x_p.type ~=0 then
+			if x_p.type<3 then rect(x_p.x,x_p.y,30,30,0) end
+			xyz_pointer(x_p.x, x_p.y, (x_p.type-1)%2 + 1)
+		end
+
+		if button(x_p.x,x_p.y,30,30) or x_p.drag then
+			ins = false
+			if x_p.drag then
+				rectb(x_p.x,x_p.y,30,30,13)
+			else
+				rectb(x_p.x,x_p.y,30,30,7)
+			end
+			if sc1 then x_p.type = (x_p.type+1)%5 end --click
+			if tm1==2 then --drag (init)
+				x_p.drag = true
+				x_p.mx = mx - x_p.x
+				x_p.my = my - x_p.y
+			elseif tm1>2 then --drag (update)
+				x_p.x = mx - x_p.mx
+				x_p.y = my - x_p.my
+
+				x_p.x = clip(x_p.x, 0, 210)
+				x_p.y = clip(x_p.y, 8, 106)
+			else
+				x_p.drag = false
+			end
+			top_text = "left click to change ["..x_p.type.."], drag to move"
+		end
 		--right menu
 		if menu.open then
 			if menu.type==1 then
@@ -2878,7 +2954,7 @@ function TIC()
 
 				if button(162,7,78,68,false) then ins = false end
 
-				print("Walls: "..#walls,164,9,7)
+				print("Walls: "..menu.w.sel.."/"..#walls,164,9,7,false,1,true)
 				print("Add",220,9,4)
 				if button(218,8,21,7) then
 					print("Add",220,9,7)
@@ -3092,8 +3168,6 @@ function BDR(scn_y) scn_y=scn_y-4
 		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-p.t/30,0.4))if stt<60 then darkpal(stt/60)end end)
 	end
 	if open=="edit" then
-	-- if scn_y==0 then respal() if not f_m then darkpal(0.5) else darkpal(0.8) end end
-	-- if scn_y==7 then respal() end
 	end
 end
 
@@ -3535,9 +3609,9 @@ end
 -- 125:0000000010101010000000001010101000000000101010100000000010101010
 -- 126:0000000010101010000000001010101000000000101010100000000010101010
 -- 127:0000000010101010000000001010101000000000101010100000000010101010
--- 128:0000000010101010000000001010101000000000101010100000000010101010
--- 129:0000000010101010000000001010101000000000101010100000000010101010
--- 130:0000000010101010000000001010101000000000101010100000000010101010
+-- 128:f1111fff80111fff88011fff88801fff88880fff0000ffffffffffffffffffff
+-- 129:f8888fff10888fff11088fff11108fff11110fff0000ffffffffffffffffffff
+-- 130:f8888fff80888fff88088fff88808fff88880fff0000ffffffffffffffffffff
 -- 131:0000000010101010000000001010101000000000101010100000000010101010
 -- 132:0000000010101010000000001010101000000000101010100000000010101010
 -- 133:0000000010101010000000001010101000000000101010100000000010101010
@@ -3551,9 +3625,9 @@ end
 -- 141:0000000010101010000000001010101000000000101010100000000010101010
 -- 142:0000000010101010000000001010101000000000101010100000000010101010
 -- 143:0000000010101010000000001010101000000000101010100000000010101010
--- 144:0000000010101010000000001010101000000000101010100000000010101010
--- 145:0000000010101010000000001010101000000000101010100000000010101010
--- 146:0000000010101010000000001010101000000000101010100000000010101010
+-- 144:00000fff0a0a0fff0a0a0fff00a00fff0a0a0fff0a0a0fff00000fffffffffff
+-- 145:00000fff0d0d0fff0d0d0fff00dd0fff000d0fff0dd00fff0000ffffffffffff
+-- 146:00000fff08880fff00080fff00800fff08000fff08880fff00000fffffffffff
 -- 147:0000000010101010000000001010101000000000101010100000000010101010
 -- 148:0000000010101010000000001010101000000000101010100000000010101010
 -- 149:0000000010101010000000001010101000000000101010100000000010101010
