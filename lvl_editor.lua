@@ -5,7 +5,7 @@
 -- saveid: portal3d_unitic_lvl_editor
 
 local save_reminder = true
-local easter_eggs = true
+local easter_eggs = false
 --[[
 Everything related to portals or other less important
 parts has been cut out in order to speed up the code
@@ -1332,7 +1332,7 @@ local stt=0 --The timer of the start of the game
 local clp1,clp2
 local mx, my, cl1, cl2, whl
 local cid
-local ins --is the curcos in the scene
+local ins --is the cursor in the scene
 --sprite editor
 local function setpix(sx,sy,color)
 	local id=sx//8+sy//8*16
@@ -2286,8 +2286,6 @@ function unitic.render() --------
 		end
 	end
 	--
-	vbank(1) cls(0)
-	vbank(0) cls(15)
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 	unitic.update_pr()
 	unitic.update()
@@ -2769,6 +2767,8 @@ function TIC()
 			respal()
 		end
 		vbank(0)
+
+		if f_m then darkpal(0.85) else darkpal(0.5) end
 	 --camera rotation
 		fmt = fmt + 1
 		if keyp(26) then fmt=0 f_m = not f_m mx,my = 0,0 end
@@ -2798,7 +2798,12 @@ function TIC()
 	 --update + collision
 		if not plr.d then unitic.player_collision() end
 	 --render
+		vbank(0)
+		cls(15)
 		unitic.render()
+		memcpy(0x8000,0x0000,240*136/2)
+		vbank(1)
+		memcpy(0x0000,0x8000,240*136/2)
 	 --sounds
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) and s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end
@@ -2808,7 +2813,7 @@ function TIC()
 	 --debug
 	 	local debug_text={
 			"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).."  Frame:"..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).."  ms.".." v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f,
-			"walls:"..#walls.." particles :"..#unitic.p.." objects:"..#unitic.obj,
+			"walls:"..#walls.." particles:"..#unitic.p.." objects:"..#unitic.obj,
 			"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
 		}
 	 --top debug panel
@@ -2822,12 +2827,11 @@ function TIC()
 			end
 		end
 		local top_text=debug_text[plr.dt]
-		vbank(1)
 	 --easter egg (2)
 		if ee.draw then top_text = ee_text[ee.i] end
 	 --bottom debug panel
-		if plr.noclip then print("Noclip", 1, 130, 7) end
-
+		if plr.noclip then rect(0,129,35,7,0) print("Noclip", 2, 130, 7) end
+		rect(0,0,240,7,0)
 		line(220,0,220,6,7)
 		line(230,0,230,6,7)
 		if my<7 or mx<0 or mx>239 or my>135 then ins = false end
@@ -2867,10 +2871,10 @@ function TIC()
 			end
 		end
 		--right menu
-		if menu.open and not f_m then
+		if menu.open then
 			if menu.type==1 then
-				rect( 162,7,78,68,2)
-				rectb(162,7,78,68,1)
+				rect(162,8,78,68,0)
+				if f_m then vbank(0) end
 
 				if button(162,7,78,68,false) then ins = false end
 
@@ -2896,15 +2900,16 @@ function TIC()
 					print("Y:",164,27,14)
 					print("Z:",164,35,9 )
 					print("type:"  ,164,43,7)
-					print("Angle:" ,164,51,7)
-					print("Normal:",164,59,7)
+					print("Normal:",164,51,7)
+					print("Angle:" ,164,59,7)
 					--
 					local sl = menu.w.sl
 					--
 					local ind = {1,2,3,6}
 					local min_max={{0,10},{0,2},{0,10},{1,17}}
 					for i = 1,4 do
-						rect(204,10+i*8,15,7,1)
+						-- rect(204,10+i*8,15,7,15)
+						rectb(203,9+i*8,17,9,15)
 						print_mid(wall[ind[i]],212,11+i*8,7)
 						if button(204,10+i*8,15,7) then
 							if clp1 then
@@ -2947,10 +2952,15 @@ function TIC()
 						end
 					end
 					--
-					for vb = 0,1 do
-						vbank(vb)
+					if f_m then
 						spr(447 + wall[5],210,51,15)
 						spr(431 + wall[4],210,59,15)
+					else
+						for vb = 0,1 do
+							vbank(vb)
+							spr(447 + wall[5],210,51,15)
+							spr(431 + wall[4],210,59,15)
+						end
 					end
 					--normal
 					if button(210,51,5,5) then
@@ -3011,7 +3021,7 @@ function TIC()
 		end
 		--mouse selection
 			menu.w.m_sel = -1
-			if ins or cl2 then
+			if (ins or cl2) and false then
 			  local x1 = plr.x
 			  local y1 = plr.y
 			  local z1 = plr.z
@@ -3082,8 +3092,8 @@ function BDR(scn_y) scn_y=scn_y-4
 		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-p.t/30,0.4))if stt<60 then darkpal(stt/60)end end)
 	end
 	if open=="edit" then
-	if scn_y==0 then respal() if not f_m then darkpal(0.5) else darkpal(0.8) end end
-	if scn_y==7 then respal() end
+	-- if scn_y==0 then respal() if not f_m then darkpal(0.5) else darkpal(0.8) end end
+	-- if scn_y==7 then respal() end
 	end
 end
 
