@@ -1586,31 +1586,6 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 		local tx, ty, tz = cx//96, cy//128, cz//96
 		tile = get_tile(axis, tx, ty, tz)
 		if not tile then break end
-		-- Check for, and prepare to pass through portals (if enabled)
-		if params.portals and draw.p[1] and draw.p[2] then
-			local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-			local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-			local rotd1 = (2 + rot2 - rot1) % 4
-			local rotd2 = (2 + rot1 - rot2) % 4
-			if tile[2] == 5 then
-				newx, newy, newz = teleport(1, cx, cy, cz)
-				if     rotd1 == 0 then newrx,newrz=rx,rz
-				elseif rotd1 == 1 then newrx,newrz=rz,-rx
-				elseif rotd1 == 2 then newrx,newrz=-rx,-rz
-				elseif rotd1 == 3 then newrx,newrz=-rz,rx
-				end
-				break
-			end
-			if tile[2] == 6 then
-				newx, newy, newz = teleport(2, cx, cy, cz)
-				if     rotd2 == 0 then newrx,newrz=rx,rz
-				elseif rotd2 == 1 then newrx,newrz=rz,-rx
-				elseif rotd2 == 2 then newrx,newrz=-rx,-rz
-				elseif rotd2 == 3 then newrx,newrz=-rz,rx
-				end
-				break
-			end
-		end
 		if lookup[tile[2]] then
 			-- we hit a tile, break out of the loop and start testing objects
 			tilehit = {
@@ -1650,14 +1625,6 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 				}
 			end
 		end
-	end
-	-- we entered a portal, resume the raycast at the other end
-	if newx then
-		local hit = raycast(newx, newy, newz, newrx, ry, newrz, remaining_len, params)
-		if hit then
-			hit.len = hit.len + len - remaining_len
-		end
-		return hit
 	end
 	-- return the shortest found intersection
 	if not objhit or (tilehit and tilehit.len < objhit.len) then
@@ -2567,7 +2534,7 @@ function darkpal(c)
 	end
 end
 
-local x_p={x=0, y=8, mx=0, my=0, type=2, drag = false} --xyz pointer
+local x_p={x=0, y=7, mx=0, my=0, type=2, drag = false} --xyz pointer
 
 local function xyz_pointer(p_x,p_y, type)
 	if type == 0 then return end
@@ -2815,7 +2782,7 @@ function TIC()
 		end
 		vbank(0)
 
-		if f_m then darkpal(0.85) else darkpal(0.5) end
+		if f_m then darkpal(0.85) else darkpal(0.6) end
 	 --camera rotation
 		fmt = fmt + 1
 		if keyp(26) then fmt=0 f_m = not f_m mx,my = 0,0 end
@@ -2940,7 +2907,7 @@ function TIC()
 				x_p.y = my - x_p.my
 
 				x_p.x = clip(x_p.x, 0, 210)
-				x_p.y = clip(x_p.y, 8, 106)
+				x_p.y = clip(x_p.y, 7, 106)
 			else
 				x_p.drag = false
 			end
@@ -2949,7 +2916,7 @@ function TIC()
 		--right menu
 		if menu.open then
 			if menu.type==1 then
-				rect(162,8,78,68,0)
+				rect(162,7,78,68,0)
 				if f_m then vbank(0) end
 
 				if button(162,7,78,68,false) then ins = false end
@@ -3097,44 +3064,49 @@ function TIC()
 		end
 		--mouse selection
 			menu.w.m_sel = -1
-			if (ins or cl2) and false then
+			if (ins or cl2) then
 			  local x1 = plr.x
 			  local y1 = plr.y
 			  local z1 = plr.z
 			  
-			  local x2 = (mx - 120) * 100 / unitic.fov
-			  local y2 = (my - 68 ) * 100 / unitic.fov
+			  local x2 = -(mx - 120) * 100000 / unitic.fov
+			  local y2 = -(my - 68 ) * 100000 / unitic.fov
 
 			  if cl2 then x2,y2 = 0,0 end
-			  local z2 = - 100
-			  
-				local txsin = math.sin(-plr.tx)
-				local txcos = math.cos(-plr.tx)
-				local tysin = math.sin( plr.ty)
-				local tycos = math.cos( plr.ty)
-				
-				local a1 = x2
-				local b1 = y2
-				local c1 = z2
+			  local z2 = - 100000
 
-				local c2 = c1 * tycos - a1 * tysin
-				
-				x2 = c1 * tysin + a1 * tycos + plr.x
-				y2 = b1 * txcos - c2 * txsin + plr.y
-				z2 = b1 * txsin + c2 * txcos + plr.z
+			  local a1=x2
+			  local b1=y2
+			  local c1=z2
+			  
+			  local b2=b1*math.cos(-cam.tx)-c1*math.sin(-cam.tx)
+			  local c2=b1*math.sin(-cam.tx)+c1*math.cos(-cam.tx)
+			  local a2=a1
+			  
+			  local c3=c2*math.cos(cam.ty)-a2*math.sin(cam.ty)
+			  local a3=c2*math.sin(cam.ty)+a2*math.cos(cam.ty)
+			  local b3=b2
+
+				x2 = a3 + plr.x
+				y2 = b3 + plr.y
+				z2 = c3 + plr.z
 			  
 				--debug
-				draw.pr[1].x = x2
-				draw.pr[1].y = y2
-				draw.pr[1].z = z2
-				draw.pr[1].c = 13
 
-			  local rc1 = {true,true,true,true,true,true,true,true,true,true,true,true}
-			  local rc2 = {true,true,true,true,true,true,true,true,true,true}
 			  --only for walls, ignore objects
-			  local x3,y3,z3,angle = raycast_legacy(x1,y1,z1,x2,y2,z2,rc1,rc2,false)
-			  if x3 then
-				  menu.w.m_sel = draw.map[angle][x3][y3][z3][3]
+			  --local x3,y3,z3,angle = raycast_legacy(x1,y1,z1,x2,y2,z2,rc1,rc2,false)
+
+			  local ray_params = {
+				portals = false,
+				walls = {true,true,true,true,true,true,true,true,true,true,true,true},
+				floors = {true,true,true,true,true,true,true,true,true,true},
+				objs = {}
+			  }
+			  local hit = raycast(x1,y1,z1,x2,y2,z2,9999,ray_params)
+			  if hit then
+				  menu.w.m_sel = hit.tile[3]
+				  cid = 1
+				  if sc1 then menu.w.sel = menu.w.m_sel end
 			  end
 		  end
 		--top debug panel (2)
