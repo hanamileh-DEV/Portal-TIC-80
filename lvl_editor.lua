@@ -1301,6 +1301,8 @@ local s = { --sounds
 	n={0,0,0} --The exact position of the current track
 }
 
+--enigma configuration: [5,8,7][2,19,6][7,24,9][3} [AO][QP][MN][EZ][XU]
+
 local world_size={12,4,12}
 world_size[4]=world_size[2]*world_size[3]
 world_size[5]=world_size[1]*world_size[2]*world_size[3]
@@ -2619,7 +2621,7 @@ local fmt = 0
 --player speed
 local speed=4
 --init
-local open
+local state
 local tm1,tm2 = 0,0
 local p={t=0} --pause
 local ms={b={}} --main screen | Table with current buttons
@@ -2637,7 +2639,7 @@ local menu_options --It must be separate, otherwise local variables inside this 
 local function load_map_bank(i)
 	ms.b = menu_options.mb
 	map_bank_state[map_bank+1] = (#walls~=0)
-	open="edit"
+	state="edit"
 	poke(0x7FC3F,1,1)
 	map_bank = i
 	sync(4, map_bank, false)
@@ -2648,7 +2650,7 @@ end
 
 menu_options = {
 	p = { --pause
-		{draw = true, y = 65, t=1, text = "Resume"       , func = function() open="edit" sfx_(17) poke(0x7FC3F,1,1) end},
+		{draw = true, y = 65, t=1, text = "Resume"       , func = function() state="edit" sfx_(17) poke(0x7FC3F,1,1) end},
 		{draw = true, y = 85, t=1, text = "select a map bank", func = function() ms.b = menu_options.mb sfx_(16)end},
 	},
 	mb = { --map bank select
@@ -2744,7 +2746,7 @@ menu = {
 	}
 }
 
-open="map_bank_check"
+state="map_bank_check"
 
 sync(4, map_bank, false)
 function TIC()
@@ -2768,12 +2770,12 @@ function TIC()
 	--------------------------
 	-- map bank check --------
 	--------------------------
-	if open=="map_bank_check" then
+	if state=="map_bank_check" then
 		cls(0)
 		print("Please wait...",85,63,1)
 		if mbc >= 8 then
 			sync(4, map_bank, false)
-			open = "load lvl"
+			state = "load lvl"
 		else
 			sync(4, mbc, false)
 		end
@@ -2788,18 +2790,18 @@ function TIC()
 	--------------------------
 	-- load lvl --------------
 	--------------------------
-	if open=="load lvl" then
+	if state=="load lvl" then
 		world_size={12,4,12,4*12,12*4*12}
 		load_world()
 		--
 		mx,my=0,0
 		poke(0x7FC3F,1,1)
-		open="edit"
+		state="edit"
 	end
 	--------------------------
 	-- pause -----------------
 	--------------------------
-	if open=="pause" then
+	if state=="pause" then
 		p.t=p.t+1
 		--GUI
 		vbank(0)
@@ -2809,14 +2811,14 @@ function TIC()
 		--logo
 		spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3)
 
-		if open=="pause" then
+		if state=="pause" then
 			print("Pause",min(p.t*2,37),35,7)
 			upd_buttons()
 		end
 
 		--Resume
-		if (keyp(44) and p.t>1) or (my>52 and my<63 and clp1 and open=="pause") then
-			open="edit"
+		if (keyp(44) and p.t>1) or (my>52 and my<63 and clp1 and state=="pause") then
+			state="edit"
 			sfx_(17)
 			poke(0x7FC3F,1,1)
 		 end
@@ -2824,7 +2826,7 @@ function TIC()
 	--------------------------
 	-- game ------------------
 	--------------------------
-	if open=="edit" then
+	if state=="edit" then
 	 --counters
 		if stt~=120 then stt=stt+1 end
 	 --easter egg
@@ -2909,7 +2911,7 @@ function TIC()
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) and s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end
 	 --pause
-		if keyp(44) and p.t==0 then vbank(0) memcpy(0x8000,0x0000,240*136/2) open="pause" ms.b = menu_options.p for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
+		if keyp(44) and p.t==0 then vbank(0) memcpy(0x8000,0x0000,240*136/2) state="pause" ms.b = menu_options.p for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
 		p.t=0
 	 --debug
 	 	local debug_text={
@@ -2977,7 +2979,7 @@ function TIC()
 			xyz_pointer(x_p.x, x_p.y, (x_p.type-1)%2 + 1)
 		end
 
-		if button(x_p.x,x_p.y,30,30) or x_p.drag then
+		if (button(x_p.x,x_p.y,30,30) or x_p.drag) and not f_m then
 			ins = false
 			if x_p.drag then
 				rectb(x_p.x,x_p.y,30,30,13)
@@ -3222,14 +3224,15 @@ end
 
 function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
-	if open=="pause" then
+	if state=="pause" then
 		vbank(1)poke(0x03FF9,0)respal()vbank(0)poke(0x03FF9,0)
 		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-p.t/30,0.4)) end)
 	end
-	if open=="edit" then
+	if state=="edit" then
 	end
 end
 
+--config: [5,7,1][1,5,1][4,24,1][1} []
 
 -- <TILES>
 -- 000:4444444443333333434333334333333343333433433333334343334343333333
