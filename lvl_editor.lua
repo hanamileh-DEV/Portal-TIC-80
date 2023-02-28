@@ -6,6 +6,9 @@
 
 local save_reminder = true
 local easter_eggs = false
+
+local map_bank = pmem(0)
+local map_bank_state = {false,true,false,false,false,false,false,false} -- false x8
 --[[
 Everything related to portals or other less important
 parts has been cut out in order to speed up the code
@@ -2253,6 +2256,8 @@ end
 local walls = {}
 
 local function import()
+	walls = {}
+
 	for i=1,3 do
 		draw.map[i]={}
 		for x=0,world_size[1]-1 do
@@ -2326,7 +2331,7 @@ function upd_walls()
 	update_world()
 
 	--export (2)
-	sync(4, 0, true)
+	sync(4, map_bank, true)
 end
 
 function addobj(x, y, z, type,t1) --objects
@@ -2498,7 +2503,7 @@ function update_world()
 	end
 end
 
-local function load_world() --Loads the world from ROM memory (from the 'Maps' table)
+local function load_world() --Loads the world from the map RAM
 	--init
 	draw.map={}
 	draw.world={v={},f={},sp={}}
@@ -2619,6 +2624,7 @@ local tm1,tm2 = 0,0
 local p={t=0} --pause
 local ms={b={}} --main screen | Table with current buttons
 local ee={t=600, i=0, draw = false} --easter egg
+local mbc = 0 --map bank id
 local ee_text = {
 	"The cake its a lie",
 	"Never gonna give you up",
@@ -2628,27 +2634,59 @@ local ee_text = {
 --buttons
 local menu_options --It must be separate, otherwise local variables inside this table may not see each other
 
+local function load_map_bank(i)
+	ms.b = menu_options.mb
+	map_bank_state[map_bank+1] = (#walls~=0)
+	open="edit"
+	poke(0x7FC3F,1,1)
+	map_bank = i
+	sync(4, map_bank, false)
+	pmem(0, map_bank)
+	load_world()
+	trace("Current bank: "..map_bank,3)
+end
+
 menu_options = {
 	p = { --pause
 		{draw = true, y = 65, t=1, text = "Resume"       , func = function() open="edit" sfx_(17) poke(0x7FC3F,1,1) end},
-		{draw = true, y = 75, t=1, text = "Export", func = function() end},
+		{draw = true, y = 85, t=1, text = "select a map bank", func = function() ms.b = menu_options.mb sfx_(16)end},
 	},
+	mb = { --map bank select
+		{draw = true, y =  45, t=1, text = "Map bank 0", func = function()load_map_bank(0)end},
+		{draw = true, y =  55, t=1, text = "Map bank 1", func = function()load_map_bank(1)end},
+		{draw = true, y =  65, t=1, text = "Map bank 2", func = function()load_map_bank(2)end},
+		{draw = true, y =  75, t=1, text = "Map bank 3", func = function()load_map_bank(3)end},
+		{draw = true, y =  85, t=1, text = "Map bank 4", func = function()load_map_bank(4)end},
+		{draw = true, y =  95, t=1, text = "Map bank 5", func = function()load_map_bank(5)end},
+		{draw = true, y = 105, t=1, text = "Map bank 6", func = function()load_map_bank(6)end},
+		{draw = true, y = 115, t=1, text = "Map bank 7", func = function()load_map_bank(7)end},
+		{draw = true, y = 125, t=1, text = "Back", func = function() ms.b = menu_options.p sfx_(17)end},
+	}
 }
 
 local function upd_buttons()
 	for i = 1, #ms.b do
 		local b = ms.b[i]
 		if b.draw then
-			print(b.text, min(24-b.t*20), b.y, 7)
+			if ms.b == menu_options.mb and i<9 then
+				if map_bank == i-1 then
+					print(b.text, min(24-b.t*20), b.y, 11)
+					print("Current", 192, b.y, 11)
+				elseif map_bank_state[i]  then
+					print(b.text, min(24-b.t*20), b.y, 7)
+				else
+					print("Empty", 198, b.y, 2)
+					print(b.text, min(24-b.t*20), b.y, 2)
+				end
+
+			else
+				print(b.text, min(24-b.t*20), b.y, 7)
+			end
 
 			if my > b.y - 3 and my < b.y + 8 then
-				if not open=="pause|settings" or (i<13 and my<110 and my>19) or i>=13 then
-					b.t = max(b.t-0.05,0.5)
-					cid = 1
-					if clp1 then b.func() break end
-				else
-					b.t = min(1,b.t+0.05)
-				end
+				b.t = max(b.t-0.05,0.5)
+				cid = 1
+				if clp1 then b.func() break end
 			else
 				b.t = min(1,b.t+0.05)
 			end
@@ -2706,8 +2744,9 @@ menu = {
 	}
 }
 
-open="load lvl"
+open="map_bank_check"
 
+sync(4, map_bank, false)
 function TIC()
 	--counters
 	t1 = time()
@@ -2726,6 +2765,26 @@ function TIC()
 
 	clp1 = tm1 == 1
 	clp2 = tm2 == 1
+	--------------------------
+	-- map bank check --------
+	--------------------------
+	if open=="map_bank_check" then
+		cls(0)
+		print("Please wait...",85,63,1)
+		if mbc >= 8 then
+			sync(4, map_bank, false)
+			open = "load lvl"
+		else
+			sync(4, mbc, false)
+		end
+
+		map_bank_state[mbc+1] = false
+		for i = 0, 240*136-1 do
+			if peek(0x08000+i) ~=0 then map_bank_state[mbc+1] = true break end
+		end
+
+		mbc = mbc + 1
+	end
 	--------------------------
 	-- load lvl --------------
 	--------------------------
@@ -3165,7 +3224,7 @@ function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
 	if open=="pause" then
 		vbank(1)poke(0x03FF9,0)respal()vbank(0)poke(0x03FF9,0)
-		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-p.t/30,0.4))if stt<60 then darkpal(stt/60)end end)
+		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-p.t/30,0.4)) end)
 	end
 	if open=="edit" then
 	end
@@ -3626,7 +3685,7 @@ end
 -- 142:0000000010101010000000001010101000000000101010100000000010101010
 -- 143:0000000010101010000000001010101000000000101010100000000010101010
 -- 144:00000fff0a0a0fff0a0a0fff00a00fff0a0a0fff0a0a0fff00000fffffffffff
--- 145:00000fff0d0d0fff0d0d0fff00dd0fff000d0fff0dd00fff0000ffffffffffff
+-- 145:00000fff0d0d0fff0d0d0fff0ddd0fff000d0fff0ddd0fff00000fffffffffff
 -- 146:00000fff08880fff00080fff00800fff08000fff08880fff00000fffffffffff
 -- 147:0000000010101010000000001010101000000000101010100000000010101010
 -- 148:0000000010101010000000001010101000000000101010100000000010101010
@@ -3642,7 +3701,7 @@ end
 -- 158:0000000010101010000000001010101000000000101010100000000010101010
 -- 159:0000000010101010000000001010101000000000101010100000000010101010
 -- 160:a0a00000a0a000000a000000a0a00000a0a00000000000000000000000000000
--- 161:d0d00000d0d000000dd0000000d00000dd000000000000000000000000000000
+-- 161:d0d00000d0d00000ddd0000000d00000ddd00000000000000000000000000000
 -- 162:8880000000800000080000008000000088800000000000000000000000000000
 -- 163:0000000010101010000000001010101000000000101010100000000010101010
 -- 164:0000000010101010000000001010101000000000101010100000000010101010
