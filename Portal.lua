@@ -385,9 +385,35 @@ end
 load_replay()
 
 --camera
-local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0 }
+local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0, tz = 0}
 --player
-local plr = { x = 0, y = 64, z = 0, tx = 0, ty = 0, vy=0 , xy=false, d = false, godmode = false, noclip = false , hp = 100 , hp2 = 100, cd = 0 , cd2 = 0, dt= 0, cd3 = 0, holding = false, pg_lvl = 2 --[[portal gun level]]}
+local plr = {
+	--coordinates
+	x = 0,
+	y = 64,
+	z = 0,
+	--rotation
+	tx = 0,
+	ty = 0,
+	tz = 0,
+	--stuff
+	vy=0 ,
+	xy=false,
+	d = false,
+	--cheats
+	godmode = false,
+	noclip = false ,
+	--hp
+	hp = 100 ,
+	hp2 = 100,
+	cd = 0 ,
+	cd2 = 0,
+	dt = 0,
+	cd3 = 0,
+	--stuff
+	holding = false,
+	pg_lvl = 2 --portal gun level
+}
 
 --engine settings:
 local unitic = {
@@ -2488,19 +2514,19 @@ init=function()end,
 scripts=function()end
 }
 
--- for x=0,10 do
--- 	for y=0,2 do
--- 		maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,R(1,2)}
--- 		maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,R(1,2)}
--- 		maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,R(1,2)}
--- 		maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,R(1,2)}
--- 	end
--- 
--- 	for z=0,10 do
--- 		maps[0][2].w[#maps[0][2].w+1]={x,0,z,2,2,1}
--- 		if R()>0.5 then maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,R(1,5)} end
--- 	end
--- end
+for x=0,10 do
+	for y=0,2 do
+		maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,R(1,2)}
+		maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,R(1,2)}
+		maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,R(1,2)}
+		maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,R(1,2)}
+	end
+
+	for z=0,10 do
+		maps[0][2].w[#maps[0][2].w+1]={x,0,z,2,2,2}
+		if R()>0.5 then maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,R(1,5)} end
+	end
+end
 
 maps[0][2].w[#maps[0][2].w+1]={0,0,1,1,2,9}
 maps[0][2].w[#maps[0][2].w+1]={3,0,11,3,2,9}
@@ -2530,6 +2556,10 @@ maps[0][2].w[#maps[0][2].w+1]={0,0,0,3,3,12}
 maps[0][2].w[#maps[0][2].w+1]={1,0,0,3,3,11}
 maps[0][2].w[#maps[0][2].w+1]={11,0,1,1,1,2}
 maps[0][2].w[#maps[0][2].w+1]={3,2,3,2,3,2}
+
+
+maps[0][2].w[#maps[0][2].w+1]={2,0,7,2,2,6}
+maps[0][2].w[#maps[0][2].w+1]={3,0,7,2,2,7}
 
 
 --song text
@@ -3022,19 +3052,29 @@ function unitic.update(draw_portal,p_id)
 	local txcos = math.cos(cam.tx)
 	local tysin = math.sin(-cam.ty)
 	local tycos = math.cos(-cam.ty)
+	local tzsin = math.sin(cam.tz)
+	local tzcos = math.cos(cam.tz)
 
 	for ind = 1, #unitic.poly.v do
 		if unitic.poly.v[4]~=false then -- true or nil
-		local a1 = unitic.poly.v[ind][1] - cam.x
-		local b1 = unitic.poly.v[ind][2] - cam.y
-		local c1 = unitic.poly.v[ind][3] - cam.z
+		local a = unitic.poly.v[ind][1] - cam.x
+		local b = unitic.poly.v[ind][2] - cam.y
+		local c = unitic.poly.v[ind][3] - cam.z
+
+		local a1 = a * tzcos - b * tzsin
+		local b1 = a * tzsin + b * tzcos
+		local c1 = c
 
 		local c2 = c1 * tycos - a1 * tysin
+		local a2 = c1 * tysin + a1 * tycos
+		local b2 = b1
 
-		local a3 = c1 * tysin + a1 * tycos
-		local b3 = b1 * txcos - c2 * txsin
-		local c3 = b1 * txsin + c2 * txcos
+		local b3 = b2 * txcos - c2 * txsin
+		local c3 = b2 * txsin + c2 * txcos
+		local a3 = a2
+
 		local c4 = c3
+
 		if c4>-0.001 then c4=-0.001 end
 		local z0 = unitic.fov / c4 --this saves one division (very important optimization)
 
@@ -3047,34 +3087,25 @@ function unitic.update(draw_portal,p_id)
 		unitic.poly.v[ind][4]=c3>0
 		end
 	end
-	--points for debug
-	--[[
-	for ind = 1, #draw.world.sp do
-		local a1 = draw.world.sp[ind][1] - cam.x
-		local b1 = draw.world.sp[ind][2] - cam.y
-		local c1 = draw.world.sp[ind][3] - cam.z
-
-		local c2 = c1 * tycos - a1 * tysin
-
-		local a3 = c1 * tysin + a1 * tycos
-		local b3 = b1 * txcos - c2 * txsin
-		local c3 = b1 * txsin + c2 * txcos
-		if c3>-0.001 then c3=-0.001 end
-
-		unitic.poly.sp[ind]={a3,b3,c3}
-	end]]
 
 	--particles
 	for ind = 1, #draw.pr do
-		local a1 = draw.pr[ind].x - cam.x
-		local b1 = draw.pr[ind].y - cam.y
-		local c1 = draw.pr[ind].z - cam.z
+		local a = draw.pr[ind].x - cam.x
+		local b = draw.pr[ind].y - cam.y
+		local c = draw.pr[ind].z - cam.z
+
+		
+		local a1 = a * tzcos - b * tzsin
+		local b1 = a * tzsin + b * tzcos
+		local c1 = c
 
 		local c2 = c1 * tycos - a1 * tysin
+		local a2 = c1 * tysin + a1 * tycos
+		local b2 = b1
 
-		local x0 = c1 * tysin + a1 * tycos
-		local y0 = b1 * txcos - c2 * txsin
-		local z0 = b1 * txsin + c2 * txcos
+		local y0 = b2 * txcos - c2 * txsin
+		local z0 = b2 * txsin + c2 * txcos
+		local x0 = a2
 
 		local dist=math.sqrt(x0^2+y0^2+z0^2)
 
@@ -4085,7 +4116,15 @@ function unitic.render() --------
 
 	vbank(1)
 	cls(1)
-	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
+
+	cam.x = plr.x
+	cam.y = plr.y
+	cam.z = plr.z
+	
+	cam.tx = plr.tx
+	cam.ty = plr.ty
+	cam.tz = plr.tz
+
 	unitic.update_pr()
 	unitic.update()
 	fps_.t7=time()
@@ -5462,7 +5501,8 @@ function TIC()
 		sync(2,0,false)
 		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.ct=save.ct+(tstamp()-st_t) end
-		save.lvl2=1
+		save.lvl2=0
+		save.lvl =2
 		pmem(4,save.ct)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
@@ -6694,12 +6734,12 @@ end
 -- 093:fffffffffffffffffff888fffffffffffffffff9ffffffffffffffff8fffffff
 -- 094:ffffffffffffffffffffffffffffffff99ffffffffffffffffffffffffffffff
 -- 095:0000000010101010000000001010101000000000101010100000000010101010
--- 096:0000000010101010000000001010101000000000101010100000000010101010
--- 097:0000000010101010000000001010101000000000101010100000000010101010
--- 098:0000000010101010000000001010101000000000101010100000000010101010
--- 099:0000000010101010000000001010101000000000101010100000000010101010
--- 100:0000000010101010000000001010101000000000101010100000000010101010
--- 101:0000000010101010000000001010101000000000101010100000000010101010
+-- 096:7777777676666665766766657666656576766665766656657666666565555555
+-- 097:7777777676666665766766657666656576766665766656657666666565555555
+-- 098:7777777676666665766766657666656576766665766656657666666565555555
+-- 099:aaccccccaaccccccaaccccccaacccccc7aaccccc7aaccccc7aaccccc65aacccc
+-- 100:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+-- 101:ccccccaaccccccaaccccccaaccccccaacccccaa5cccccaa5cccccaa5ccccaa55
 -- 102:4444444343333332433433324333323243433332433323324333333232222222
 -- 103:4444444343333332431111124122122112221222122212221232123212221222
 -- 104:4444444343333332433433324333323213433332133323321333333212222222
@@ -6710,12 +6750,12 @@ end
 -- 109:0000888800008888000088880000888888880000888800008888000088880000
 -- 110:0000888800008888000088880000888888880000888800008888000088880000
 -- 111:0000000010101010000000001010101000000000101010100000000010101010
--- 112:0000000010101010000000001010101000000000101010100000000010101010
--- 113:0000000010101010000000001010101000000000101010100000000010101010
--- 114:0000000010101010000000001010101000000000101010100000000010101010
--- 115:0000000010101010000000001010101000000000101010100000000010101010
--- 116:0000000010101010000000001010101000000000101010100000000010101010
--- 117:0000000010101010000000001010101000000000101010100000000010101010
+-- 112:777777767666666a766766aa76666aac7676aacc766aaccc76aacccc65aacccc
+-- 113:7aaaaaa6aaaaaaaaaccccccacccccccccccccccccccccccccccccccccccccccc
+-- 114:77777776a6666665aa676665caa66565ccaa6665cccaa665ccccaa65ccccaa55
+-- 115:77aacccc76aacccc766aaccc7666aacc76766aac766656aa7666666a65555555
+-- 116:ccccccccccccccccccccccccccccccccccccccccaccccccaaaaaaaaa6aaaaaa5
+-- 117:ccccaa76ccccaa65cccaa665ccaa6565caa66665aa665665a666666565555555
 -- 118:4444444343333332433433324333323243433332433323324333333232222222
 -- 119:122212221222122212221222122212221232123212221222122ba222111aa111
 -- 120:1444444313333332133433321333323213433332133323321333333212222222
@@ -6726,12 +6766,12 @@ end
 -- 125:0000000010000000410000004410000044100000440000004410000044100000
 -- 126:0003301100344444034444443444444434444444044444441444444414444444
 -- 127:0000000010000000410000004410000044100000440000004410000044100000
--- 128:0000000010101010000000001010101000000000101010100000000010101010
--- 129:0000000010101010000000001010101000000000101010100000000010101010
--- 130:0000000010101010000000001010101000000000101010100000000010101010
--- 131:0000000010101010000000001010101000000000101010100000000010101010
--- 132:0000000010101010000000001010101000000000101010100000000010101010
--- 133:0000000010101010000000001010101000000000101010100000000010101010
+-- 128:77aacccc7aaccccc7aaccccc7aacccccaaccccccaaccccccaaccccccaacccccc
+-- 129:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+-- 130:ccccaa76cccccaa5cccccaa5cccccaa5ccccccaaccccccaaccccccaaccccccaa
+-- 131:7777777676666665766766657666656576766665766656657666666565555555
+-- 132:7777777676666665766766657666656576766665766656657666666565555555
+-- 133:7777777676666665766766657666656576766665766656657666666565555555
 -- 134:4444444343333332433433324333323243433332433323324333333232222222
 -- 135:1222222212223222123222321222222212211222412112214311111232222222
 -- 136:1444444313333332133433321333323213433332433323324333333232222222
