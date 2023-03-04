@@ -190,6 +190,8 @@ end
 local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.abs
 local pi2 = math.pi / 2
 
+local dt = 1 --delta time
+
 local st={ --settings
 m_s   =60, --mouse sensitivity
 r_p   =true, --rendering portals
@@ -5186,7 +5188,17 @@ local sn_k={3,1,11,5}
 
 state="logo" sync(25 ,1,false) music(0)
 
+
+local lag_mode = false
+local dt_const = false
 function TIC()
+	dt = min(max((fr[3]+fr[2])/ 33.333, 1), 2.5)
+
+	if keyp(2 ) then dt_const = not dt_const end
+	if keyp(14) then lag_mode = not lag_mode end
+
+	if dt_const then dt = 1 end
+
 	if keyp(38) and replay.mode == "rec" then -- "="
 		save_replay()
 	end
@@ -5677,21 +5689,24 @@ function TIC()
 
 		if (plr.cd3==0 or plr.godmode) and key(64) then speed = 8 else speed = 4 end
 		if plr.noclip then speed=12 end
+
+		speed = speed * dt
+	 --cheats
 		if keyp(57) or keyp(22) then plr.noclip = not plr.noclip end
 		if keyp(2) then plr.godmode = not plr.godmode end
 	--zoom
-		if key(65) then unitic.fov=min(unitic.fov*1.2,800) else unitic.fov=max(unitic.fov/1.2,80) end
+		if key(65) then unitic.fov=min(unitic.fov*1.2*dt,800) else unitic.fov=max(unitic.fov/1.2/dt,80) end
 	--jump
 		if plr.noclip and not plr.d then
-			if key(48) then plr.y = plr.y + 8 end
-			if key(63) then plr.y = plr.y - 8 end
+			if key(48) then plr.y = plr.y + 8 * dt end
+			if key(63) then plr.y = plr.y - 8 * dt end
 			plr.vy=0
 		elseif not plr.d then
 			if plr.xy then plr.vy=-1
 				if keyp(48) then plr.vy = 8 end
 			end
-			plr.y = plr.y + plr.vy
-			plr.vy=max(plr.vy-0.5,-20)
+			plr.y = plr.y + plr.vy * dt
+			plr.vy=max(plr.vy-0.5 * dt,-20)
 		end
 	 --palette
 		local r = 1
@@ -5836,7 +5851,7 @@ function TIC()
 		pcall(portal_gun)
 	 --sounds
 		s.t1=max(s.t1-1,0)
-		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1 if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
+		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1*dt  if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
 		if plr.cd2==8 then sfx_(3,"B-4",-1,1) end
 	 --hp
 		if plr.hp2 == plr.hp then plr.cd=plr.cd+1 else plr.cd=0 end
@@ -5985,6 +6000,7 @@ function TIC()
 	 	local debug_text={
 			{
 				"FPS:  " .. F(1000 / (fr[3]+fr[2])*2),
+				"dt:   " .. dt*1000//1/1000
 			},
 			{
 				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5),
@@ -6001,6 +6017,9 @@ function TIC()
 			}
 		}
 
+		if dt_const then debug_text[1][3] = "dt const: on" else debug_text[1][3] = "dt const: off" end
+		if lag_mode then debug_text[1][4] = "lag mode: on" else debug_text[1][4] = "lag mode: off" end
+
 		if keyp(49) then plr.dt=(plr.dt+1)%(#debug_text+1) end
 		
 		vbank(1)
@@ -6016,6 +6035,8 @@ function TIC()
 			if plr.noclip then print("Noclip", 104, 85, 7) end
 		vbank(0)
 	end
+
+	while time()-t1<32 and lag_mode do end
 	--------------------------
 	-- settings menu ---------
 	--------------------------
