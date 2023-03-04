@@ -3912,15 +3912,19 @@ function unitic.render() --------
 			end
 		end
 	end
-	--
-	local dist12d, dist22d, dist2d = math.huge, math.huge, false
+	-- portal stuff --
 
+	--local distance of portal (on 2d screen)
+	local dist12d, dist22d, dist2d = math.huge, math.huge, false
+	--global distance of portals (according to 3d coordinates)
 	local dist13d, dist23d, dist3d = math.huge, math.huge, false
 
 	local txsin = math.sin( plr.tx)
 	local txcos = math.cos( plr.tx)
 	local tysin = math.sin(-plr.ty)
 	local tycos = math.cos(-plr.ty)
+	
+	--distance calculating
 	if draw.p[1] then
 		local x1, y1, z1 = portalcenter(1)
 
@@ -3940,8 +3944,8 @@ function unitic.render() --------
 		local x0 = a3 * z0
 		local y0 = b3 * z0
 
-		dist12d=(x0^2 + y0^2)^0.5
-		dist13d=(a1^2 + b1^2 + c1^2)^0.5
+		dist12d=math.sqrt(x0^2 + y0^2)
+		dist13d=math.sqrt(a1^2 + b1^2 + c1^2)
 	end
 
 	if draw.p[2] then
@@ -3980,6 +3984,7 @@ function unitic.render() --------
 	fps_.t5=fps_.t4
 	fps_.t6=fps_.t4
 
+	--rendering world behind portals
 	if st.r_p and draw.p[1] and draw.p[2] then
 		local x1, y1, z1 = portalcenter(1)
 		local x2, y2, z2 = portalcenter(2)
@@ -4114,9 +4119,6 @@ function unitic.render() --------
 		end
 	end
 
-	vbank(1)
-	cls(1)
-
 	cam.x = plr.x
 	cam.y = plr.y
 	cam.z = plr.z
@@ -4125,54 +4127,70 @@ function unitic.render() --------
 	cam.ty = plr.ty
 	cam.tz = plr.tz
 
+	
+	vbank(1)
+	cls(1)
 	unitic.update_pr()
 	unitic.update()
 	fps_.t7=time()
 	unitic.draw()
 	fps_.t8=time()
-	if (draw.p[1] or draw.p[2]) and not (st.r_both and draw.p[1] and draw.p[2]) then
-		--portal overlays
-		local v_id={}
-		if dist2d then
-			v_id={
-				draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+1,
-				draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+1}
-			if draw.p[2][4]==1 then
-				v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+1
-				v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[4]+world_size[3]+1
+
+	local v_id={{},{}}
+	local p2d={{},{}}
+	local tri_face={}
+
+	for i = 1,2 do
+		if draw.p[i] then
+			v_id[i][1] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + 1
+			v_id[i][2] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[3]+1
+
+			if draw.p[i][4]==1 then
+				v_id[i][3] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[4]+1
+				v_id[i][4] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[4]+world_size[3]+1
 			else
-				v_id[3]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+2
-				v_id[4]=draw.p[2][1]+draw.p[2][2]*world_size[3]+draw.p[2][3]*world_size[4]+world_size[3]+2
+				v_id[i][3] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + 2
+				v_id[i][4] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[3]+2
 			end
-		else
-			v_id={
-				draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+1,
-				draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+1}
-			if draw.p[1][4]==1 then
-				v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+1
-				v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[4]+world_size[3]+1
-			else
-				v_id[3]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+2
-				v_id[4]=draw.p[1][1]+draw.p[1][2]*world_size[3]+draw.p[1][3]*world_size[4]+world_size[3]+2
+
+			p2d[i] = {x={},y={},z={},z2={}}
+
+			for i2 = 1,4 do
+				p2d[i].x [i2]=unitic.poly.v[v_id[i][i2]][1]
+				p2d[i].y [i2]=unitic.poly.v[v_id[i][i2]][2]
+				p2d[i].z [i2]=unitic.poly.v[v_id[i][i2]][3]
+				p2d[i].z2[i2]=unitic.poly.v[v_id[i][i2]][4]
 			end
+			
+			tri_face[i] = (p2d[i].x[2] - p2d[i].x[1]) * (p2d[i].y[3] - p2d[i].y[1]) - (p2d[i].x[3] - p2d[i].x[1]) * (p2d[i].y[2] - p2d[i].y[1]) < 0
 		end
+	end
 
-		local p2d={x={},y={},z={},z2={}}
-		for i=1,4 do
-			p2d.x[i]=unitic.poly.v[v_id[i]][1]
-			p2d.y[i]=unitic.poly.v[v_id[i]][2]
-			p2d.z[i]=unitic.poly.v[v_id[i]][3]
-			p2d.z2[i]=unitic.poly.v[v_id[i]][4]
-		end
+	--portal overlays
+	if (draw.p[1] or draw.p[2]) then
+		for i=1,2 do
+			if draw.p[i] and (tri_face[i] == (draw.p[i][5]==1)) and not (p2d[i].z2[1] and p2d[i].z2[2] and p2d[i].z2[3] and p2d[i].z2[4]) then
+				--portal border
+				if i==1 then
+					ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],120,32,120,0,96,32,0,15,p2d[i].z[1]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+					ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],96 ,0 ,120,0,96,32,0,15,p2d[i].z[4]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+				else
+					ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,64,24,32,0,64,0,15,p2d[i].z[1]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+					ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],0 ,32,24,32,0,64,0,15,p2d[i].z[4]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+				end
 
-		local tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
+				--portal center
+				if (not st.r_p or dist2d ~= (i==1)) and not st.r_both then
+					if i==1 then
+						ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,232,24,200,0,232,0,15,p2d[i].z[1]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98) --blue
+						ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],0 ,200,24,200,0,232,0,15,p2d[i].z[4]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98)
+					else
+						ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],48,232,48,200,24,232,0,15,p2d[i].z[1]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98) --orange
+						ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,200,48,200,24,232,0,15,p2d[i].z[4]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98)
+					end
+				end
 
-		if dist2d and ((tri_face and draw.p[2][5]==1) or (tri_face==false and draw.p[2][5]==2)) and not (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4]) then
-			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],48,232,48,200,24,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99) --orange
-			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,48,200,24,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
-		elseif not dist2d and ((tri_face and draw.p[1][5]==1) or (tri_face==false and draw.p[1][5]==2)) and not (p2d.z2[1] and p2d.z2[2] and p2d.z2[3] and p2d.z2[4]) then
-			ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,232,24,200,0,232,0,15,p2d.z[1]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
-			ttri(p2d.x[4],p2d.y[4],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0 ,200,24,200,0,232,0,15,p2d.z[4]*0.99,p2d.z[2]*0.99,p2d.z[3]*0.99)
+			end
 		end
 	end
 
@@ -4335,12 +4353,17 @@ local function portal_gun()
 	local z2=z1-math.cos(plr.ty)*10000*math.cos(plr.tx)
 
 	local x,y,z,f=raycast_legacy(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true})
+	
+	local x3,y3,z3 = raycast_legacy(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true},true)
+	
+	--portal gun texture
 	if clp1 and plr.pg_lvl>0 then p_g.c=1 p_g.t2=1 end
 	if clp2 and plr.pg_lvl>1 then p_g.c=2 p_g.t2=1 end
 
 	p_g.cd1=max(p_g.cd1-1,0)
 	p_g.cd2=max(p_g.cd2-1,0)
 
+	--portal gun (portals)
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 and plr.pg_lvl>0 then
 			p_g.cd1=10
@@ -4348,7 +4371,7 @@ local function portal_gun()
 
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
 			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1],0}
-			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
+			-- addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
 			update_world()
 		elseif clp2 and plr.pg_lvl>1 then
 			p_g.cd2=10
@@ -4356,18 +4379,34 @@ local function portal_gun()
 
 			if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) end
 			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1],0}
-			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
+			-- addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
 			update_world()
 		end
+
+	--particles
 	elseif x and (clp1 or clp2) then
-		local x1,y1,z1=raycast_legacy(x1,y1,z1,x2,y2,z2,{[1]=true,[2]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true,[19]=true},{[1]=true,[2]=true,[4]=true,[6]=true,[7]=true,[8]=true,[9]=true},true)
 		if clp1 and plr.pg_lvl>0 then
-			for i=0,99 do addp(x1,y1,z1,(R()-0.5)*5,(R()-0.5)*5,(R()-0.5)*5,R(5,25),R(10,11)) end
+			for i=0,99 do
+				addp(x3,y3,z3,
+				(R()-0.5)*5,
+				(R()-0.5)*5,
+				(R()-0.5)*5,
+				R(5,25),
+				R(10,11))
+			end
 		elseif clp2 and plr.pg_lvl>1 then
-			for i=0,99 do addp(x1,y1,z1,(R()-0.5)*5,(R()-0.5)*5,(R()-0.5)*5,R(5,25),R(13,14)) end
+			for i=0,99 do
+				addp(x3,y3,z3,
+				(R()-0.5)*5,
+				(R()-0.5)*5,
+				(R()-0.5)*5,
+				R(5,25),
+				R(13,14))
+			end
 		end
 	end
 
+	--portal reset
 	if debug and (keyp(6) or (plr.cd2>1 and save.lvl~=3 and save.lvl2~=1)) then
 		if draw.p[1] then
 			portal_check(1)
@@ -4383,6 +4422,8 @@ local function portal_gun()
 			update_world()
 		end
 	end
+
+	--portal gun texture (2)
 	p_g.t2=max(p_g.t2-0.1,0)
 
 	p_g.x=    math.sin(p_g.t1/10) *5+p_g.t2^0.5*10
@@ -4398,6 +4439,7 @@ local function portal_gun()
 	if draw.p[2] then draw.p[2][6] = draw.p[2][6] + 1 end
 
 	--updating textures
+	--[[
 	for i = 1,2 do
 		local px,py ,sc --set color
 		--Blue(95; 0) Orange(0; 32)
@@ -4426,7 +4468,8 @@ local function portal_gun()
 				end
 			end end
 		end
-	end
+	end]]
+
 end
 
 --map
@@ -4531,8 +4574,8 @@ function update_world()
 		local face = draw.map[angle][x0][y0][z0][1]
 		local type = draw.map[angle][x0][y0][z0][2]-1
 
-		local type1 = type%5
-		local type2 = type//5
+		local type1 = type%5  --4
+		local type2 = type//5 --0
 		------
 		if type~=-1 then
 			if angle==1 then
@@ -6346,9 +6389,9 @@ end
 -- 009:555555555fffffff5fffffff5fffffff5fffffff5fffffff5fffffff5fffffbf
 -- 010:55555555ffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 -- 011:55555555fffffff5fffffff5fffffff4fffffff4fffffff4fffffff4fffffff4
--- 012:666666666555555a656555aa65555aa06555aa00655aa00065aa000065aa0000
--- 013:6aaaaaa6aaaaaaaaa000000a0000000000000000000000000000000000000000
--- 014:66666665a5555554aa5565540aa5555400aa5454000aa5540000aa540000aa54
+-- 012:fffffffffffffffaffffffaafffffaa0ffffaa00fffaa000ffaa0000ffaa0000
+-- 013:faaaaaafaaaaaaaaa000000a0000000000000000000000000000000000000000
+-- 014:ffffffffafffffffaaffffff0aafffff00aaffff000aafff0000aaff0000aaff
 -- 015:0000000010101010000000001010101000000000101010100000000010101010
 -- 016:4333333343333333434333334333333343333333433333334343334343333333
 -- 017:3433343333333333333333333333333333343333333333333333333333333333
@@ -6362,8 +6405,8 @@ end
 -- 025:5ffffbcf5fffbcff5fffcfff5fffffff5fffffff5fffffff5fffffff5fffffff
 -- 026:fffffffffffffffbffffffbcfffffbcffffffcfffffbffffffbcffffffcfffff
 -- 027:fffffff4fffffff4fffffff4fffffff4fffffff4fffffff4fffffff4fffffff4
--- 028:65aa00006aa000006aa000006aa00000aa000000aa000000aa000000aa000000
--- 030:0000aa5400000aa400000aa400000aa4000000aa000000aa000000aa000000aa
+-- 028:ffaa0000faa00000faa00000faa00000aa000000aa000000aa000000aa000000
+-- 030:0000aaff00000aaf00000aaf00000aaf000000aa000000aa000000aa000000aa
 -- 031:0000000010101010000000001010101000000000101010100000000010101010
 -- 032:4333333343333333434333334333333343333333433333334333433343333333
 -- 033:3433333333333233433333333333333333333233333333333323333333333333
@@ -6377,8 +6420,8 @@ end
 -- 041:5fffffff5fffffff5fffffff5fffffff5fffffff5ffffffb5fffffbc5fffffcf
 -- 042:fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb
 -- 043:fffffff4fffffff4fffffff4fffffff4fffffff4fbfffff4bcfffff4cffffff4
--- 044:aa000000aa000000aa000000aa0000006aa000006aa000006aa0000065aa0000
--- 046:000000aa000000aa000000aa000000aa00000aa400000aa400000aa40000aa54
+-- 044:aa000000aa000000aa000000aa000000faa00000faa00000faa00000ffaa0000
+-- 046:000000aa000000aa000000aa000000aa00000aaf00000aaf00000aaf0000aaff
 -- 047:0000000010101010000000001010101000000000101010100000000010101010
 -- 048:4333333343333333433333334333333343343333433333334333333332222222
 -- 049:3333333333333332233323333333333333333332333333333333333322222222
@@ -6392,13 +6435,13 @@ end
 -- 057:5fffffff5fffffff5fffffff5fffffff5fffffff5fffffff5555555554444444
 -- 058:fffffffcffffffffffffffffffffffffffffffffffffffff5554444444444444
 -- 059:fffffff4fffffff4fffffff4fffffff4fffffff4fffffff44444444444444444
--- 060:65aa000065aa0000655aa0006555aa0065565aa0655555aa6555555a54444444
--- 061:0000000000000000000000000000000000000000a000000aaaaaaaaa4aaaaaa4
--- 062:0000aa540000aa54000aa55400aa55540aa55454aa555554a555555444444444
+-- 060:ffaa0000ffaa0000fffaa000ffffaa00fffffaa0ffffffaafffffffaffffffff
+-- 061:0000000000000000000000000000000000000000a000000aaaaaaaaafaaaaaaf
+-- 062:0000aaff0000aaff000aafff00aaffff0aafffffaaffffffafffffffffffffff
 -- 063:0000000010101010000000001010101000000000101010100000000010101010
--- 064:666666666555555d656555dd65555dd06555dd00655dd00065dd000065dd0000
--- 065:6dddddd6ddddddddd000000d0000000000000000000000000000000000000000
--- 066:66666665d5555554dd5565540dd5555400dd5454000dd5540000dd540000dd54
+-- 064:fffffffffffffffdffffffddfffffdd0ffffdd00fffdd000ffdd0000ffdd0000
+-- 065:fddddddfddddddddd000000d0000000000000000000000000000000000000000
+-- 066:ffffffffdfffffffddffffff0ddfffff00ddffff000ddfff0000ddff0000ddff
 -- 067:ffffffffffaaaffffffffffffffffffffffffffffffffffaffffffffffffffff
 -- 068:fffffffffffffffffffffffbffffffffffffffffaafffffffffffffffffffffa
 -- 069:ffffffffffffffffbbffffffffffffffffffffffffffffffffffffffaaffffff
@@ -6412,8 +6455,8 @@ end
 -- 077:6666666611111111777777771177771111177111711771177117711771177117
 -- 078:6666666511117654777776541117765411117654771176547711765477117654
 -- 079:0000000010101010000000001010101000000000101010100000000010101010
--- 080:65dd00006dd000006dd000006dd00000dd000000dd000000dd000000dd000000
--- 082:0000dd5400000dd400000dd400000dd4000000dd000000dd000000dd000000dd
+-- 080:ffdd0000fdd00000fdd00000fdd00000dd000000dd000000dd000000dd000000
+-- 082:0000ddff00000ddf00000ddf00000ddf000000dd000000dd000000dd000000dd
 -- 083:ffffbbbfffffffffffffffffffffffffffffffffffffffffffffffffffaaafff
 -- 084:fffffffffffffffffbbbfffffffffffffffffffffffffffabbbfffffffffffff
 -- 085:ffffffffffffffffffffffffffffffffffffffffaaffffffffffffffffffffff
@@ -6427,8 +6470,8 @@ end
 -- 093:7117711171177711711777777117711711177111117777117777777711111111
 -- 094:1111765411117654771176547711765411117654111776547777765411117654
 -- 095:0000000010101010000000001010101000000000101010100000000010101010
--- 096:dd000000dd000000dd000000dd0000006dd000006dd000006dd0000065dd0000
--- 098:000000dd000000dd000000dd000000dd00000dd400000dd400000dd40000dd54
+-- 096:dd000000dd000000dd000000dd000000fdd00000fdd00000fdd00000ffdd0000
+-- 098:000000dd000000dd000000dd000000dd00000ddf00000ddf00000ddf0000ddff
 -- 099:fffffffffffffffffffffffffffbbbffffffffffffffffffffffffffffffffaa
 -- 100:fffffffffffffffffffaaafffffffffffffffffbffffffffffffffffafffffff
 -- 101:ffffffffffffffffffffffffffffffffbbffffffffffffffffffffffffffffff
@@ -6442,9 +6485,9 @@ end
 -- 109:7777777717177777171777777777777711733711117337117777777733733733
 -- 110:7777765477777654777776547777765473377654733776547777765471177654
 -- 111:0000000010101010000000001010101000000000101010100000000010101010
--- 112:65dd000065dd0000655dd0006555dd0065565dd0655555dd6555555d54444444
--- 113:0000000000000000000000000000000000000000d000000ddddddddd4dddddd4
--- 114:0000dd540000dd54000dd55400dd55540dd55454dd555554d555555444444444
+-- 112:ffdd0000ffdd0000fffdd000ffffdd00fffffdd0ffffffddfffffffdffffffff
+-- 113:0000000000000000000000000000000000000000d000000dddddddddfddddddf
+-- 114:0000ddff0000ddff000ddfff00ddffff0ddfffffddffffffdfffffffffffffff
 -- 115:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 -- 116:ffffffffffffffffffffffaafffffffffbbbffffffffffffffffffffffffffff
 -- 117:ffffffffffffffffaffffffffffffffffffffffffbbbffffffffffffffffffff
