@@ -202,6 +202,7 @@ d_t   =true, --dynamic textures
 music =true,
 sfx   =true,
 pcm   =true,
+dt_c  =false, --time delta constant
 scr   =30,
 vx    =40,
 }
@@ -229,6 +230,7 @@ if save.st&2^31~=0 then
 	st.p     =save.st&2^5 ~=0
 	st.d_t   =save.st&2^6 ~=0
 	st.pcm   =save.st&2^7 ~=0
+	st.dt_c  =save.st&2^8 ~=0
 end
 
 local function save_settings()
@@ -241,6 +243,7 @@ local function save_settings()
 	if st.p      then save.st=save.st+2^5 end
 	if st.d_t    then save.st=save.st+2^6 end
 	if st.pcm    then save.st=save.st+2^7 end
+	if st.dt_c   then save.st=save.st+2^8 end
 	save.st=save.st+2^31
 	pmem(1,save.st)
 end
@@ -5091,6 +5094,7 @@ local ach={t=0,y=0,t2=0} --achievement (easter egg)
 local d_t=0 --darkening
 local l_={t=0,p={}} --logo
 local ms={t=0,b={}} --main screen | Table with current buttons
+local sh_i=-1 --settings hint
 
 --buttons
 local menu_options --It must be separate, otherwise local variables inside this table may not see each other
@@ -5111,16 +5115,16 @@ menu_options = {
 		{draw = true, y=115, t=1, text = "Back", func = function() sfx_(17) state="main" ms.b = menu_options.ms end}
 	},
 	s = { --settings
-		{draw = true, y = 25, t=1, text="", func = function() sfx_(18) if state=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end},
-		{draw = true, y = 35, t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
-		{draw = true, y = 45, t=1, text="", func = function() sfx_(18) st.pcm   =not st.pcm    end},
-		{draw = true, y = 55, t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
-		{draw = true, y = 65, t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
-		{draw = true, y = 75, t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
-		{draw = true, y = 85, t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
-		{draw = true, y = 95, t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+		{draw = true, y = 25 , t=1, text="", func = function() sfx_(18) if state=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end},
+		{draw = true, y = 35 , t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
+		{draw = true, y = 45 , t=1, text="", func = function() sfx_(18) st.pcm   =not st.pcm    end},
+		{draw = true, y = 55 , t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
+		{draw = true, y = 65 , t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
+		{draw = true, y = 75 , t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
+		{draw = true, y = 85 , t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
+		{draw = true, y = 95 , t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) st.dt_c  =not st.dt_c   end},
 
-		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 115, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 125, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 135, t=1, text="", func = function() sfx_(18) end},
@@ -5141,6 +5145,7 @@ menu_options = {
 }
 
 local function upd_buttons()
+	sh_i=-1
 	for i = 1, #ms.b do
 		local b = ms.b[i]
 		if b.draw then
@@ -5148,6 +5153,7 @@ local function upd_buttons()
 
 			if my > b.y - 3 and my < b.y + 8 then
 				if not (state=="main|settings" or state=="pause|settings") or (i<13 and my<110 and my>19) or i>=13 then
+					if (state=="main|settings" or state=="pause|settings") then sh_i = i end
 					b.t = max(b.t-0.05,0.5)
 					cid = 1
 					if clp1 then b.func() break end
@@ -5190,14 +5196,14 @@ state="logo" sync(25 ,1,false) music(0)
 
 
 local lag_mode = false
-local dt_const = false
 function TIC()
-	dt = min(max((fr[3]+fr[2])/ 33.333, 1), 2.5)
+	if st.dt_c then
+		dt=1
+	else
+		dt = min(max((fr[3]+fr[2])/ 33.333, 1), 2.5)
+	end
 
-	if keyp(2 ) then dt_const = not dt_const end
 	if keyp(14) then lag_mode = not lag_mode end
-
-	if dt_const then dt = 1 end
 
 	if keyp(38) and replay.mode == "rec" then -- "="
 		save_replay()
@@ -6017,9 +6023,6 @@ function TIC()
 			}
 		}
 
-		if dt_const then debug_text[1][3] = "dt const: on" else debug_text[1][3] = "dt const: off" end
-		if lag_mode then debug_text[1][4] = "lag mode: on" else debug_text[1][4] = "lag mode: off" end
-
 		if keyp(49) then plr.dt=(plr.dt+1)%(#debug_text+1) end
 		
 		vbank(1)
@@ -6073,20 +6076,20 @@ function TIC()
 		clip(0,20, 240, 90)
 
 		local texts = {
-			{"music" , "Music:"               },
-			{"sfx"   , "Sfx:"                 },
-			{"pcm"   , "PCM sample playback:" },
+			{"music" , "Music:"               , {"Background music is always good", "but not everyone likes it"}},
+			{"sfx"   , "Sfx:"                 , {"Sounds of walking, pressing buttons,","shooting turrets, etc."}},
+			{"pcm"   , "PCM sample playback:" , {"Uses PCM technology to play some","melodies, sometimes sounds better"}},
 
-			{"r_p"   , "Rendering portals: "  },
-			{"h_q_p" , "High quality portals:"},
-			{"r_both", "Render both poratls: "},
-			{"p"     , "Particles:"           },
-			{"d_t"   , "Dynamic textures:"    },
+			{"r_p"   , "Rendering portals: "  , {"Allows the world to be drawn through portals",""}},
+			{"h_q_p" , "High quality portals:", {"using a different method of drawing portals,","which works faster but reduces their quality"}},
+			{"r_both", "Render both poratls: ", {"allows you to see through both","portals at the same time"}},
+			{"p"     , "Particles:"           , {"enables particle visibility",""}},
+			{"d_t"   , "Dynamic textures:"    , {"allows some textures to change in real time","(for example, the texture of a light bridge)"}},
 			
-			{"","Test:"},
-			{"","Test:"},
-			{"","Test:"},
-			{"","Test:"},
+			{"dt_c","Time delta constant:",{"When turned off, the player moves at","the same speed regardless of the fps"}},
+			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
+			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
+			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 		}
 
 		for i = 1, #texts do
@@ -6099,10 +6102,12 @@ function TIC()
 				end
 			else
 				print(texts[i][2],4,12+i*10 - F(st.scr),7)
-				if st[texts[i][1]] then
+				if st[texts[i][1]]==true then
 					print("On",140,12+i*10 - F(st.scr),13)
-				else
+				elseif st[texts[i][1]]==false then
 					print("Off",140,12+i*10 - F(st.scr),11)
+				else
+					print(st[texts[i][1]],140,12+i*10 - F(st.scr),4)
 				end
 			end
 		end
@@ -6113,6 +6118,13 @@ function TIC()
 		rect(4+st.m_s-20,43-30,2,6,6)
 
 		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
+
+		--settings hints
+		if sh_i ~= -1 and sh_i<13 then
+			print(texts[sh_i][3][1],70,115,7,false,1,true)
+			print(texts[sh_i][3][2],70,125,7,false,1,true)
+		end
+
 
 		menu_options.s[13].draw = state=="main|settings" --calibration button
 		--saving the settings
