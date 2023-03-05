@@ -3258,70 +3258,44 @@ function unitic.player_collision()
 	local z2=min((plr.z+16)//96,world_size[3]-1)
 
 	for x0 = x1,x2 do for y0 = y1,y2 do for z0 = z1,z2 do
-		if wall_coll[draw.map[1][x0][y0][z0][2]] then
-			plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-		elseif draw.map[1][x0][y0][z0][2]==5 or draw.map[1][x0][y0][z0][2]==6 then
-			if not draw.p[1] or not draw.p[2] then
-				plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-			else
-				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
-				or coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-				or coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colx = true end
-
-				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
-				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then coly = true end
-
-				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
-				or coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-				or coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96, y0 * 128 + 126, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then colz = true end
-			end
-		elseif draw.map[1][x0][y0][z0][2]==11 then
-			plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 62, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
-		elseif draw.map[1][x0][y0][z0][2]==12 then
-			plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 34)
-		elseif draw.map[1][x0][y0][z0][2]==7 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.cd2=10 end
-		elseif draw.map[1][x0][y0][z0][2]==15 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end
+		-- walls --
+		if draw.map[1][x0][y0][z0][2]==2 and draw.p[1] and draw.p[2] and -- portals
+			((draw.p[1][1] == x0 and draw.p[1][2] == y0 and draw.p[1][3] == z0 and draw.p[1][4]==1) or
+			 (draw.p[2][1] == x0 and draw.p[2][2] == y0 and draw.p[2][3] == z0 and draw.p[2][4]==1))
+		then
+			plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2 , x0 * 96, y0 * 128 + 126, z0 * 96 + 2)
+			plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 94, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+			plr_collide(x0 * 96, y0 * 128      , z0 * 96 + 2 , x0 * 96, y0 * 128      , z0 * 96 + 94)
+			plr_collide(x0 * 96, y0 * 128 + 128, z0 * 96 + 2 , x0 * 96, y0 * 128 + 128, z0 * 96 + 94)
+		elseif wall_coll[draw.map[1][x0][y0][z0][2]] then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
+		elseif draw.map[1][x0][y0][z0][2]==11 then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 62, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) -- doorway (1)
+		elseif draw.map[1][x0][y0][z0][2]==12 then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 34) -- doorway (2)
+		elseif draw.map[1][x0][y0][z0][2]==7  then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.cd2=10 end -- blue field
+		elseif draw.map[1][x0][y0][z0][2]==15 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end -- red field
 		end
 
-		if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
-			plr_collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
-		elseif draw.map[2][x0][y0][z0][2]==5 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end
-		elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.vy=12 sfx_(0,"C-6",-1,1) end
-		end
+		-- floors --
+		if     draw.map[2][x0][y0][z0][2]==5 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end -- red field
+		elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.vy=12 sfx_(0,"C-6",-1,1) end
+		elseif draw.map[2][x0][y0][z0][2]~=0 then plr_collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) end
 
-		if wall_coll[draw.map[3][x0][y0][z0][2]] then
-			plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-		elseif draw.map[3][x0][y0][z0][2]==5 or draw.map[3][x0][y0][z0][2]==6 then
-			if not draw.p[1] or not draw.p[2] then
-				plr_collide(x0 * 96, y0 * 128, z0 * 96, x0 * 96 + 96, y0 * 128 + 128, z0 * 96)
-			else
-				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
-				or coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-				or coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colx = true end
-
-				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
-				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-				or coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then coly = true end
-
-				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
-				or coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-				or coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x0 * 96 + 2, y0 * 128 + 126, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then colz = true end
-			end
-		elseif draw.map[3][x0][y0][z0][2]==7 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.cd2=10 end
-		elseif draw.map[3][x0][y0][z0][2]==11 then
-			plr_collide(x0 * 96 + 62, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
-		elseif draw.map[3][x0][y0][z0][2]==12 then
-			plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 34, y0 * 128 + 126, z0 * 96)
-		elseif draw.map[3][x0][y0][z0][2]==15 then
-			if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx_(2,"C-3",-1,1) end
+		-- walls (2) --
+		if draw.map[3][x0][y0][z0][2]==2 or draw.p[1] and draw.p[2] and -- portals
+			((draw.p[1][1] == x0 and draw.p[1][2] == y0 and draw.p[1][3] == z0 and draw.p[1][4]==3) or
+		 	 (draw.p[2][1] == x0 and draw.p[2][2] == y0 and draw.p[2][3] == z0 and draw.p[2][4]==3))
+		then
+			plr_collide(x0 * 96 + 2 , y0 * 128 + 2, z0 * 96, x0 * 96 + 2, y0 * 128 + 126, z0 * 96)
+			plr_collide(x0 * 96 + 94, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+			plr_collide(x0 * 96 + 2, y0 * 128      , z0 * 96, x0 * 96 + 94, y0 * 128      , z0 * 96)
+			plr_collide(x0 * 96 + 2, y0 * 128 + 128, z0 * 96, x0 * 96 + 94, y0 * 128 + 128, z0 * 96)
+		elseif wall_coll[draw.map[3][x0][y0][z0][2]] then plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+		elseif draw.map[3][x0][y0][z0][2]==11 then plr_collide(x0 * 96 + 62, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
+		elseif draw.map[3][x0][y0][z0][2]==12 then plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 34, y0 * 128 + 126, z0 * 96)
+		elseif draw.map[3][x0][y0][z0][2]==7  then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.cd2=10 end
+		elseif draw.map[3][x0][y0][z0][2]==15 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx_(2,"C-3",-1,1) end
 		end
 	end end end
+
 	--Is the player in the portal (it is necessary that the player can not go through the objects on the other side of the portal)
 	if draw.p[1] and draw.p[2] then
 		--Blue portal
