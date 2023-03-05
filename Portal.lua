@@ -2533,39 +2533,34 @@ for x=0,10 do
 	end
 end
 
-maps[0][2].w[#maps[0][2].w+1]={0,0,1,1,2,9}
-maps[0][2].w[#maps[0][2].w+1]={3,0,11,3,2,9}
-maps[0][2].w[#maps[0][2].w+1]={0,1,2,1,2,16}
-maps[0][2].w[#maps[0][2].w+1]={0,1,3,1,2,17}
-maps[0][2].w[#maps[0][2].w+1]={0,0,6,3,3,12}
-maps[0][2].w[#maps[0][2].w+1]={1,0,6,3,3,11}
-maps[0][2].w[#maps[0][2].w+1]={2,0,5,1,1,2}
-maps[0][2].w[#maps[0][2].w+1]={3,0,5,1,2,2}
-maps[0][2].w[#maps[0][2].w+1]={2,0,6,3,1,2}
-maps[0][2].w[#maps[0][2].w+1]={2,0,5,3,2,2}
-maps[0][2].w[#maps[0][2].w+1]={2,1,5,2,2,2}
-maps[0][2].w[#maps[0][2].w+1]={3,0,6,3,3,14}
-maps[0][2].w[#maps[0][2].w+1]={4,0,6,3,3,13}
-maps[0][2].w[#maps[0][2].w+1]={5,0,6,3,3,1}
-maps[0][2].w[#maps[0][2].w+1]={6,0,6,3,3,15}
-maps[0][2].w[#maps[0][2].w+1]={7,0,6,3,3,3}
-maps[0][2].w[#maps[0][2].w+1]={8,0,6,3,3,3}
-maps[0][2].w[#maps[0][2].w+1]={9,0,6,3,3,4}
-maps[0][2].w[#maps[0][2].w+1]={10,0,6,3,3,7}
-maps[0][2].w[#maps[0][2].w+1]={6,0,5,2,3,8}
-maps[0][2].w[#maps[0][2].w+1]={6,0,6,2,3,8}
-maps[0][2].w[#maps[0][2].w+1]={3,0,5,2,3,8}
-maps[0][2].w[#maps[0][2].w+1]={0,0,10,1,3,11}
-maps[0][2].w[#maps[0][2].w+1]={0,0,9,1,3,12}
-maps[0][2].w[#maps[0][2].w+1]={0,0,0,3,3,12}
-maps[0][2].w[#maps[0][2].w+1]={1,0,0,3,3,11}
-maps[0][2].w[#maps[0][2].w+1]={11,0,1,1,1,2}
-maps[0][2].w[#maps[0][2].w+1]={3,2,3,2,3,2}
-
-
-maps[0][2].w[#maps[0][2].w+1]={2,0,7,2,2,6}
-maps[0][2].w[#maps[0][2].w+1]={3,0,7,2,2,7}
-
+maps[0][2].w[#maps[0][2].w+1]={0 ,0,1 ,1,2,9}
+maps[0][2].w[#maps[0][2].w+1]={3 ,0,11,3,2,9}
+maps[0][2].w[#maps[0][2].w+1]={0 ,1,2 ,1,2,16}
+maps[0][2].w[#maps[0][2].w+1]={0 ,1,3 ,1,2,17}
+maps[0][2].w[#maps[0][2].w+1]={0 ,0,6 ,3,3,12}
+maps[0][2].w[#maps[0][2].w+1]={1 ,0,6 ,3,3,11}
+maps[0][2].w[#maps[0][2].w+1]={2 ,0,5 ,1,1,2}
+maps[0][2].w[#maps[0][2].w+1]={3 ,0,5 ,1,2,2}
+maps[0][2].w[#maps[0][2].w+1]={2 ,0,6 ,3,1,2}
+maps[0][2].w[#maps[0][2].w+1]={2 ,0,5 ,3,2,2}
+maps[0][2].w[#maps[0][2].w+1]={2 ,1,5 ,2,2,2}
+maps[0][2].w[#maps[0][2].w+1]={3 ,0,6 ,3,3,14}
+maps[0][2].w[#maps[0][2].w+1]={4 ,0,6 ,3,3,13}
+maps[0][2].w[#maps[0][2].w+1]={5 ,0,6 ,3,3,1}
+maps[0][2].w[#maps[0][2].w+1]={6 ,0,6 ,3,3,15}
+maps[0][2].w[#maps[0][2].w+1]={7 ,0,6 ,3,3,3}
+maps[0][2].w[#maps[0][2].w+1]={8 ,0,6 ,3,3,3}
+maps[0][2].w[#maps[0][2].w+1]={9 ,0,6 ,3,3,4}
+maps[0][2].w[#maps[0][2].w+1]={10,0,6 ,3,3,7}
+maps[0][2].w[#maps[0][2].w+1]={6 ,0,5 ,2,3,9}
+maps[0][2].w[#maps[0][2].w+1]={6 ,0,6 ,2,3,9}
+maps[0][2].w[#maps[0][2].w+1]={3 ,0,5 ,2,3,9}
+maps[0][2].w[#maps[0][2].w+1]={0 ,0,10,1,3,11}
+maps[0][2].w[#maps[0][2].w+1]={0 ,0,9 ,1,3,12}
+maps[0][2].w[#maps[0][2].w+1]={0 ,0,0 ,3,3,12}
+maps[0][2].w[#maps[0][2].w+1]={1 ,0,0 ,3,3,11}
+maps[0][2].w[#maps[0][2].w+1]={11,0,1 ,1,1,2}
+maps[0][2].w[#maps[0][2].w+1]={3 ,2,3 ,2,3,2}
 
 --song text
 local s_t={
@@ -3004,7 +2999,8 @@ function unitic.update(draw_portal,p_id)
 	for i=1,#draw.objects.c  do
 		i2=i2+1 unitic.obj[i2]=draw.objects.c [i]
 		if draw.objects.c[i].inp then
-			i2=i2+1 unitic.obj[i2]={
+			i2=i2+1
+			unitic.obj[i2]={
 				type = draw.objects.c[i].type,
 				draw = draw.objects.c[i].draw,
 				model= draw.objects.c[i].model,
@@ -3057,60 +3053,45 @@ function unitic.update(draw_portal,p_id)
 	local txcos = math.cos(cam.tx)
 	local tysin = math.sin(-cam.ty)
 	local tycos = math.cos(-cam.ty)
-	local tzsin = math.sin(cam.tz)
-	local tzcos = math.cos(cam.tz)
 
 	for ind = 1, #unitic.poly.v do
 		if unitic.poly.v[4]~=false then -- true or nil
-		local a = unitic.poly.v[ind][1] - cam.x
-		local b = unitic.poly.v[ind][2] - cam.y
-		local c = unitic.poly.v[ind][3] - cam.z
+			local a1 = unitic.poly.v[ind][1] - cam.x
+			local b1 = unitic.poly.v[ind][2] - cam.y
+			local c1 = unitic.poly.v[ind][3] - cam.z
+	
+			local c2 = c1 * tycos - a1 * tysin
+	
+			local a3 = c1 * tysin + a1 * tycos
+			local b3 = b1 * txcos - c2 * txsin
+			local c3 = b1 * txsin + c2 * txcos
 
-		local a1 = a * tzcos - b * tzsin
-		local b1 = a * tzsin + b * tzcos
-		local c1 = c
+			local c4 = c3
 
-		local c2 = c1 * tycos - a1 * tysin
-		local a2 = c1 * tysin + a1 * tycos
-		local b2 = b1
+			if c4>-0.001 then c4=-0.001 end
+			local z0 = unitic.fov / c4 --this saves one division (very important optimization)
 
-		local b3 = b2 * txcos - c2 * txsin
-		local c3 = b2 * txsin + c2 * txcos
-		local a3 = a2
+			local x0 = a3 * z0 + 120
+			local y0 = b3 * z0 + 68
 
-		local c4 = c3
-
-		if c4>-0.001 then c4=-0.001 end
-		local z0 = unitic.fov / c4 --this saves one division (very important optimization)
-
-		local x0 = a3 * z0 + 120
-		local y0 = b3 * z0 + 68
-
-		unitic.poly.v[ind][1]=x0
-		unitic.poly.v[ind][2]=y0
-		unitic.poly.v[ind][3]=-c4
-		unitic.poly.v[ind][4]=c3>0
+			unitic.poly.v[ind][1]=x0
+			unitic.poly.v[ind][2]=y0
+			unitic.poly.v[ind][3]=-c4
+			unitic.poly.v[ind][4]=c3>0
 		end
 	end
 
 	--particles
 	for ind = 1, #draw.pr do
-		local a = draw.pr[ind].x - cam.x
-		local b = draw.pr[ind].y - cam.y
-		local c = draw.pr[ind].z - cam.z
-
-		
-		local a1 = a * tzcos - b * tzsin
-		local b1 = a * tzsin + b * tzcos
-		local c1 = c
+		local a1 = draw.pr[ind].x - cam.x
+		local b1 = draw.pr[ind].y - cam.y
+		local c1 = draw.pr[ind].z - cam.z
 
 		local c2 = c1 * tycos - a1 * tysin
-		local a2 = c1 * tysin + a1 * tycos
-		local b2 = b1
 
-		local y0 = b2 * txcos - c2 * txsin
-		local z0 = b2 * txsin + c2 * txcos
-		local x0 = a2
+		local x0 = c1 * tysin + a1 * tycos
+		local y0 = b1 * txcos - c2 * txsin
+		local z0 = b1 * txsin + c2 * txcos
 
 		local dist=math.sqrt(x0^2+y0^2+z0^2)
 
@@ -6810,12 +6791,12 @@ end
 -- 093:fffffffffffffffffff888fffffffffffffffff9ffffffffffffffff8fffffff
 -- 094:ffffffffffffffffffffffffffffffff99ffffffffffffffffffffffffffffff
 -- 095:0000000010101010000000001010101000000000101010100000000010101010
--- 096:7777777676666665766766657666656576766665766656657666666565555555
--- 097:7777777676666665766766657666656576766665766656657666666565555555
--- 098:7777777676666665766766657666656576766665766656657666666565555555
--- 099:aaccccccaaccccccaaccccccaacccccc7aaccccc7aaccccc7aaccccc65aacccc
--- 100:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
--- 101:ccccccaaccccccaaccccccaaccccccaacccccaa5cccccaa5cccccaa5ccccaa55
+-- 096:0000000010101010000000001010101000000000101010100000000010101010
+-- 097:0000000010101010000000001010101000000000101010100000000010101010
+-- 098:0000000010101010000000001010101000000000101010100000000010101010
+-- 099:0000000010101010000000001010101000000000101010100000000010101010
+-- 100:0000000010101010000000001010101000000000101010100000000010101010
+-- 101:0000000010101010000000001010101000000000101010100000000010101010
 -- 102:4444444343333332433433324333323243433332433323324333333232222222
 -- 103:4444444343333332431111124122122112221222122212221232123212221222
 -- 104:4444444343333332433433324333323213433332133323321333333212222222
@@ -6826,12 +6807,12 @@ end
 -- 109:0000888800008888000088880000888888880000888800008888000088880000
 -- 110:0000888800008888000088880000888888880000888800008888000088880000
 -- 111:0000000010101010000000001010101000000000101010100000000010101010
--- 112:777777767666666a766766aa76666aac7676aacc766aaccc76aacccc65aacccc
--- 113:7aaaaaa6aaaaaaaaaccccccacccccccccccccccccccccccccccccccccccccccc
--- 114:77777776a6666665aa676665caa66565ccaa6665cccaa665ccccaa65ccccaa55
--- 115:77aacccc76aacccc766aaccc7666aacc76766aac766656aa7666666a65555555
--- 116:ccccccccccccccccccccccccccccccccccccccccaccccccaaaaaaaaa6aaaaaa5
--- 117:ccccaa76ccccaa65cccaa665ccaa6565caa66665aa665665a666666565555555
+-- 112:0000000010101010000000001010101000000000101010100000000010101010
+-- 113:0000000010101010000000001010101000000000101010100000000010101010
+-- 114:0000000010101010000000001010101000000000101010100000000010101010
+-- 115:0000000010101010000000001010101000000000101010100000000010101010
+-- 116:0000000010101010000000001010101000000000101010100000000010101010
+-- 117:0000000010101010000000001010101000000000101010100000000010101010
 -- 118:4444444343333332433433324333323243433332433323324333333232222222
 -- 119:122212221222122212221222122212221232123212221222122ba222111aa111
 -- 120:1444444313333332133433321333323213433332133323321333333212222222
@@ -6842,12 +6823,12 @@ end
 -- 125:0000000010000000410000004410000044100000440000004410000044100000
 -- 126:0003301100344444034444443444444434444444044444441444444414444444
 -- 127:0000000010000000410000004410000044100000440000004410000044100000
--- 128:77aacccc7aaccccc7aaccccc7aacccccaaccccccaaccccccaaccccccaacccccc
--- 129:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
--- 130:ccccaa76cccccaa5cccccaa5cccccaa5ccccccaaccccccaaccccccaaccccccaa
--- 131:7777777676666665766766657666656576766665766656657666666565555555
--- 132:7777777676666665766766657666656576766665766656657666666565555555
--- 133:7777777676666665766766657666656576766665766656657666666565555555
+-- 128:0000000010101010000000001010101000000000101010100000000010101010
+-- 129:0000000010101010000000001010101000000000101010100000000010101010
+-- 130:0000000010101010000000001010101000000000101010100000000010101010
+-- 131:0000000010101010000000001010101000000000101010100000000010101010
+-- 132:0000000010101010000000001010101000000000101010100000000010101010
+-- 133:0000000010101010000000001010101000000000101010100000000010101010
 -- 134:4444444343333332433433324333323243433332433323324333333232222222
 -- 135:1222222212223222123222321222222212211222412112214311111232222222
 -- 136:1444444313333332133433321333323213433332433323324333333232222222
@@ -6941,7 +6922,7 @@ end
 -- 224:fcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffff
 -- 225:fcfcfcfcbfbfbfbffcfcfcfcbfbfbfbffcfcfcfcbfbfbfbfaaaaaaaaffffffff
 -- 226:298889882988899929888889298888892988888929999999222222227bbbb707
--- 227:89888920998889208888892088888920888889209999992022222226eeee7006
+-- 227:89888920998889208888892088888920888889209999992022222225eeee7005
 -- 228:3aaa1aaa3aa1aaaa3a1aaaaa3aaaaaaa33333333222222220000000000000000
 -- 229:1aaa3000a1aa3000aa1a3000aaaa300033333000222220000000000000000000
 -- 230:3ddd1d1d3ddd1d1d3dddd1dd3ddddddd33333333222222220000000000000000
