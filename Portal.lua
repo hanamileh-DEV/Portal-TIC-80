@@ -3970,7 +3970,7 @@ function unitic.render() --------
 		elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
 		end
 		fps_.t4=time()
-		if st.h_q_p or min(dist13d,dist23d)<128^2 or (t%2==0 and min(dist13d,dist23d)<512^2) or (t%3==0 and min(dist13d,dist23d)>=512^2) then
+		if st.h_q_p or min(dist13d,dist23d)<96 or t%2==0 then
 				if (dist2d and not st.r_both) or (dist3d and st.r_both) then
 					cam.x = 96*x2 + relx1
 					cam.y = 128*y2 + rely1
