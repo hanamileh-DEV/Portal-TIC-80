@@ -3124,7 +3124,7 @@ function unitic.update_pr() --update particles
 	until i>=#draw.pr end
 end
 
-function unitic.draw()
+function unitic.draw(particles)
 	for i = 1, #unitic.poly.f do
 		local poly = unitic.poly.f[i]
 
@@ -3166,7 +3166,7 @@ function unitic.draw()
 		end
 	end
 
-	if #unitic.p~=0 and st.p then
+	if particles and #unitic.p~=0 and st.p then
 		for i = 1, #unitic.p do
 			if unitic.p[i][4] then
 				local p2d = {x=unitic.p[i][1],y=unitic.p[i][2]}
@@ -3859,7 +3859,7 @@ function unitic.render() --------
 		local  z=draw.pr_g[i][3]*96
 		local vx=draw.pr_g[i][4]
 		local vz=draw.pr_g[i][5]
-		for i=0,15 do
+		for i=0,15,2 do
 			if     vx==-1 then addp(x+96,y,z+i*6, R(1,4),R(-2,2), R(-2,2),R(2,10),R(10,11))
 			elseif vx==1  then addp(x   ,y,z+i*6,-R(1,4),R(-2,2), R(-2,2),R(2,10),R(10,11))
 			elseif vz==-1 then addp(x+i*6,y,z+96, R(-2,2),R(-2,2), R(1,4),R(2,10),R(10,11))
@@ -3977,14 +3977,14 @@ function unitic.render() --------
 					cam.z = 96*z2 + relz1
 					cam.ty = plr.ty + math.pi * rotd1 / 2
 					cam.tx = plr.tx
-					unitic.update(true,1) unitic.draw() --blue portal
+					unitic.update(true,1) unitic.draw(false) --blue portal
 				else
 					cam.x = 96*x1 + relx2
 					cam.y = 128*y1 + rely2
 					cam.z = 96*z1 + relz2
 					cam.ty = plr.ty + math.pi * rotd2 / 2
 					cam.tx = plr.tx
-					unitic.update(true,2) unitic.draw() --orange portal
+					unitic.update(true,2) unitic.draw(false) --orange portal
 				end
 				fps_.t5=time()
 
@@ -4056,14 +4056,14 @@ function unitic.render() --------
 					cam.z = 96*z1 + relz2
 					cam.ty = plr.ty + math.pi * rotd2 / 2
 					cam.tx = plr.tx
-					unitic.update(true,2) unitic.draw() --orange portal
+					unitic.update(true,2) unitic.draw(false) --orange portal
 				else
 					cam.x = 96*x2 + relx1
 					cam.y = 128*y2 + rely1
 					cam.z = 96*z2 + relz1
 					cam.ty = plr.ty + math.pi * rotd1 / 2
 					cam.tx = plr.tx
-					unitic.update(true,1) unitic.draw() --blue portal
+					unitic.update(true,1) unitic.draw(false) --blue portal
 				end
 			end
 			memcpy(0x8000,0x0,240*136/2)
@@ -4088,7 +4088,7 @@ function unitic.render() --------
 	unitic.update_pr()
 	unitic.update()
 	fps_.t7=time()
-	unitic.draw()
+	unitic.draw(true)
 	fps_.t8=time()
 
 	local v_id={{},{}}
