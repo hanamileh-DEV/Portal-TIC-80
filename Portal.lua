@@ -4320,21 +4320,19 @@ local function portal_gun()
 
 	--portal gun (portals)
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
-		if clp1 and plr.pg_lvl>0 then
+		if clp1 and plr.pg_lvl>0 and not (draw.p[2] and draw.p[2][1]==x and draw.p[2][2]==y and draw.p[2][3]==z and draw.p[2][4]==f) then
 			p_g.cd1=10
 			portal_check(1)
 
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
 			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1],0}
-			-- addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],5)
 			update_world()
-		elseif clp2 and plr.pg_lvl>1 then
+		elseif clp2 and plr.pg_lvl>1 and not (draw.p[1] and draw.p[1][1]==x and draw.p[1][2]==y and draw.p[1][3]==z and draw.p[1][4]==f) then
 			p_g.cd2=10
 			portal_check(2)
 
 			if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) end
 			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1],0}
-			-- addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],6)
 			update_world()
 		end
 
