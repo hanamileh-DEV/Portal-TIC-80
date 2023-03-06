@@ -1806,6 +1806,16 @@ function unitic.draw()
 					unitic.poly.v[poly[1]][3],
 					unitic.poly.v[poly[2]][3],
 					unitic.poly.v[poly[3]][3])
+			elseif poly.w then
+					if poly.w[7]==1 then
+						if poly.w[2]==2 then ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],0,200,24,200,0,176,0,15,unitic.poly.v[poly[1]][3],unitic.poly.v[poly[2]][3],unitic.poly.v[poly[3]][3])
+						else ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],120,32,96,32,120,0,0,15,unitic.poly.v[poly[1]][3],unitic.poly.v[poly[2]][3],unitic.poly.v[poly[3]][3])
+						end
+					else
+						if poly.w[2]==2 then ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],24,200,24,176,0,176,0,15,unitic.poly.v[poly[1]][3],unitic.poly.v[poly[2]][3],unitic.poly.v[poly[3]][3])
+						else ttri(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],96,32,96,0,120,0,0, 15,unitic.poly.v[poly[1]][3],unitic.poly.v[poly[2]][3],unitic.poly.v[poly[3]][3])
+						end
+					end
 			end
 			if poly.w[6] == menu.w.m_sel then
 				line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],13)
@@ -2418,6 +2428,7 @@ function addobj(x, y, z, type,t1) --objects
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
 
+
 function update_world()
 	draw.world.f={}
 	draw.pr_g={}
@@ -2426,15 +2437,20 @@ function update_world()
 
 	for angle=1,3 do for x0=0,world_size[1]-1 do for y0=0,world_size[2]-1 do for z0=0,world_size[3]-1 do
 		local face = draw.map[angle][x0][y0][z0][1]
-		local type = draw.map[angle][x0][y0][z0][2]-1
+		local type = draw.map[angle][x0][y0][z0][2]
 		local id   = draw.map[angle][x0][y0][z0][3]
+
+		if angle == 2 and (type == 6 or type>9) then type = 7 end
+		if angle ~= 2 and type == 5 then type = 6 end
+
+		type = type - 1
 		local type1 = type%5
 		local type2 = type//5
 		------
 		if type~=-1 then
 			if angle==1 then
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id,1},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id,2},x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+world_size[3]+1,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
 				--
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1][4]=true
@@ -2443,8 +2459,8 @@ function update_world()
 			end
 
 			if angle==2 then
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,0+type1*24,24+type1*24},y={152+type2*24,176+type2*24,152+type2*24}}})
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,24+type1*24,24+type1*24},y={176+type2*24,176+type2*24,152+type2*24}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id,1},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,0+type1*24,24+type1*24},y={152+type2*24,176+type2*24,152+type2*24}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id,2},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1,f=face,uv={x={0+type1*24,24+type1*24,24+type1*24},y={176+type2*24,176+type2*24,152+type2*24}}})
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+2][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[4]+1][4]=true
@@ -2452,8 +2468,8 @@ function update_world()
 			end
 
 			if angle==3 then
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
-				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id,1},x0+y0*world_size[3]+z0*world_size[4]+1,x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={24+type1*24,type1*24,24+type1*24},y={32+type2*32,32+type2*32,0+type2*32}}})
+				table.insert(draw.world.f,{w={face,angle,x0,y0,z0,id,2},x0+y0*world_size[3]+z0*world_size[4]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2,x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+1,f=face,uv={x={type1*24,type1*24,24+type1*24},y={32+type2*32,0+type2*32,0+type2*32}}})
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+1][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+2][4]=true
 				draw.world.v[x0+y0*world_size[3]+z0*world_size[4]+world_size[3]+2][4]=true
@@ -2730,8 +2746,10 @@ local function print_mid(text,x,y,color)
 	print(text,x - text_size//2, y, color)
 end
 
-local function clip(val, min_v,max_v)
-	return min(max(val,min_v),max_v)
+local function clip_val(val, min_v,max_v)
+	if val<min_v then return min_v end
+	if val>max_v then return max_v end
+	return val
 end
 menu = {
 	open = true,
@@ -2995,8 +3013,8 @@ function TIC()
 				x_p.x = mx - x_p.mx
 				x_p.y = my - x_p.my
 
-				x_p.x = clip(x_p.x, 0, 210)
-				x_p.y = clip(x_p.y, 7, 106)
+				x_p.x = clip_val(x_p.x, 0, 210)
+				x_p.y = clip_val(x_p.y, 7, 106)
 			else
 				x_p.drag = false
 			end
@@ -3247,9 +3265,9 @@ end
 -- 009:555555555fffffff5fffffff5fffffff5fffffff5fffffff5fffffff5fffffbf
 -- 010:55555555ffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 -- 011:55555555fffffff5fffffff5fffffff4fffffff4fffffff4fffffff4fffffff4
--- 012:666666666555555a656555aa65555aab6555aabb655aabbb65aabbbb65aabbbb
--- 013:6aaaaaa6aaaaaaaaabbbbbbabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 014:66666665a5555554aa556554baa55554bbaa5454bbbaa554bbbbaa54bbbbaa54
+-- 012:ddddddddd1111111d1111111d1111111d1111111d1111111d1111111d1111111
+-- 013:dddddddd11111111111111111111111111111111111111111111111111111111
+-- 014:dddddddd1111111d1111111d1111111d1111111d1111111d1111111d1111111d
 -- 015:0000000010101010000000001010101000000000101010100000000010101010
 -- 016:4333333343333333434333334333333343333333433333334343334343333333
 -- 017:3433343333333333333333333333333333343333333333333333333333333333
@@ -3263,9 +3281,9 @@ end
 -- 025:5ffffbcf5fffbcff5fffcfff5fffffff5fffffff5fffffff5fffffff5fffffff
 -- 026:fffffffffffffffbffffffbcfffffbcffffffcfffffbffffffbcffffffcfffff
 -- 027:fffffff4fffffff4fffffff4fffffff4fffffff4fffffff4fffffff4fffffff4
--- 028:65aabbbb6aabbbbb6aabbbbb6aabbbbbaabbbbbbaabbbbbbaabbbbbbaabbbbbb
--- 029:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 030:bbbbaa54bbbbbaa4bbbbbaa4bbbbbaa4bbbbbbaabbbbbbaabbbbbbaabbbbbbaa
+-- 028:d1111111d1111111d111111dd111111dd111111dd111111dd111111dd1111111
+-- 029:1111111111111111dd111dd111d1d11d11d1d11d11d1d11d11d11dd111111111
+-- 030:1111111d1111111d1111111d1111111d1111111d1111111d1111111d1111111d
 -- 031:0000000010101010000000001010101000000000101010100000000010101010
 -- 032:4333333343333333434333334333333343333333433333334333433343333333
 -- 033:3433333333333233433333333333333333333233333333333323333333333333
@@ -3279,9 +3297,9 @@ end
 -- 041:5fffffff5fffffff5fffffff5fffffff5fffffff5ffffffb5fffffbc5fffffcf
 -- 042:fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb
 -- 043:fffffff4fffffff4fffffff4fffffff4fffffff4fbfffff4bcfffff4cffffff4
--- 044:aabbbbbbaabbbbbbaabbbbbbaabbbbbb6aabbbbb6aabbbbb6aabbbbb65aabbbb
--- 045:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
--- 046:bbbbbbaabbbbbbaabbbbbbaabbbbbbaabbbbbaa4bbbbbaa4bbbbbaa4bbbbaa54
+-- 044:d1ddd11dd1d11d1dd1d11d1dd1d11d1dd1d11d1dd1ddd11dd1111111d1111111
+-- 045:dd111dd111d1d11d11d1d11ddd11dddd11d1d11d11d1d11d1111111111111111
+-- 046:1d111d1d1d111d1d1d111d1d1d1d1d1d1dd1dd1d1d111d1d1111111d1111111d
 -- 047:0000000010101010000000001010101000000000101010100000000010101010
 -- 048:4333333343333333433333334333333343343333433333334333333332222222
 -- 049:3333333333333332233323333333333333333332333333333333333322222222
@@ -3295,13 +3313,13 @@ end
 -- 057:5fffffff5fffffff5fffffff5fffffff5fffffff5fffffff5555555554444444
 -- 058:fffffffcffffffffffffffffffffffffffffffffffffffff5554444444444444
 -- 059:fffffff4fffffff4fffffff4fffffff4fffffff4fffffff44444444444444444
--- 060:65aabbbb65aabbbb655aabbb6555aabb65565aab655555aa6555555a54444444
--- 061:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbabbbbbbaaaaaaaaa4aaaaaa4
--- 062:bbbbaa54bbbbaa54bbbaa554bbaa5554baa55454aa555554a555555444444444
+-- 060:d1111111d1111111d1111111d1111111d1111111d1111111d1111111dddddddd
+-- 061:11111111111111111111111111111111111111111111111111111111dddddddd
+-- 062:1111111d1111111d1111111d1111111d1111111d1111111d1111111ddddddddd
 -- 063:0000000010101010000000001010101000000000101010100000000010101010
--- 064:666666666555555d656555dd65555dde6555ddee655ddeee65ddeeee65ddeeee
--- 065:6dddddd6dddddddddeeeeeedeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 066:66666665d5555554dd556554edd55554eedd5454eeedd554eeeedd54eeeedd54
+-- 064:8888888881111111811111118111111181111111811111118111111181111111
+-- 065:8888888811111111111111111111111111111111111111111111111111111111
+-- 066:8888888811111118111111181111111811111118111111181111111811111118
 -- 067:ffffffffffaaaffffffffffffffffffffffffffffffffffaffffffffffffffff
 -- 068:fffffffffffffffffffffffbffffffffffffffffaafffffffffffffffffffffa
 -- 069:ffffffffffffffffbbffffffffffffffffffffffffffffffffffffffaaffffff
@@ -3315,9 +3333,9 @@ end
 -- 077:6666666611111111777777771177771111177111711771177117711771177117
 -- 078:6666666511117654777776541117765411117654771176547711765477117654
 -- 079:0000000010101010000000001010101000000000101010100000000010101010
--- 080:65ddeeee6ddeeeee6ddeeeee6ddeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeee
--- 081:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 082:eeeedd54eeeeedd4eeeeedd4eeeeedd4eeeeeeddeeeeeeddeeeeeeddeeeeeedd
+-- 080:8111111181111111811118888111181181111811811118118111181181111111
+-- 081:1111111111111111111881188181181181811811818118118118811111111111
+-- 082:1111111811111118881111188111111881111118811111188111111811111118
 -- 083:ffffbbbfffffffffffffffffffffffffffffffffffffffffffffffffffaaafff
 -- 084:fffffffffffffffffbbbfffffffffffffffffffffffffffabbbfffffffffffff
 -- 085:ffffffffffffffffffffffffffffffffffffffffaaffffffffffffffffffffff
@@ -3331,9 +3349,9 @@ end
 -- 093:7117711171177711711777777117711711177111117777117777777711111111
 -- 094:1111765411117654771176547711765411117654111776547777765411117654
 -- 095:0000000010101010000000001010101000000000101010100000000010101010
--- 096:ddeeeeeeddeeeeeeddeeeeeeddeeeeee6ddeeeee6ddeeeee6ddeeeee65ddeeee
--- 097:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
--- 098:eeeeeeddeeeeeeddeeeeeeddeeeeeeddeeeeedd4eeeeedd4eeeeedd4eeeedd54
+-- 096:8118118181181181811811818118118181118811811111118111111181111111
+-- 097:8881888181118111888188111181811188818881111111111111111111111111
+-- 098:8881111881181118811811188118111888811118111111181111111811111118
 -- 099:fffffffffffffffffffffffffffbbbffffffffffffffffffffffffffffffffaa
 -- 100:fffffffffffffffffffaaafffffffffffffffffbffffffffffffffffafffffff
 -- 101:ffffffffffffffffffffffffffffffffbbffffffffffffffffffffffffffffff
@@ -3347,9 +3365,9 @@ end
 -- 109:7777777717177777171777777777777711733711117337117777777733733733
 -- 110:7777765477777654777776547777765473377654733776547777765471177654
 -- 111:0000000010101010000000001010101000000000101010100000000010101010
--- 112:65ddeeee65ddeeee655ddeee6555ddee65565dde655555dd6555555d54444444
--- 113:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeedeeeeeeddddddddd4dddddd4
--- 114:eeeedd54eeeedd54eeedd554eedd5554edd55454dd555554d555555444444444
+-- 112:8111111181111111811111118111111181111111811111118111111188888888
+-- 113:1111111111111111111111111111111111111111111111111111111188888888
+-- 114:1111111811111118111111181111111811111118111111181111111888888888
 -- 115:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 -- 116:ffffffffffffffffffffffaafffffffffbbbffffffffffffffffffffffffffff
 -- 117:ffffffffffffffffaffffffffffffffffffffffffbbbffffffffffffffffffff
@@ -3639,12 +3657,12 @@ end
 -- 093:fffffffffffffffffff888fffffffffffffffff9ffffffffffffffff8fffffff
 -- 094:ffffffffffffffffffffffffffffffff99ffffffffffffffffffffffffffffff
 -- 095:0000000010101010000000001010101000000000101010100000000010101010
--- 096:0000000010101010000000001010101000000000101010100000000010101010
--- 097:0000000010101010000000001010101000000000101010100000000010101010
--- 098:0000000010101010000000001010101000000000101010100000000010101010
--- 099:0000000010101010000000001010101000000000101010100000000010101010
--- 100:0000000010101010000000001010101000000000101010100000000010101010
--- 101:0000000010101010000000001010101000000000101010100000000010101010
+-- 096:ddddddddd1111111d1111111d1111111d1111111d1111111d111111dd111111d
+-- 097:dddddddd1111111111111111111111111111111111111111dd111dd111d1d11d
+-- 098:dddddddd1111111d1111111d1111111d1111111d1111111d1111111d1111111d
+-- 099:8888888881111111811111118111111181111111811111118111118881111181
+-- 100:8888888811111111111111111111111111111111111111118118881818181811
+-- 101:8888888811111118111111181111111811111118111111188811111881111118
 -- 102:4444444343333332433433324333323243433332433323324333333232222222
 -- 103:4444444343333332431111124122122112221222122212221232123212221222
 -- 104:4444444343333332433433324333323213433332133323321333333212222222
@@ -3655,12 +3673,12 @@ end
 -- 109:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 110:0000ffff0000ffff0000ffff0000ffffffff0000ffff0000ffff0000ffff0000
 -- 111:0000000010101010000000001010101000000000101010100000000010101010
--- 112:0000000010101010000000001010101000000000101010100000000010101010
--- 113:0000000010101010000000001010101000000000101010100000000010101010
--- 114:0000000010101010000000001010101000000000101010100000000010101010
--- 115:0000000010101010000000001010101000000000101010100000000010101010
--- 116:0000000010101010000000001010101000000000101010100000000010101010
--- 117:0000000010101010000000001010101000000000101010100000000010101010
+-- 112:d111111dd111111dd111111dd1111111d1ddd11dd1d11d1dd1d11d1dd1d11d1d
+-- 113:11d1d11d11d1d11d11d11dd111111111dd111dd111d1d11d11d1d11ddd11dddd
+-- 114:1111111d1111111d1111111d1111111d1d111d1d1d111d1d1d1d1d1d1dd1dd1d
+-- 115:8111118181111181811111818111111181118118811181188111811881118118
+-- 116:1818181118181811181888111111111118881888181118111888188811181811
+-- 117:8111111881111118811111181111111818811118181811181818111818181118
 -- 118:4444444343333332433433324333323243433332433323324333333232222222
 -- 119:122212221222122212221222122212221232123212221222122ba222111aa111
 -- 120:1444444313333332133433321333323213433332133323321333333212222222
@@ -3671,12 +3689,12 @@ end
 -- 125:0000000010101010000000001010101000000000101010100000000010101010
 -- 126:0000000010101010000000001010101000000000101010100000000010101010
 -- 127:0000000010101010000000001010101000000000101010100000000010101010
--- 128:f1111fff80111fff88011fff88801fff88880fff0000ffffffffffffffffffff
--- 129:f8888fff10888fff11088fff11108fff11110fff0000ffffffffffffffffffff
--- 130:f8888fff80888fff88088fff88808fff88880fff0000ffffffffffffffffffff
--- 131:0000000010101010000000001010101000000000101010100000000010101010
--- 132:0000000010101010000000001010101000000000101010100000000010101010
--- 133:0000000010101010000000001010101000000000101010100000000010101010
+-- 128:d1ddd11dd1111111d1111111d1111111d1111111d1111111d1111111dddddddd
+-- 129:11d1d11d111111111111111111111111111111111111111111111111dddddddd
+-- 130:1d111d1d1111111d1111111d1111111d1111111d1111111d1111111ddddddddd
+-- 131:8111188181111111811111118111111181111111811111118111111188888888
+-- 132:1888188811111111111111111111111111111111111111111111111188888888
+-- 133:1881111811111118111111181111111811111118111111181111111888888888
 -- 134:4444444343333332433433324333323243433332433323324333333232222222
 -- 135:1222222212223222123222321222222212211222412112214311111232222222
 -- 136:1444444313333332133433321333323213433332433323324333333232222222
