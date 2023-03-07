@@ -16,46 +16,46 @@ if not filename.endswith(".map"):
 
 # Check that the file exists, isn't a directory, and its size does not exceed 32640 bytes
 if not os.path.exists(filename):
-    print(f"The file \"{filename}\" was not found")
-elif os.path.isdir(filename):
-    print(f"\"{filename}\" is a directory")
-elif os.path.getsize(filename) > 32640:
-    print("The file is too large")
-else:
-    # Open a binary reading file in binary mode
-    with open(filename, "rb") as f:
-        # We read the file to the end and break it into blocks of 3 bytes
-        blocks = []
+    sys.exit(f"The file \"{filename}\" was not found")
+if os.path.isdir(filename):
+    sys.exit(f"\"{filename}\" is a directory")
+if os.path.getsize(filename) > 32640:
+    sys.exit("The file is too large")
+
+# Open a binary reading file in binary mode
+with open(filename, "rb") as f:
+    # We read the file to the end and break it into blocks of 3 bytes
+    blocks = []
+    block = f.read(3)
+    while block and block != b"\x00\x00\x00":
+        # We break the block into 6 numbers
+        a, b, c = block
+
+        bytes = (a<<16) + (b<<8) + c
+
+        num6 = (bytes & 0b0000_0000_0000_0000_0011_1111) >> 0
+        num5 = (bytes & 0b0000_0000_0000_0000_1100_0000) >> 6
+        num4 = (bytes & 0b0000_0000_0000_0011_0000_0000) >> 8
+        num3 = (bytes & 0b0000_0000_0011_1100_0000_0000) >> 10
+        num2 = (bytes & 0b0000_0000_1100_0000_0000_0000) >> 14
+        num1 = (bytes & 0b0000_1111_0000_0000_0000_0000) >> 16
+
+
+        blocks.append((num1, num2, num3, num4, num5, num6))
         block = f.read(3)
-        while block and block != b"\x00\x00\x00":
-            # We break the block into 6 numbers
-            a, b, c = block
-            
-            bytes = (a<<16) + (b<<8) + c
 
-            num6 = (bytes & 0b0000_0000_0000_0000_0011_1111) >> 0
-            num5 = (bytes & 0b0000_0000_0000_0000_1100_0000) >> 6
-            num4 = (bytes & 0b0000_0000_0000_0011_0000_0000) >> 8
-            num3 = (bytes & 0b0000_0000_0011_1100_0000_0000) >> 10
-            num2 = (bytes & 0b0000_0000_1100_0000_0000_0000) >> 14
-            num1 = (bytes & 0b0000_1111_0000_0000_0000_0000) >> 16
+# Save the blocks to the text file
+with open(filename[0:-4] + ".lua", "w") as f:
+    f.write("maps[1][lvl_id] = { --map by: [your name]\n")
+    f.write("   w={ -- walls\n")
+    for i, block in enumerate(blocks):
+        f.write("       {" + ", ".join(str(num) for num in block) + "}")
+        if i < len(blocks) - 1:
+            f.write(",")
+        f.write("\n")
+    f.write("    },")
 
-
-            blocks.append((num1, num2, num3, num4, num5, num6))
-            block = f.read(3)
-
-    # Save the blocks to the text file
-    with open(filename[0:-4] + ".lua", "w") as f:
-        f.write("maps[1][lvl_id] = { --map by: [your name]\n")
-        f.write("   w={ -- walls\n")
-        for i, block in enumerate(blocks):
-            f.write("       {" + ", ".join(str(num) for num in block) + "}")
-            if i < len(blocks) - 1:
-                f.write(",")
-            f.write("\n")
-        f.write("    },")
-
-        f.write("""
+    f.write("""
     o={ --table for objects
         --{X, Y, Z, type, [additional parameters]}
     },
@@ -71,4 +71,4 @@ else:
     end
 }""")
 
-        print("Finished!")
+print("Finished!")
