@@ -13,14 +13,15 @@ else:
 # Add the .map extension if necessary
 if not filename.endswith(".map"):
     filename += ".map"
+outfilename = filename[0:-4] + ".lua"
 
 # Check that the file exists, isn't a directory, and its size does not exceed 32640 bytes
 if not os.path.exists(filename):
-    sys.exit(f"The file \"{filename}\" was not found")
+    sys.exit(f"The file \"{filename}\" was not found.")
 if os.path.isdir(filename):
-    sys.exit(f"\"{filename}\" is a directory")
+    sys.exit(f"\"{filename}\" is a directory.")
 if os.path.getsize(filename) > 32640:
-    sys.exit("The file is too large")
+    sys.exit("The file is too large.")
 
 # Open a binary reading file in binary mode
 with open(filename, "rb") as f:
@@ -42,7 +43,7 @@ with open(filename, "rb") as f:
         blocks.append((num1, num2, num3, num4, num5, num6))
 
 # Save the blocks to the text file
-with open(filename[0:-4] + ".lua", "w") as f:
+with open(outfilename, "w") as f:
     f.write("maps[1][lvl_id] = { --map by: [your name]\n")
     f.write("	w={ -- walls\n")
     for i, block in enumerate(blocks):
@@ -64,4 +65,4 @@ with open(filename[0:-4] + ".lua", "w") as f:
 }
 """)
 
-print("Finished!")
+print(f"Finished! Result is in \"{outfilename}\".")
