@@ -44,15 +44,10 @@ with open(filename, "rb") as f:
 # Save the blocks to the text file
 with open(filename[0:-4] + ".lua", "w") as f:
     f.write("maps[1][lvl_id] = { --map by: [your name]\n")
-    f.write("   w={ -- walls\n")
+    f.write("	w={ -- walls\n")
     for i, block in enumerate(blocks):
-        f.write("       {" + ", ".join(str(num) for num in block) + "}")
-        if i < len(blocks) - 1:
-            f.write(",")
-        f.write("\n")
-    f.write("    },")
-
-    f.write("""
+        f.write("		{" + ", ".join(str(num) for num in block) + "},\n")
+    f.write("""	},
 	o={ --table for objects
 		--{X, Y, Z, type, [additional parameters]}
 	},
