@@ -53,19 +53,19 @@ with open(filename[0:-4] + ".lua", "w") as f:
     f.write("    },")
 
     f.write("""
-    o={ --table for objects
-        --{X, Y, Z, type, [additional parameters]}
-    },
+	o={ --table for objects
+		--{X, Y, Z, type, [additional parameters]}
+	},
 	p={}, --table for portals (leave empty if the portals are not needed)
 	lg={}, --light bridge generators
 	lift={nil,nil}, --Initial and final elevator (X Y Z angle)
 	pg_lvl=0, --portal gun lvl
-    init = function()
-        --its executed once before starting this lvl
-    end,
-    scripts = function()
-        --its executed once per frame (usually 60 times per second)
-    end
+	init = function()
+		--its executed once before starting this lvl
+	end,
+	scripts = function()
+		--its executed once per frame (usually 60 times per second)
+	end
 }""")
 
 print("Finished!")
