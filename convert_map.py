@@ -26,12 +26,11 @@ if os.path.getsize(filename) > 32640:
 with open(filename, "rb") as f:
     # We read the file to the end and break it into blocks of 3 bytes
     blocks = []
-    block = f.read(3)
-    while block and block != b"\x00\x00\x00":
-        # We break the block into 6 numbers
-        a, b, c = block
-
-        val = (a << 16) + (b << 8) + c
+    while True:
+        block = f.read(3)
+        if len(block) < 3 or block == b"\x00\x00\x00":
+            break
+        val = int.from_bytes(block, "big")
 
         num6 = (val & 0b0000_0000_0000_0000_0011_1111) >> 0
         num5 = (val & 0b0000_0000_0000_0000_1100_0000) >> 6
@@ -41,7 +40,6 @@ with open(filename, "rb") as f:
         num1 = (val & 0b0000_1111_0000_0000_0000_0000) >> 16
 
         blocks.append((num1, num2, num3, num4, num5, num6))
-        block = f.read(3)
 
 # Save the blocks to the text file
 with open(filename[0:-4] + ".lua", "w") as f:
