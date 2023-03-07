@@ -61,6 +61,7 @@ with open(filename[0:-4] + ".lua", "w") as f:
 	scripts = function()
 		--its executed once per frame (usually 60 times per second)
 	end
-}""")
+}
+""")
 
 print("Finished!")
