@@ -205,7 +205,7 @@ sfx   =true,
 pcm   =true,
 dt_c  =false, --time delta constant
 scroll=30,
-vx    =40, --X velocity
+vy    =40, --Y velocity
 }
 
 local save
@@ -5995,9 +5995,9 @@ function TIC()
 		if btn(0) or key(54) or key(58) or key(23) then whl = 1 end
 		if btn(1) or key(55) or key(59) or key(19) then whl =-1 end
 
-		if whl~=0 then st.vx = whl * 3 else st.vx = st.vx * 0.8 end
+		if whl~=0 then st.vy = whl * 3 else st.vy = st.vy * 0.8 end
 
-		st.scroll = st.scroll - min(max(st.vx, -3),3)
+		st.scroll = st.scroll - min(max(st.vy, -3),3)
 
 		local max_y = 12 * 10 - 90 --constant
 
