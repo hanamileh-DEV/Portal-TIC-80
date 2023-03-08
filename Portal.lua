@@ -5797,7 +5797,7 @@ function TIC()
 			spr(380+ach.t//30%2*2,75-5,122+ach.y,0,1,0,0,2,2)
 			for i=0,1 do  --shadows for the text
 				print("achievement unlocked!",82,122+ach.y-i,i*6+1,false,1,true)
-			 print("150G - Come back to the start",82,129+ach.y-i,i*5+1,false,1,true)
+				print("150G - Come back to the start",82,129+ach.y-i,i*5+1,false,1,true)
 			end
 		end
 	 --portal gun
