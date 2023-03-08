@@ -6,6 +6,7 @@
 -- enigma: toqmekyfrisbwvuhqabropjymqtupobpvfcwdhbmxdddjgcavylgigcrlmimjwqktqkkza
 
 local debug = true
+local lag_mode = false
 
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
@@ -203,8 +204,8 @@ music =true,
 sfx   =true,
 pcm   =true,
 dt_c  =false, --time delta constant
-scr   =30,
-vx    =40,
+scroll=30,
+vx    =40, --X velocity
 }
 
 local save
@@ -212,11 +213,11 @@ function load_save()
 	save={ --saving the game
 		i=pmem(0)==0, --How for the first time the player went into the game
 		lvl=pmem(0),
-		lvl2=0, --ID set of levels
+		lvl_pack=0, --ID set of levels
 		st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
 		--pmem(2) not used
-		d=pmem(3), --the number of player deaths (in the main game)
-		ct=pmem(4), --current time passing the main game
+		deaths=pmem(3), --the number of player deaths (in the main game)
+		cur_t=pmem(4), --current time passing the main game
 	}
 end
 load_save()
@@ -390,33 +391,33 @@ end
 load_replay()
 
 --camera
-local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0, tz = 0}
+local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0}
 --player
 local plr = {
+	speed = 4,
 	--coordinates
 	x = 0,
 	y = 64,
 	z = 0,
 	--rotation
-	tx = 0,
-	ty = 0,
-	tz = 0,
-	--stuff
-	vy=0 ,
-	xy=false,
-	d = false,
+	tx = 0, --vertical
+	ty = 0, --horizontal
 	--cheats
 	godmode = false,
 	noclip = false ,
 	--hp
 	hp = 100 ,
-	hp2 = 100,
-	cd = 0 ,
-	cd2 = 0,
-	dt = 0,
-	cd3 = 0,
+	l_hp = 100, --last hp
+	--different time counts
+	hp_t = 0 ,
+	hp_t_2 = 0,
+	bf_t = 0, --blue field
 	--stuff
+	vy=0, --vertical speed
+	debug_text = 0,
 	holding = false,
+	on_ground=false,
+	death = false, --is the player dead
 	pg_lvl = 2 --portal gun level
 }
 
@@ -1557,7 +1558,7 @@ local fps_={t1=0,t2=0,t3=0,t4=0,t5=0,t6=0,t7=0,t8=0,t9=0}
 local p_g={x=0,y=0,c=1,t1=0,t2=0, cd1=0, cd2=0}
 
 --Text for levels
-local l_t={
+local lvl_text={
 	{
 		"Welcome to the Aperture Science",
 		"To skip this boring text, hold Z",
@@ -1593,7 +1594,7 @@ local l_t={
 		"Congratulations, you stayed alive"
 	}
 }
-local l_t2={
+local lvl_text_2={
 	draw=true, --Should the text be thrown out
 	pause=false, --as not surprising, this is a pause
 	id=1, --The number of the desired array of the text
@@ -1603,10 +1604,10 @@ local l_t2={
 --funcions
 local addwall, addobj, respal, updpal, darkpal
 --time
-local t1=0 --The start time of the frame drawing
-local t2=0 --The time for drawing the current frame
+local frame_t=0 -- The start time of the frame drawing
+local fr_draw_t=0 -- Frame drawing time
 local t=0 -- Global timer (+1 for each code call)
-local stt=0 --The timer of the start of the game
+local lvl_t=0 --Timer for the lvl
 --mouse
 local clp1,clp2
 local mx, my, cl1, cl2, whl
@@ -1711,7 +1712,7 @@ maps[1][1]={
 		plr.z=288
 		plr.ty=-pi2
 		maps[1][1].t=0
-		l_t2={draw=false,pause=false,id=1,i=1,t=0}
+		lvl_text_2={draw=false,pause=false,id=1,i=1,t=0}
 		for x=0,19 do for y=0,28 do
 			setpix(93-x,y+99,15)
 		end end
@@ -1720,12 +1721,12 @@ maps[1][1]={
 		maps[1][1].t = maps[1][1].t + 1
 		local mt = maps[1][1].t
 		--initial animation
-		if mt==100 then l_t2.draw = true end
+		if mt==100 then lvl_text_2.draw = true end
 		
 		--
-		if l_t2.i>9 then
-			l_t2.i=1
-			l_t2.draw=false
+		if lvl_text_2.i>9 then
+			lvl_text_2.i=1
+			lvl_text_2.draw=false
 			addwall(4,0,2,1,1,5)
 			addwall(4,0,0,1,1,6)
 
@@ -1839,12 +1840,12 @@ maps[1][2]={
 	lift={{-1,1,1,0},{2,1,7,2}}, --Initial and final elevator (X Y Z angle)
 	pg_lvl=0, --portal gun lvl
 	init=function()
-		l_t2={draw=false,pause=false,id=2,i=1,t=0}
+		lvl_text_2={draw=false,pause=false,id=2,i=1,t=0}
 		maps[1][2].t=0 --a variable for the level
 	end,
 	scripts=function()
-		if stt==50 then l_t2.draw=true end
-		if l_t2.i>6 then maps[1][2].t=maps[1][2].t+1 end
+		if lvl_t==50 then lvl_text_2.draw=true end
+		if lvl_text_2.i>6 then maps[1][2].t=maps[1][2].t+1 end
 		if maps[1][2].t==1 then
 			addwall(2,1,0,3,1,5)
 			addwall(7,1,0,3,1,6)
@@ -1953,7 +1954,7 @@ maps[1][3]={
 	lift={{4,0,-1,3},{7,0,5,1}}, --Initial and final elevator (X Y Z angle)
 	pg_lvl=0, --portal gun lvl
 	init=function()
-		l_t2={draw=false,pause=false,id=2,i=1,t=0}
+		lvl_text_2={draw=false,pause=false,id=2,i=1,t=0}
 		draw.p[2]={5,0,0,3,1,0}
 	end,
 	scripts=function()
@@ -2049,14 +2050,14 @@ maps[1][4]={
 	lift={{-1,0,4,0},{8,1,4,1}}, --Initial and final elevator (X Y Z angle)
 	pg_lvl=0, --portal gun lvl
 	init=function()
-		l_t2={draw=false,pause=false,id=3,i=1,t=0}
+		lvl_text_2={draw=false,pause=false,id=3,i=1,t=0}
 	end,
 	scripts=function()
-		if stt==50 then
-			l_t2.draw=true
+		if lvl_t==50 then
+			lvl_text_2.draw=true
 		end
-		if l_t2.i==2 then plr.pg_lvl=1 end
-		if stt==85 or (draw.objects.b[1].tick and draw.objects.b[1].s) then
+		if lvl_text_2.i==2 then plr.pg_lvl=1 end
+		if lvl_t==85 or (draw.objects.b[1].tick and draw.objects.b[1].s) then
 			draw.p[2]={0,0,5,3,2,0}
 			addwall(0,0,5,3,2,6)
 			update_world()
@@ -2157,10 +2158,10 @@ maps[1][5]={
 	lift={{-1,2,8,0},{11,2,8,1}}, --Initial and final elevator (X Y Z angle)
 	pg_lvl=1, --portal gun lvl
 	init=function()
-		l_t2={draw=false,pause=false,id=3,i=1,t=0}
+		lvl_text_2={draw=false,pause=false,id=3,i=1,t=0}
 	end,
 	scripts=function()
-		if stt==50 then
+		if lvl_t==50 then
 			addwall(1,2,6,3,1,6)
 			update_world()
 			draw.p[2]={1,2,6,3,1,0}
@@ -2245,10 +2246,10 @@ maps[1][6]={
 	lift={{1,0,8,0},{3,0,-1,3}}, --Initial and final elevator (X Y Z angle)
 	pg_lvl=1, --portal gun lvl
 	init=function()
-		l_t2={draw=false,pause=false,id=3,i=1,t=0}
+		lvl_text_2={draw=false,pause=false,id=3,i=1,t=0}
 	end,
 	scripts=function()
-		if stt==50 then
+		if lvl_t==50 then
 			addwall(0,2,2,1,2,6)
 			draw.p[2]={0,2,2,1,2}
 			update_world()
@@ -2420,13 +2421,13 @@ maps[1][7]={
 	lift={{12,0,6,1},{12,0,10,1}}, --Initial and final elevator (X Y Z angle)
 	pg_lvl=2, --portal gun lvl
 	init=function()
-		l_t2={draw=false,pause=false,id=4,i=1,t=0}
+		lvl_text_2={draw=false,pause=false,id=4,i=1,t=0}
 	end,
 	scripts=function()
-		if stt==50 then
-			l_t2={draw=true,pause=false,id=4,i=1,t=0}
+		if lvl_t==50 then
+			lvl_text_2={draw=true,pause=false,id=4,i=1,t=0}
 		end
-		if l_t2.draw and l_t2.i==2 and peek(0x13FFC)~=1 then
+		if lvl_text_2.draw and lvl_text_2.i==2 and peek(0x13FFC)~=1 then
 			music(1)
 		end
 		if draw.objects.fb[1].tick then
@@ -2440,7 +2441,7 @@ maps[1][7]={
 			draw.objects.d[1].s=draw.objects.fb[1].s
 			update_world()
 		end
-		if plr.x>1080 and plr.z>800 and l_t2.id==4 then l_t2={draw=true,pause=false,id=5,i=1,t=0} music(3,3) end
+		if plr.x>1080 and plr.z>800 and lvl_text_2.id==4 then lvl_text_2={draw=true,pause=false,id=5,i=1,t=0} music(3,3) end
 	end
 }
 maps[0][2]={ --main gameroom
@@ -2461,7 +2462,7 @@ maps[0][2]={ --main gameroom
 	pg_lvl=2, --portal gun lvl
 	init=function()end,
 	scripts=function()
-		l_t2={draw=false,pause=false,id=1,i=1,t=0}
+		lvl_text_2={draw=false,pause=false,id=1,i=1,t=0}
 		if draw.objects.fb[1].tick then
 			if draw.objects.fb[1].s then
 				draw.lg[1]=nil
@@ -2518,52 +2519,52 @@ pg_lvl=0, --portal gun lvl
 init=function()end,
 scripts=function()end
 }
+do
+	for x=0,10 do
+		for y=0,2 do
+			maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,R(1,2)}
+			maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,R(1,2)}
+			maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,R(1,2)}
+			maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,R(1,2)}
+		end
 
-for x=0,10 do
-	for y=0,2 do
-		maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,R(1,2)}
-		maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,R(1,2)}
-		maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,R(1,2)}
-		maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,R(1,2)}
+		for z=0,10 do
+			maps[0][2].w[#maps[0][2].w+1]={x,0,z,2,2,2}
+			if R()>0.5 then maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,R(1,5)} end
+		end
 	end
 
-	for z=0,10 do
-		maps[0][2].w[#maps[0][2].w+1]={x,0,z,2,2,2}
-		if R()>0.5 then maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,R(1,5)} end
-	end
+	maps[0][2].w[#maps[0][2].w+1]={0 ,0,1 ,1,2,9}
+	maps[0][2].w[#maps[0][2].w+1]={3 ,0,11,3,2,9}
+	maps[0][2].w[#maps[0][2].w+1]={0 ,1,2 ,1,2,16}
+	maps[0][2].w[#maps[0][2].w+1]={0 ,1,3 ,1,2,17}
+	maps[0][2].w[#maps[0][2].w+1]={0 ,0,6 ,3,3,12}
+	maps[0][2].w[#maps[0][2].w+1]={1 ,0,6 ,3,3,11}
+	maps[0][2].w[#maps[0][2].w+1]={2 ,0,5 ,1,1,2}
+	maps[0][2].w[#maps[0][2].w+1]={3 ,0,5 ,1,2,2}
+	maps[0][2].w[#maps[0][2].w+1]={2 ,0,6 ,3,1,2}
+	maps[0][2].w[#maps[0][2].w+1]={2 ,0,5 ,3,2,2}
+	maps[0][2].w[#maps[0][2].w+1]={2 ,1,5 ,2,2,2}
+	maps[0][2].w[#maps[0][2].w+1]={3 ,0,6 ,3,3,14}
+	maps[0][2].w[#maps[0][2].w+1]={4 ,0,6 ,3,3,13}
+	maps[0][2].w[#maps[0][2].w+1]={5 ,0,6 ,3,3,1}
+	maps[0][2].w[#maps[0][2].w+1]={6 ,0,6 ,3,3,15}
+	maps[0][2].w[#maps[0][2].w+1]={7 ,0,6 ,3,3,3}
+	maps[0][2].w[#maps[0][2].w+1]={8 ,0,6 ,3,3,3}
+	maps[0][2].w[#maps[0][2].w+1]={9 ,0,6 ,3,3,4}
+	maps[0][2].w[#maps[0][2].w+1]={10,0,6 ,3,3,7}
+	maps[0][2].w[#maps[0][2].w+1]={6 ,0,5 ,2,3,9}
+	maps[0][2].w[#maps[0][2].w+1]={6 ,0,6 ,2,3,9}
+	maps[0][2].w[#maps[0][2].w+1]={3 ,0,5 ,2,3,9}
+	maps[0][2].w[#maps[0][2].w+1]={0 ,0,10,1,3,11}
+	maps[0][2].w[#maps[0][2].w+1]={0 ,0,9 ,1,3,12}
+	maps[0][2].w[#maps[0][2].w+1]={0 ,0,0 ,3,3,12}
+	maps[0][2].w[#maps[0][2].w+1]={1 ,0,0 ,3,3,11}
+	maps[0][2].w[#maps[0][2].w+1]={11,0,1 ,1,1,2}
+	maps[0][2].w[#maps[0][2].w+1]={3 ,2,3 ,2,3,2}
 end
-
-maps[0][2].w[#maps[0][2].w+1]={0 ,0,1 ,1,2,9}
-maps[0][2].w[#maps[0][2].w+1]={3 ,0,11,3,2,9}
-maps[0][2].w[#maps[0][2].w+1]={0 ,1,2 ,1,2,16}
-maps[0][2].w[#maps[0][2].w+1]={0 ,1,3 ,1,2,17}
-maps[0][2].w[#maps[0][2].w+1]={0 ,0,6 ,3,3,12}
-maps[0][2].w[#maps[0][2].w+1]={1 ,0,6 ,3,3,11}
-maps[0][2].w[#maps[0][2].w+1]={2 ,0,5 ,1,1,2}
-maps[0][2].w[#maps[0][2].w+1]={3 ,0,5 ,1,2,2}
-maps[0][2].w[#maps[0][2].w+1]={2 ,0,6 ,3,1,2}
-maps[0][2].w[#maps[0][2].w+1]={2 ,0,5 ,3,2,2}
-maps[0][2].w[#maps[0][2].w+1]={2 ,1,5 ,2,2,2}
-maps[0][2].w[#maps[0][2].w+1]={3 ,0,6 ,3,3,14}
-maps[0][2].w[#maps[0][2].w+1]={4 ,0,6 ,3,3,13}
-maps[0][2].w[#maps[0][2].w+1]={5 ,0,6 ,3,3,1}
-maps[0][2].w[#maps[0][2].w+1]={6 ,0,6 ,3,3,15}
-maps[0][2].w[#maps[0][2].w+1]={7 ,0,6 ,3,3,3}
-maps[0][2].w[#maps[0][2].w+1]={8 ,0,6 ,3,3,3}
-maps[0][2].w[#maps[0][2].w+1]={9 ,0,6 ,3,3,4}
-maps[0][2].w[#maps[0][2].w+1]={10,0,6 ,3,3,7}
-maps[0][2].w[#maps[0][2].w+1]={6 ,0,5 ,2,3,9}
-maps[0][2].w[#maps[0][2].w+1]={6 ,0,6 ,2,3,9}
-maps[0][2].w[#maps[0][2].w+1]={3 ,0,5 ,2,3,9}
-maps[0][2].w[#maps[0][2].w+1]={0 ,0,10,1,3,11}
-maps[0][2].w[#maps[0][2].w+1]={0 ,0,9 ,1,3,12}
-maps[0][2].w[#maps[0][2].w+1]={0 ,0,0 ,3,3,12}
-maps[0][2].w[#maps[0][2].w+1]={1 ,0,0 ,3,3,11}
-maps[0][2].w[#maps[0][2].w+1]={11,0,1 ,1,1,2}
-maps[0][2].w[#maps[0][2].w+1]={3 ,2,3 ,2,3,2}
-
 --song text
-local s_t={
+local song_text={
 	"This is one of the",
 	"few games that took",
 	"us weeks of hard",
@@ -2591,7 +2592,7 @@ local s_t={
 	"    ",
 }
 
-local s_t2={1,1} --some data to display the text above
+local song_text_2={1,1} --some data to display the text above
 --
 local function sfx_(...)
 if st.sfx then sfx(...) end
@@ -2602,37 +2603,37 @@ end
 
 --Texture cache
 
-local b_f={} --Texture for the blue field
-local p_t={{},{}} --portal texture
+local blue_field={} --Texture for the blue field
+local portal_texture={{},{}} --portal texture
 for y0=0,31 do
-	b_f[y0]={}
-	p_t[1][y0]={} --blue portal
-	p_t[2][y0]={} --orange portal
+	blue_field[y0]={}
+	portal_texture[1][y0]={} --blue portal
+	portal_texture[2][y0]={} --orange portal
 	local c=false
 	for x0=0,23 do
 		local color1=getpix(x0+24,y0+32)
 		local color2=getpix((x0+23)%24+24,y0+32)
 
-		if color1~=15 then b_f[y0][3]=color1 c=true end
+		if color1~=15 then blue_field[y0][3]=color1 c=true end
 		if color1~=color2 then
-			if color1==15 then b_f[y0][1]=x0 else b_f[y0][2]=x0 end
+			if color1==15 then blue_field[y0][1]=x0 else blue_field[y0][2]=x0 end
 		end
-		p_t[1][y0][x0]=getpix(96+x0,0 +y0)
-		p_t[2][y0][x0]=getpix(0 +x0,32+y0)
+		portal_texture[1][y0][x0]=getpix(96+x0,0 +y0)
+		portal_texture[2][y0][x0]=getpix(0 +x0,32+y0)
 	end
 
-	b_f[y0].d=c
+	blue_field[y0].d=c
 end
 
-local l_b={} --Level board (a thing on which the current level is written)
+local lvl_board={} --Level board (a thing on which the current level is written)
 for i=0,9 do
-	l_b[i]={}
+	lvl_board[i]={}
 	for x=0,6 do
-		l_b[i][x]={}
+		lvl_board[i][x]={}
 		for y=0,10 do
 			local addr=0x8000+x+i*8+y*240
-			l_b[i][x][y]=7
-			if peek(addr)==255 then l_b[i][x][y]=1 end
+			lvl_board[i][x][y]=7
+			if peek(addr)==255 then lvl_board[i][x][y]=1 end
 		end
 	end
 end
@@ -3270,7 +3271,7 @@ function unitic.player_collision()
 		elseif wall_coll[draw.map[1][x0][y0][z0][2]] then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 		elseif draw.map[1][x0][y0][z0][2]==11 then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 62, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) -- doorway (1)
 		elseif draw.map[1][x0][y0][z0][2]==12 then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 34) -- doorway (2)
-		elseif draw.map[1][x0][y0][z0][2]==7  then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.cd2=10 end -- blue field
+		elseif draw.map[1][x0][y0][z0][2]==7  then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.bf_t=10 end -- blue field
 		elseif draw.map[1][x0][y0][z0][2]==15 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end -- red field
 		end
 
@@ -3291,7 +3292,7 @@ function unitic.player_collision()
 		elseif wall_coll[draw.map[3][x0][y0][z0][2]] then plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 		elseif draw.map[3][x0][y0][z0][2]==11 then plr_collide(x0 * 96 + 62, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 		elseif draw.map[3][x0][y0][z0][2]==12 then plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 34, y0 * 128 + 126, z0 * 96)
-		elseif draw.map[3][x0][y0][z0][2]==7  then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.cd2=10 end
+		elseif draw.map[3][x0][y0][z0][2]==7  then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.bf_t=10 end
 		elseif draw.map[3][x0][y0][z0][2]==15 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx_(2,"C-3",-1,1) end
 		end
 	end end end
@@ -3332,7 +3333,7 @@ function unitic.player_collision()
 	if colx then plr.x = lx end
 	if coly then plr.y = ly end
 	if colz then plr.z = lz end
-	plr.xy=coly
+	plr.on_ground=coly
 end
 
 local cube_params={
@@ -3342,7 +3343,7 @@ local cube_params={
 	objs = {"c","b","lb","t","l"}
 }
 
-local cht=0
+local cht=0 --a very important variable for the function below (in other words, a crutch)
 function unitic.cube_update() --all physics related to cubes
 	-- dispensers
 	for i=1,#draw.objects.cd do
@@ -3830,25 +3831,25 @@ function unitic.render() --------
 		end
 		--blue / red field
 		for y0=0,31,2 do
-			if b_f[y0].d then
-				setpix((b_f[y0][1]+t//2)%24+24,y0+32,b_f[y0][3])
-				setpix((b_f[y0][2]+t//2)%24+24,y0+32,15)
+			if blue_field[y0].d then
+				setpix((blue_field[y0][1]+t//2)%24+24,y0+32,blue_field[y0][3])
+				setpix((blue_field[y0][2]+t//2)%24+24,y0+32,15)
 				--red field
-				setpix((b_f[y0][1]+t//2)%24+96,y0+64,b_f[y0][3]-2)
-				setpix((b_f[y0][2]+t//2)%24+96,y0+64,15)
+				setpix((blue_field[y0][1]+t//2)%24+96,y0+64,blue_field[y0][3]-2)
+				setpix((blue_field[y0][2]+t//2)%24+96,y0+64,15)
 
-				setpix((b_f[y0][1]+t//2)%24+96,y0+152,b_f[y0][3]-2)
-				setpix((b_f[y0][2]+t//2)%24+96,y0+152,15)
+				setpix((blue_field[y0][1]+t//2)%24+96,y0+152,blue_field[y0][3]-2)
+				setpix((blue_field[y0][2]+t//2)%24+96,y0+152,15)
 			end
-			if b_f[y0+1].d then
-				setpix((b_f[y0+1][1]+t//2*23)%24+24,y0+33,15)
-				setpix((b_f[y0+1][2]+t//2*23)%24+24,y0+33,b_f[y0+1][3])
+			if blue_field[y0+1].d then
+				setpix((blue_field[y0+1][1]+t//2*23)%24+24,y0+33,15)
+				setpix((blue_field[y0+1][2]+t//2*23)%24+24,y0+33,blue_field[y0+1][3])
 				--red field
-				setpix((b_f[y0+1][1]+t//2*23)%24+96,y0+65,15)
-				setpix((b_f[y0+1][2]+t//2*23)%24+96,y0+65,b_f[y0+1][3]-2)
+				setpix((blue_field[y0+1][1]+t//2*23)%24+96,y0+65,15)
+				setpix((blue_field[y0+1][2]+t//2*23)%24+96,y0+65,blue_field[y0+1][3]-2)
 
-				setpix((b_f[y0+1][1]+t//2*23)%24+96,y0+153,15)
-				setpix((b_f[y0+1][2]+t//2*23)%24+96,y0+153,b_f[y0+1][3]-2)
+				setpix((blue_field[y0+1][1]+t//2*23)%24+96,y0+153,15)
+				setpix((blue_field[y0+1][2]+t//2*23)%24+96,y0+153,blue_field[y0+1][3]-2)
 			end
 		end
 	end
@@ -4203,7 +4204,7 @@ function unitic.turret_update()
 		if hits then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
 			if draw.objects.t[i].cd>40 then
 				plr.hp=plr.hp-R(1,2)
-				if plr.cd3<2 then plr.cd3=5 sfx_(4,"C-3",-1,1) end
+				if plr.hp_t_2<2 then plr.hp_t_2=5 sfx_(4,"C-3",-1,1) end
 				if draw.objects.t[i].type==14 or draw.objects.t[i].type==15 then
 					for _=1,2 do
 						if R()>0.75 then addp(x0+16,y0+32,z0,R()-0.5,R()-0.5,R()-0.5,10,13+R(0,1)) end
@@ -4360,7 +4361,7 @@ local function portal_gun()
 	end
 
 	--portal reset
-	if debug and (keyp(6) or (plr.cd2>1 and save.lvl~=3 and save.lvl2~=1)) then
+	if debug and (keyp(6) or (plr.bf_t>1 and save.lvl~=3 and save.lvl2~=1)) then
 		if draw.p[1] then
 			portal_check(1)
 			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
@@ -5029,20 +5030,18 @@ function enigma(input)
 end
 --lucsxtcpvzrcvd
 
-local avf={} --average frame
-local fr={0,0,0} --framerate
---player speed
-local speed=4
+local av_frame={} --average frame
+local framerate={0,0,0} --framerate
 --init
 local state
 local tm1,tm2 = 0,0
-local p={t=0} --pause
-local sts={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
-local ach={t=0,y=0,t2=0} --achievement (easter egg)
-local d_t=0 --darkening
-local l_={t=0,p={}} --logo
-local ms={t=0,b={}} --main screen | Table with current buttons
-local sh_i=-1 --settings hint
+local pause={t=0} --pause
+local start_scr={t=1,time={1,2,0,0},i=0,t2=0,sl=50,q=1,y=0,n=0} --start screen
+local achievement={t=0,y=0,t2=0} --achievement (easter egg)
+local darkening=0 --darkening
+local logo={t=0,p={}} --logo
+local main_screen={t=0,b={}} --main screen | Table with current buttons
+local setting_hint_i=-1 --settings hint
 
 --buttons
 local menu_options --It must be separate, otherwise local variables inside this table may not see each other
@@ -5050,17 +5049,17 @@ local menu_options --It must be separate, otherwise local variables inside this 
 menu_options = {
 	ms = { --main screen
 		{draw = true , y = 65, t=1, text = "Continue", func = function() vbank(0)cls(0)vbank(1)cls(0) state="load lvl" save.lvl2=1 end},
-		{draw = true , y = 75, t=1, text = "New game", func = function() if save.i then state="load lvl" save.lvl2=1 music() else state="main|newgame" ms.b = menu_options.mn sfx_(16) end end},
-		{draw = true , y = 95, t=1, text = "Settings", func = function() state="main|settings" sfx_(16) ms.b = menu_options.s end},
-		{draw = true , y =105, t=1, text = "Authors" , func = function() state="main|authors" ms.b = menu_options.ma sfx_(16) end},
+		{draw = true , y = 75, t=1, text = "New game", func = function() if save.i then state="load lvl" save.lvl2=1 music() else state="main|newgame" main_screen.b = menu_options.mn sfx_(16) end end},
+		{draw = true , y = 95, t=1, text = "Settings", func = function() state="main|settings" sfx_(16) main_screen.b = menu_options.s end},
+		{draw = true , y =105, t=1, text = "Authors" , func = function() state="main|authors" main_screen.b = menu_options.ma sfx_(16) end},
 		{draw = true , y =125, t=1, text = "Exit"    , func = function() exit() end},
 	},
 	mn = { --main | newgame
-		{draw = true, y = 85, t=1, text = "Accept", func = function() state="load lvl" save.lvl=0 save.ct=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end},
-		{draw = true, y =105, t=1, text = "Cancel", func = function() sfx_(17) state="main" ms.b = menu_options.ms end},
+		{draw = true, y = 85, t=1, text = "Accept", func = function() state="load lvl" save.lvl=0 save.cur_t=0 pmem(0,0)pmem(2,0)pmem(3,0)pmem(4,0) end},
+		{draw = true, y =105, t=1, text = "Cancel", func = function() sfx_(17) state="main" main_screen.b = menu_options.ms end},
 	},
 	ma = { --main|authors
-		{draw = true, y=115, t=1, text = "Back", func = function() sfx_(17) state="main" ms.b = menu_options.ms end}
+		{draw = true, y=115, t=1, text = "Back", func = function() sfx_(17) state="main" main_screen.b = menu_options.ms end}
 	},
 	s = { --settings
 		{draw = true, y = 25 , t=1, text="", func = function() sfx_(18) if state=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end},
@@ -5078,30 +5077,30 @@ menu_options = {
 		{draw = true, y = 135, t=1, text="", func = function() sfx_(18) end},
 
 		{draw = true, y = 115, t=1, text="", func = function() sfx_(16) music(3,7,0)state="calibration" end},
-		{draw = true, y = 125, t=1, text="", func = function() sfx_(17) if state=="main|settings" then state="main" ms.b = menu_options.ms else state="pause" ms.b = menu_options.p end end},
+		{draw = true, y = 125, t=1, text="", func = function() sfx_(17) if state=="main|settings" then state="main" main_screen.b = menu_options.ms else state="pause" main_screen.b = menu_options.p end end},
 	},
 	p = { --pause
 		{draw = true, y = 65, t=1, text = "Resume"       , func = function() state="game" sfx_(17) poke(0x7FC3F,1,1) if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end lctp=ctp or 0 ctp=0 st_t=tstamp() end},
 		{draw = true, y = 75, t=1, text = "Restart level", func = function() state="load lvl" if s.n[1]~=255 then music(s.n[1],s.n[2],s.n[3]) elseif st.music then music(maps[save.lvl2][save.lvl].music) end plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 for x=0,19 do for y=0,28 do setpix(93-x,y+99,5) end end end},
-		{draw = true, y = 95, t=1, text = "Settings"     , func = function() state="pause|settings" sfx_(16) ms.b = menu_options.s end},
-		{draw = true, y =125, t=1, text = "Exit"         , func = function() state="pause|accept" sfx_(16) ms.b = menu_options.pa end},
+		{draw = true, y = 95, t=1, text = "Settings"     , func = function() state="pause|settings" sfx_(16) main_screen.b = menu_options.s end},
+		{draw = true, y =125, t=1, text = "Exit"         , func = function() state="pause|accept" sfx_(16) main_screen.b = menu_options.pa end},
 	},
 	pa = { --pause|accept
-		{draw = true, y = 85, t=1, text = "Accept", func = function() state="main" ms.b=menu_options.ms poke(0x7FC3F,1,0) music(2) load_world(0,1) plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 end},
-		{draw = true, y =105, t=1, text = "Back"  , func = function() state="pause" sfx_(17) ms.b = menu_options.p end},
+		{draw = true, y = 85, t=1, text = "Accept", func = function() state="main" main_screen.b=menu_options.ms poke(0x7FC3F,1,0) music(2) load_world(0,1) plr.x=0 plr.y=64 plr.z=0 plr.tx=0 plr.ty=0 end},
+		{draw = true, y =105, t=1, text = "Back"  , func = function() state="pause" sfx_(17) main_screen.b = menu_options.p end},
 	},
 }
 
 local function upd_buttons()
-	sh_i=-1
-	for i = 1, #ms.b do
-		local b = ms.b[i]
+	setting_hint_i=-1
+	for i = 1, #main_screen.b do
+		local b = main_screen.b[i]
 		if b.draw then
-			print(b.text, min(min(ms.t*2-20,4)+(1-b.t)*20), b.y, 7)
+			print(b.text, min(min(main_screen.t*2-20,4)+(1-b.t)*20), b.y, 7)
 
 			if my > b.y - 3 and my < b.y + 8 then
 				if not (state=="main|settings" or state=="pause|settings") or (i<13 and my<110 and my>19) or i>=13 then
-					if (state=="main|settings" or state=="pause|settings") then sh_i = i end
+					if (state=="main|settings" or state=="pause|settings") then setting_hint_i = i end
 					b.t = max(b.t-0.05,0.5)
 					cid = 1
 					if clp1 then b.func() break end
@@ -5119,11 +5118,11 @@ local function upd_buttons_bdr(bdr_y,orig_pal)
 	if bdr_y == 0 then
 		orig_pal()
 	end
-	for i = 1, #ms.b + 1 do
+	for i = 1, #main_screen.b + 1 do
 		local b
 		local lb
-		if i<=#ms.b then b = ms.b[i] end
-		if i>1 then lb = ms.b[i-1] end
+		if i<=#main_screen.b then b = main_screen.b[i] end
+		if i>1 then lb = main_screen.b[i-1] end
 
 		if lb and lb.draw and lb.y == bdr_y - 8 then
 			orig_pal()
@@ -5136,9 +5135,9 @@ local function upd_buttons_bdr(bdr_y,orig_pal)
 	end
 end
 
-local is={t=0,t1=0,t2=0} --init setting
-local sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
-local sn_k={3,1,11,5}
+local init_setting={t=0,t1=0,t2=0} --init setting
+local snake={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
+local snake_keys={3,1,11,5}
 
 --[[each line is 5 text variables.
 if there is "1" after the text it means this text in the small font]]
@@ -5160,16 +5159,15 @@ for i in ipairs(surv_t) do
 	len_t[i]=print(surv_t[i][1],0,-100,0,false,size,small)
 end
 
-state="logo" sync(25 ,1,false) music(0)
-
-
-local lag_mode = false
+state="logo"
+sync(25 ,1,false)
+music(0)
 
 function TIC()
 	if st.dt_c then
 		dt=1
 	else
-		dt = min(max((fr[3]+fr[2])/ 33.333, 1), 2.5)
+		dt = min(max((framerate[3]+framerate[2])/ 33.333, 1), 2.5)
 	end
 
 	if keyp(14) then lag_mode = not lag_mode end
@@ -5185,7 +5183,7 @@ function TIC()
 	end
 
 	--fps counter
-	t1 = time()
+	frame_t = time()
 	t = t + 1
 	--mouse
 	mx, my, cl1, _, cl2, _, whl = mouse()
@@ -5200,7 +5198,7 @@ function TIC()
 	-- logo ------------------
 	--------------------------
 	if state=="logo" then
-		l_.t=l_.t+1
+		logo.t=logo.t+1
 		--css content
 		if css_content_path == nil then
 			trace("Something creates script errors!",3)
@@ -5212,14 +5210,14 @@ function TIC()
 		cls(0)
 		--particles
 		if t%2==0 then
-			l_.p[#l_.p+1]={x=R(-120,239), y=135, v=R()+0.5} --X, Y, velocity
+			logo.p[#logo.p+1]={x=R(-120,239), y=135, v=R()+0.5} --X, Y, velocity
 		end
 
-		for i = 1,#l_.p do
-			l_.p[i].x = l_.p[i].x + l_.p[i].v
-			l_.p[i].y = l_.p[i].y - l_.p[i].v*0.9
+		for i = 1,#logo.p do
+			logo.p[i].x = logo.p[i].x + logo.p[i].v
+			logo.p[i].y = logo.p[i].y - logo.p[i].v*0.9
 
-			pix(l_.p[i].x,l_.p[i].y, 7*l_.p[i].y/135 )
+			pix(logo.p[i].x,logo.p[i].y, 7*logo.p[i].y/135 )
 		end
 		
 		spr(112,88,24,0,1,0,0,8,9)
@@ -5228,14 +5226,14 @@ function TIC()
 		for i=0,1 do
 			vbank(i)
 			respal()
-			if l_.t<60 then darkpal(min(l_.t/40,1))
-			elseif l_.t>100 then darkpal((140-l_.t)/40)
+			if logo.t<60 then darkpal(min(logo.t/40,1))
+			elseif logo.t>100 then darkpal((140-logo.t)/40)
 			else respal()
 			end
 		end
 		vbank(0)
 		darkpal(0.4)
-		if l_.t>=140 or (keyp() and l_.t>10) then
+		if logo.t>=140 or (keyp() and logo.t>10) then
 			sync(25,0,false)
 			vbank(0) respal()
 			vbank(1) respal() cls()
@@ -5244,7 +5242,7 @@ function TIC()
 				state="main"
 				music(2)
 				--buttons
-				ms.b = menu_options.ms
+				main_screen.b = menu_options.ms
 			end
 		end
 	end
@@ -5253,9 +5251,9 @@ function TIC()
 	--------------------------
 	if state=="init setting" then respal()
 		vbank(0)
-		is.t=is.t+1
-		if is.t==2 then
-			is.t1=time()
+		init_setting.t=init_setting.t+1
+		if init_setting.t==2 then
+			init_setting.t1=time()
 			for i=1,300 do
 				cam.x=R(-999,999)
 				cam.y=R(-999,999)
@@ -5264,14 +5262,14 @@ function TIC()
 				cam.ty=R(-99,99)
 				unitic.update()
 				unitic.draw()
-				if time()-is.t1>4000 then is.t1=is.t1 - 5000 break end
+				if time()-init_setting.t1>4000 then init_setting.t1=init_setting.t1 - 5000 break end
 			end
-			is.t1=time()-is.t1
+			init_setting.t1=time()-init_setting.t1
 		end
-		if is.t<3 then
+		if init_setting.t<3 then
 			cls(0)
 			print("please wait...",1,1,2)
-			l_.p={}
+			logo.p={}
 			music(-1)
 		else
 			vbank(0)
@@ -5283,20 +5281,20 @@ function TIC()
 			
 			--particles
 			if t%2==0 then
-				l_.p[#l_.p+1]={x=R(-120,239), y=135, v=R()+0.5} --X, Y, velocity
-				if l_.p[1].y<0 then table.remove(l_.p,1) end
+				logo.p[#logo.p+1]={x=R(-120,239), y=135, v=R()+0.5} --X, Y, velocity
+				if logo.p[1].y<0 then table.remove(logo.p,1) end
 			end
 
-			for i = 1,#l_.p do
-				l_.p[i].x = l_.p[i].x + l_.p[i].v
-				l_.p[i].y = l_.p[i].y - l_.p[i].v*0.9
+			for i = 1,#logo.p do
+				logo.p[i].x = logo.p[i].x + logo.p[i].v
+				logo.p[i].y = logo.p[i].y - logo.p[i].v*0.9
 
-				pix(l_.p[i].x,l_.p[i].y, max(7*l_.p[i].y/135, 1) )
+				pix(logo.p[i].x,logo.p[i].y, max(7*logo.p[i].y/135, 1) )
 			end
 			--
 			print("The following recommended",47,5,7)
 			print("parameters were selected:",47,15,7)
-			local pt=F(1/is.t1*200000) --points
+			local pt=F(1/init_setting.t1*200000) --points
 			local text_size=print("Your result: "..pt.." points.",240,0)
 			-- print("Your result: "..pt.." points.",120-text_size//2,105,2)
 			
@@ -5335,27 +5333,27 @@ function TIC()
 				print("Accept",97,124-i,i*7)
 			end
 			vbank(0)
-			if mx>93 and my>121 and mx<135 and my<131 then cid=1 if clp1 then music(2) state="main" ms.b = menu_options.ms clp1=false save_settings() end end
+			if mx>93 and my>121 and mx<135 and my<131 then cid=1 if clp1 then music(2) state="main" main_screen.b = menu_options.ms clp1=false save_settings() end end
 		end
 	end
 	--------------------------
 	-- main screen -----------
 	--------------------------
 	if state=="main" or state=="main|newgame" or state=="main|authors" or state=="main|settings" then
-		ms.t=ms.t+1
+		main_screen.t=main_screen.t+1
 		--camera
 		vbank(0)
 		cam.x=40
 		cam.y=96
 		cam.z=525
-		cam.tx=math.sin(ms.t/50)*0.05+0.2
-		cam.ty=math.sin(ms.t/100)*0.1-math.pi/4
+		cam.tx=math.sin(main_screen.t/50)*0.05+0.2
+		cam.ty=math.sin(main_screen.t/100)*0.1-math.pi/4
 		unitic.update()
 		unitic.draw()
 
 		--GUI
 		vbank(1) cls(0)
-		if state~="main|settings" then spr(256,min(-104+ms.t*6,8),4,0,1,0,0,13,3) upd_buttons() end
+		if state~="main|settings" then spr(256,min(-104+main_screen.t*6,8),4,0,1,0,0,13,3) upd_buttons() end
 
 		if state=="main" then
 			menu_options.ms[1].draw = not save.i
@@ -5377,71 +5375,71 @@ function TIC()
 	-- calibration -----------
 	--------------------------
 	if state=="calibration" then vbank(1) cls() respal() vbank(0) respal()
-		if sts.t2>0 then sts.t2=sts.t2-1 end
+		if start_scr.t2>0 then start_scr.t2=start_scr.t2-1 end
 		cls(1)
 		--
-		if sts.t==1 then
-			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],80,50,6,true,2)
-			if sts.i<2 then
-			line(79+sts.i*12,61,91+sts.i*12,61,7)
+		if start_scr.t==1 then
+			print(start_scr.time[1]..start_scr.time[2]..":"..start_scr.time[3]..start_scr.time[4],80,50,6,true,2)
+			if start_scr.i<2 then
+			line(79+start_scr.i*12,61,91+start_scr.i*12,61,7)
 			else
-			line(79+sts.i*12+12,61,91+sts.i*12+12,61,7)
+			line(79+start_scr.i*12+12,61,91+start_scr.i*12+12,61,7)
 			end
 
-			if keyp(1) or btnp(2) then sts.i=sts.i-1 end
-			if keyp(4) or btnp(3) then sts.i=sts.i+1 end
-			sts.i=sts.i%4
+			if keyp(1) or btnp(2) then start_scr.i=start_scr.i-1 end
+			if keyp(4) or btnp(3) then start_scr.i=start_scr.i+1 end
+			start_scr.i=start_scr.i%4
 
-			if keyp(23) or btnp(0) then sts.time[sts.i+1]=sts.time[sts.i+1]+1 end
-			if keyp(19) or btnp(1) then sts.time[sts.i+1]=sts.time[sts.i+1]-1 end
+			if keyp(23) or btnp(0) then start_scr.time[start_scr.i+1]=start_scr.time[start_scr.i+1]+1 end
+			if keyp(19) or btnp(1) then start_scr.time[start_scr.i+1]=start_scr.time[start_scr.i+1]-1 end
 
-			sts.time[1]=sts.time[1]%3 sts.time[1]=sts.time[1]*10+sts.time[2]
-			sts.time[1]=sts.time[1]%24 sts.time[2]=sts.time[1]%10 sts.time[1]=sts.time[1]//10
-			sts.time[3]=sts.time[3]%6 sts.time[4]=sts.time[4]%10
+			start_scr.time[1]=start_scr.time[1]%3 start_scr.time[1]=start_scr.time[1]*10+start_scr.time[2]
+			start_scr.time[1]=start_scr.time[1]%24 start_scr.time[2]=start_scr.time[1]%10 start_scr.time[1]=start_scr.time[1]//10
+			start_scr.time[3]=start_scr.time[3]%6 start_scr.time[4]=start_scr.time[4]%10
 		end
 		--confirm button
-		if sts.t2==0 and sts.t~=2 and (sts.t<8  or sts.t==16) then
+		if start_scr.t2==0 and start_scr.t~=2 and (start_scr.t<8  or start_scr.t==16) then
 			rect(94,122,40,8,2)
 			print("Confirm",95,123,7)
-			if mx>93 and my>121 and mx<134 and my<131 then cid=1 if clp1 then sfx_(16) sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
+			if mx>93 and my>121 and mx<134 and my<131 then cid=1 if clp1 then sfx_(16) start_scr.t=start_scr.t+1 start_scr.t2=60 start_scr.sl=R(0,99) end end
 		end
 		--Yes/no button
-		if sts.t2==0 and (sts.t==2 or sts.t>7) and sts.t~=16 and sts.t~=32 then
+		if start_scr.t2==0 and (start_scr.t==2 or start_scr.t>7) and start_scr.t~=16 and start_scr.t~=32 then
 			rect(67,122,18,8,2)
 			rect(143,122,13,8,2)
 			print("Yes",68,123,7)
 			print("No",144,123,7)
-			if mx>66  and my>121 and mx<85  and my<131 then cid=1 if clp1 then sfx_(16) sts.y=sts.y+1 sts.q=1 sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
-			if mx>143 and my>121 and mx<156 and my<131 then cid=1 if clp1 then sfx_(17) sts.n=sts.n+1 sts.q=2 sts.t=sts.t+1 sts.t2=60 sts.sl=R(0,99) end end
+			if mx>66  and my>121 and mx<85  and my<131 then cid=1 if clp1 then sfx_(16) start_scr.y=start_scr.y+1 start_scr.q=1 start_scr.t=start_scr.t+1 start_scr.t2=60 start_scr.sl=R(0,99) end end
+			if mx>143 and my>121 and mx<156 and my<131 then cid=1 if clp1 then sfx_(17) start_scr.n=start_scr.n+1 start_scr.q=2 start_scr.t=start_scr.t+1 start_scr.t2=60 start_scr.sl=R(0,99) end end
 		end
 		--slider
-		if (sts.t>2 and sts.t<8) or sts.t==16 then
+		if (start_scr.t>2 and start_scr.t<8) or start_scr.t==16 then
 			rect(20,88,180,2,2)
-			rect(20+sts.sl*1.8,85,2,8,6)
-			if mx>19 and my>85 and mx<200 and my<93 then cid=1 if clp1 then sfx_(18) end if cl1 then sts.sl=(mx-20)/1.8 end end
+			rect(20+start_scr.sl*1.8,85,2,8,6)
+			if mx>19 and my>85 and mx<200 and my<93 then cid=1 if clp1 then sfx_(18) end if cl1 then start_scr.sl=(mx-20)/1.8 end end
 		end
 		--Number on the slider
-		if (sts.t>3 and sts.t<8) or sts.t==16 then
-			print(F(sts.sl+0.5),100,68,7,false,2)
+		if (start_scr.t>3 and start_scr.t<8) or start_scr.t==16 then
+			print(F(start_scr.sl+0.5),100,68,7,false,2)
 		end
 
 		------------
-		if sts.t==2 then
-			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
+		if start_scr.t==2 then
+			print(start_scr.time[1]..start_scr.time[2]..":"..start_scr.time[3]..start_scr.time[4],98,65,6,true,1)
 		end
 
-		if sts.t==3 then
-			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
+		if start_scr.t==3 then
+			print(start_scr.time[1]..start_scr.time[2]..":"..start_scr.time[3]..start_scr.time[4],98,65,6,true,1)
 			print("not accurate",12,76,7)
 			print("accurate",160,76,7)
-			local text = F(sts.sl/99*100+0.5) .."%"
+			local text = F(start_scr.sl/99*100+0.5) .."%"
 			local text_size=print(text,240,0)
 			print(text,120-text_size//2,76,7)
 		end
 
 		local yn='"no"'
-		if sts.t>=11 and sts.t<=12 then
- 			if sts.q==1 then
+		if start_scr.t>=11 and start_scr.t<=12 then
+ 			if start_scr.q==1 then
 				yn='"yes"'
 			end
 			surv_t[11][1]='Have you just answered '..yn..' to the last empty question?'
@@ -5470,7 +5468,7 @@ function TIC()
 			⠀⣷⣾⣿⣿⣿⣿⣿⣿⠁⡇⠀⠉⡀⠙⢿⣿⣿⡧⠤⠤⠭⠭⣌⣻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇
 			⢀⣿⣿⣿⣿⣿⣿⣿⣿⡟⠁⠀⠀⣇⣤⣾⣿⣿⣗⠒⠒⠲⣶⠦⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇
 		]]--You know the rules and so do I
-		if sts.t==32 then
+		if start_scr.t==32 then
 
 			clip(1,10,238,125)
 			for x=0,240,23 do for y=0,135,13 do
@@ -5486,32 +5484,32 @@ function TIC()
 			clip()
 			rectb(1,10,238,125,2)
 
-			if mx>54 and my>2 and mx<75 and my<10 then cid=1 if clp1 then sts.t=33 sts.t2=60 end end
+			if mx>54 and my>2 and mx<75 and my<10 then cid=1 if clp1 then start_scr.t=33 start_scr.t2=60 end end
 		end
-		if sts.t==33 then
+		if start_scr.t==33 then
 			print("Your statistics:",73,3,7,false,1,false)
-			print("Press the buttons \"yes\": "..sts.y.." times",31,34,7)
-			print("Press the buttons \"no\" : "..sts.n.." times",31,44,7)
+			print("Press the buttons \"yes\": "..start_scr.y.." times",31,34,7)
+			print("Press the buttons \"no\" : "..start_scr.n.." times",31,44,7)
 			print("Are you satisfied with your results?",20,97,7)
 		end
 
 		--check if the text supposed to be small font
-		small=surv_t[sts.t][2]~=nil
+		small=surv_t[start_scr.t][2]~=nil
 		--print all the survey text from the table
-		print(surv_t[sts.t][1],120-len_t[sts.t]/2,3,7,false,1,small)
+		print(surv_t[start_scr.t][1],120-len_t[start_scr.t]/2,3,7,false,1,small)
 
-		if sts.t==35 then state="main|settings" music(2) end
+		if start_scr.t==35 then state="main|settings" music(2) end
 	end
 	--------------------------
 	-- load lvl --------------
 	--------------------------
 	if state=="load lvl" then
 		sync(2,0,false)
-		sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
-		if st_t then save.ct=save.ct+(tstamp()-st_t) end
+		snake={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
+		if st_t then save.cur_t=save.cur_t+(tstamp()-st_t) end
 		save.lvl2=0
 		save.lvl =2
-		pmem(4,save.ct)
+		pmem(4,save.cur_t)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
 		if save.lvl==0 then save.lvl=1 end
@@ -5521,7 +5519,7 @@ function TIC()
 		else
 			load_world(save.lvl2,save.lvl)
 			plr.hp=100
-			plr.hp2=100
+			plr.l_hp=100
 			if not maps[save.lvl2][save.lvl].lift[1] then
 				plr.x=32
 				plr.y=64
@@ -5569,20 +5567,20 @@ function TIC()
 			local n2=save.lvl%10
 			for x=0,6 do
 				for y=0,10 do
-					setpix(100+x,35+y,l_b[n1][x][y])
-					setpix(109+x,35+y,l_b[n2][x][y])
+					setpix(100+x,35+y,lvl_board[n1][x][y])
+					setpix(109+x,35+y,lvl_board[n2][x][y])
 				end
 			end
 			--
 			mx,my=0,0
 			poke(0x7FC3F,1,1)
-			plr.d=false
+			plr.death=false
 			plr.pg_lvl=maps[save.lvl2][save.lvl].pg_lvl
 			plr.holding=false
-			ach.t2=0
+			achievement.t2=0
 			maps[save.lvl2][save.lvl].init()
 			state="game"
-			stt=0
+			lvl_t=0
 			st_t=tstamp() --The start time of this level
 		end
 	end
@@ -5590,17 +5588,17 @@ function TIC()
 	-- pause -----------------
 	--------------------------
 	if state=="pause" or state=="pause|settings" or state=="pause|accept" then
-		p.t=p.t+1
+		pause.t=pause.t+1
 		--GUI
 		vbank(0)
 		memcpy(0x0,0x8000,240*136/2)
 		vbank(1)
 		cls(0)
 		--logo
-		if state~="pause|settings" then spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3) end
+		if state~="pause|settings" then spr(256,min(-104+pause.t*6,8),4,0,1,0,0,13,3) end
 
 		if state=="pause" then
-			print("Pause",min(p.t*2,37),35,7)
+			print("Pause",min(pause.t*2,37),35,7)
 			upd_buttons()
 		elseif state=="pause|accept" then
 			print("Do you really want to leave the game?",4,45,7)
@@ -5609,7 +5607,7 @@ function TIC()
 		end
 
 		--Resume
-		if (keyp(44) and p.t>1) or (my>52 and my<63 and clp1 and state=="pause") then
+		if (keyp(44) and pause.t>1) or (my>52 and my<63 and clp1 and state=="pause") then
 			state="game"
 			sfx_(17)
 			poke(0x7FC3F,1,1)
@@ -5627,35 +5625,35 @@ function TIC()
 	-- game ------------------
 	--------------------------
 	if state=="game" then
-		if stt~=120 then stt=stt+1 end
+		if lvl_t~=120 then lvl_t=lvl_t+1 end
 		fps_.t1=time()
-		plr.cd2=max(plr.cd2-1,0)
-		plr.cd3=max(plr.cd3-1,0)
+		plr.bf_t=max(plr.bf_t-1,0)
+		plr.hp_t_2=max(plr.hp_t_2-1,0)
 	 --W A S D
 		lx, ly, lz = plr.x, plr.y, plr.z
-		if (plr.cd3==0 or R()>0.05 or plr.godmode) and not plr.d then
-			if key(23) then plr.z = plr.z - math.cos(plr.ty) * speed plr.x = plr.x - math.sin(plr.ty) * speed end
-			if key(19) then plr.z = plr.z + math.cos(plr.ty) * speed plr.x = plr.x + math.sin(plr.ty) * speed end
-			if key(1) then plr.z = plr.z - math.cos(plr.ty - pi2) * speed plr.x = plr.x - math.sin(plr.ty - pi2) * speed end
-			if key(4) then plr.z = plr.z + math.cos(plr.ty - pi2) * speed plr.x = plr.x + math.sin(plr.ty - pi2) * speed end
+		if (plr.hp_t_2==0 or R()>0.05 or plr.godmode) and not plr.death then
+			if key(23) then plr.z = plr.z - math.cos(plr.ty) * plr.speed plr.x = plr.x - math.sin(plr.ty) * plr.speed end
+			if key(19) then plr.z = plr.z + math.cos(plr.ty) * plr.speed plr.x = plr.x + math.sin(plr.ty) * plr.speed end
+			if key(1) then plr.z = plr.z - math.cos(plr.ty - pi2) * plr.speed plr.x = plr.x - math.sin(plr.ty - pi2) * plr.speed end
+			if key(4) then plr.z = plr.z + math.cos(plr.ty - pi2) * plr.speed plr.x = plr.x + math.sin(plr.ty - pi2) * plr.speed end
 		end
 
-		if (plr.cd3==0 or plr.godmode) and key(64) then speed = 8 else speed = 4 end
-		if plr.noclip then speed=12 end
+		if (plr.hp_t_2==0 or plr.godmode) and key(64) then plr.speed = 8 else plr.speed = 4 end
+		if plr.noclip then plr.speed=12 end
 
-		speed = speed * dt
+		plr.speed = plr.speed * dt
 	 --cheats
 		if keyp(57) or keyp(22) then plr.noclip = not plr.noclip end
 		if keyp(2) then plr.godmode = not plr.godmode end
 	--zoom
 		if key(65) then unitic.fov=min(unitic.fov*1.2*dt,800) else unitic.fov=max(unitic.fov/1.2/dt,80) end
 	--jump
-		if plr.noclip and not plr.d then
+		if plr.noclip and not plr.death then
 			if key(48) then plr.y = plr.y + 8 * dt end
 			if key(63) then plr.y = plr.y - 8 * dt end
 			plr.vy=0
-		elseif not plr.d then
-			if plr.xy then plr.vy=-1
+		elseif not plr.death then
+			if plr.on_ground then plr.vy=-1
 				if keyp(48) then plr.vy = 8 end
 			end
 			plr.y = plr.y + plr.vy * dt
@@ -5666,8 +5664,8 @@ function TIC()
 		local g = 1
 		local b = 1
 
-		if stt<50 and save.lvl == 1 and save.lvl2 ==1 then
-			local val = stt/50
+		if lvl_t<50 and save.lvl == 1 and save.lvl2 ==1 then
+			local val = lvl_t/50
 			r = r * val
 			g = g * val
 			b = b * val
@@ -5680,14 +5678,14 @@ function TIC()
 			b = b * val
 		end
 		--
-		if plr.cd2>0 then
-			r = r * (10-plr.cd2)/10*0.7+0.3
+		if plr.bf_t>0 then
+			r = r * (10-plr.bf_t)/10*0.7+0.3
 			g = g
 			b = b
 		end
 		--
-		if plr.cd3>0 and not plr.godmode then
-			local val = 0.2*(3-plr.cd3*0.2)
+		if plr.hp_t_2>0 and not plr.godmode then
+			local val = 0.2*(3-plr.hp_t_2*0.2)
 			r = r
 			g = g * val
 			b = b * val
@@ -5703,7 +5701,7 @@ function TIC()
 			updpal(r,g,b)
 		end
 	 --camera rotation
-	 	if p.t==0 and stt>2 then
+	 	if pause.t==0 and lvl_t>2 then
 			if key(65) then --zoom
 				plr.tx = plr.tx + my/(140-st.m_s)/10
 				plr.ty = plr.ty + mx/(140-st.m_s)/10
@@ -5716,7 +5714,7 @@ function TIC()
 		plr.tx = max(min(plr.tx, pi2), -pi2)
 	 --update + collision
 		fps_.t2=time()
-		if not plr.d then unitic.player_collision() end
+		if not plr.death then unitic.player_collision() end
 		unitic.portal_collision()
 		unitic.cube_update()
 		unitic.button_update()
@@ -5726,78 +5724,78 @@ function TIC()
 	 	do
 			local u=true
 			for i=1,65 do
-				if keyp(i) then if sn_k[sn.b]==i and u then sn.b=sn.b+1 else u=false sn.b=1 end end
+				if keyp(i) then if snake_keys[snake.b]==i and u then snake.b=snake.b+1 else u=false snake.b=1 end end
 			end
-			if sn.b>#sn_k then
+			if snake.b>#snake_keys then
 				--game init
-				sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="game",b=1}
+				snake={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="game",b=1}
 			end
 			--
-			if sn.state=="game" then
-				sn.t=sn.t+1
+			if snake.state=="game" then
+				snake.t=snake.t+1
 				--update
-				if sn.t%5==0 then
-					if sn.s[#sn.s][1]==sn.a[1] and sn.s[#sn.s][2]==sn.a[2] then
-						sn.a={R(0,10),R(0,10)}
+				if snake.t%5==0 then
+					if snake.s[#snake.s][1]==snake.a[1] and snake.s[#snake.s][2]==snake.a[2] then
+						snake.a={R(0,10),R(0,10)}
 						sfx_(7)
 					else
-						table.remove(sn.s,1)
+						table.remove(snake.s,1)
 					end
-					local x,y=sn.s[#sn.s][1],sn.s[#sn.s][2]
-					if     sn.u==0 then y=(y-1)%11
-					elseif sn.u==1 then y=(y+1)%11
-					elseif sn.u==2 then x=(x-1)%11
-					elseif sn.u==3 then x=(x+1)%11 end
-					for i=1,#sn.s do
-						if sn.s[i][1]==x and sn.s[i][2]==y then sn.state="game over" sfx_(6) sn.t=120 break end
+					local x,y=snake.s[#snake.s][1],snake.s[#snake.s][2]
+					if     snake.u==0 then y=(y-1)%11
+					elseif snake.u==1 then y=(y+1)%11
+					elseif snake.u==2 then x=(x-1)%11
+					elseif snake.u==3 then x=(x+1)%11 end
+					for i=1,#snake.s do
+						if snake.s[i][1]==x and snake.s[i][2]==y then snake.state="game over" sfx_(6) snake.t=120 break end
 					end
-					sn.s[#sn.s+1]={x,y}
+					snake.s[#snake.s+1]={x,y}
 				end
-				for i=0,3 do if btn(i) then sn.u=i end end
+				for i=0,3 do if btn(i) then snake.u=i end end
 				--display
 				for x=33,43 do for y=233,243 do
 					setpix(x,y,1) --background
 					setpix(x+16,y,1)
 				end end
-				setpix(sn.a[1]+33,sn.a[2]+233,8) --apple
-				setpix(sn.a[1]+49,sn.a[2]+233,8)
-				for i=1,#sn.s do --snake
-					local x,y=sn.s[i][1],sn.s[i][2]
+				setpix(snake.a[1]+33,snake.a[2]+233,8) --apple
+				setpix(snake.a[1]+49,snake.a[2]+233,8)
+				for i=1,#snake.s do --snake
+					local x,y=snake.s[i][1],snake.s[i][2]
 					setpix(x+33,y+233,7)
 					setpix(x+49,y+233,7)
 				end
-			elseif sn.state=="game over" then
-				sn.t=sn.t-1
+			elseif snake.state=="game over" then
+				snake.t=snake.t-1
 				for x=33,43 do for y=233,243 do
-					local color=(x+y+sn.t//5)%2*6+1
+					local color=(x+y+snake.t//5)%2*6+1
 					setpix(x,y,color)
 					setpix(x+16,y,color)
 				end end
-				if sn.t==0 then sn.state="-" sync(2,0,false) end
+				if snake.t==0 then snake.state="-" sync(2,0,false) end
 			end
 		end
 	 --render
 		unitic.render()
-		if plr.pg_lvl>0 and not plr.d then unitic.draw_portalgun() end
+		if plr.pg_lvl>0 and not plr.death then unitic.draw_portalgun() end
 	 --achievement
-		if ach.t>0 then
-			ach.t=ach.t+1
-			if ach.t<128 then
-				ach.y=ach.y-0.8
+		if achievement.t>0 then
+			achievement.t=achievement.t+1
+			if achievement.t<128 then
+				achievement.y=achievement.y-0.8
 			else
-				ach.y=ach.y+0.8
+				achievement.y=achievement.y+0.8
 			end
-			ach.y=max(ach.y,0)
-			if ach.y>17 then ach.t=0 end
+			achievement.y=max(achievement.y,0)
+			if achievement.y>17 then achievement.t=0 end
 			--
 			vbank(1)
-			rect(75 ,120+ach.y,110,15,2)
-			circ(75 ,127+ach.y,7,2)
-			circ(185,127+ach.y,7,2)
-			spr(380+ach.t//30%2*2,75-5,122+ach.y,0,1,0,0,2,2)
+			rect(75 ,120+achievement.y,110,15,2)
+			circ(75 ,127+achievement.y,7,2)
+			circ(185,127+achievement.y,7,2)
+			spr(380+achievement.t//30%2*2,75-5,122+achievement.y,0,1,0,0,2,2)
 			for i=0,1 do  --shadows for the text
-				print("achievement unlocked!",82,122+ach.y-i,i*6+1,false,1,true)
-				print("150G - Come back to the start",82,129+ach.y-i,i*5+1,false,1,true)
+				print("achievement unlocked!",82,122+achievement.y-i,i*6+1,false,1,true)
+				print("150G - Come back to the start",82,129+achievement.y-i,i*5+1,false,1,true)
 			end
 		end
 	 --portal gun
@@ -5805,12 +5803,12 @@ function TIC()
 	 --sounds
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1*dt  if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
-		if plr.cd2==8 then sfx_(3,"B-4",-1,1) end
+		if plr.bf_t==8 then sfx_(3,"B-4",-1,1) end
 	 --hp
-		if plr.hp2 == plr.hp then plr.cd=plr.cd+1 else plr.cd=0 end
-		if plr.cd>120 then plr.hp=min(plr.hp+1,100) end
+		if plr.l_hp == plr.hp then plr.hp_t=plr.hp_t+1 else plr.hp_t=0 end
+		if plr.hp_t>120 then plr.hp=min(plr.hp+1,100) end
 		if plr.y<-400 then plr.hp=max(plr.hp-2,0) end
-		plr.hp2 = plr.hp
+		plr.l_hp = plr.hp
 		if plr.godmode then plr.hp=100 end
 	 --Level scripts
 		maps[save.lvl2][save.lvl].scripts()
@@ -5822,7 +5820,7 @@ function TIC()
 			local x1=plr.x
 			local y1=plr.y
 			local z1=plr.z
-			if stt<41 then
+			if lvl_t<41 then
 				--Do not let the player out of the elevator
 				plr.y=min(max(y1,y0+64),y0+112)
 				if     maps[save.lvl2][save.lvl].lift[1][4]==0 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0-192),x0-144)
@@ -5831,8 +5829,8 @@ function TIC()
 				elseif maps[save.lvl2][save.lvl].lift[1][4]==3 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0-192),z0-144) end
 
 				--Updating the texture of the elevator door
-				local x=(40-stt)//2
-				if stt%2==1 then for y=0,28 do
+				local x=(40-lvl_t)//2
+				if lvl_t%2==1 then for y=0,28 do
 					setpix(93-x,y+99,15)
 					if x>0 then setpix(94-x,y+99,4) end
 				end end
@@ -5843,14 +5841,14 @@ function TIC()
 			or maps[save.lvl2][save.lvl].lift[1][4]==2 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-48 ,y0,z0+144, x0+48 ,y0+128,z0+192)
 			or maps[save.lvl2][save.lvl].lift[1][4]==3 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-48 ,y0,z0-192, x0+48 ,y0+128,z0-144) 
 			then
-				if ach.t2>120 then ach.t=1 ach.y=16 end
-				ach.t2=0
+				if achievement.t2>120 then achievement.t=1 achievement.y=16 end
+				achievement.t2=0
 			else
-				ach.t2=ach.t2+1
+				achievement.t2=achievement.t2+1
 			end
 		end
 	 --finish lift
-		if not plr.d and maps[save.lvl2][save.lvl].lift[2] then
+		if not plr.death and maps[save.lvl2][save.lvl].lift[2] then
 			local x0=maps[save.lvl2][save.lvl].lift[2][1]*96
 			local y0=maps[save.lvl2][save.lvl].lift[2][2]*128
 			local z0=maps[save.lvl2][save.lvl].lift[2][3]*96
@@ -5862,8 +5860,8 @@ function TIC()
 			or (maps[save.lvl2][save.lvl].lift[2][4]==1 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0+144,y0,z0-48 , x0+192,y0+128,z0+48 ))
 			or (maps[save.lvl2][save.lvl].lift[2][4]==2 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-48 ,y0,z0+144, x0+48 ,y0+128,z0+192))
 			or (maps[save.lvl2][save.lvl].lift[2][4]==3 and coll(x1-16,y1-64,z1-16,x1+16,y1+16,z1+16, x0-48 ,y0,z0-192, x0+48 ,y0+128,z0-144))
-			then stt=max(stt,121) end
-			if stt>120 then
+			then lvl_t=max(lvl_t,121) end
+			if lvl_t>120 then
 				--Do not let the player out of the elevator
 				plr.y=min(max(y1,y0+64),y0+112)
 				if     maps[save.lvl2][save.lvl].lift[2][4]==0 then plr.z=min(max(z1,z0-48),z0+48) plr.x=min(max(x1,x0-192),x0-144)
@@ -5871,13 +5869,13 @@ function TIC()
 				elseif maps[save.lvl2][save.lvl].lift[2][4]==2 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0+144),z0+192)
 				elseif maps[save.lvl2][save.lvl].lift[2][4]==3 then plr.x=min(max(x1,x0-48),x0+48) plr.z=min(max(z1,z0-192),z0-144) end
 				--Updating the texture of the elevator door
-				local x=(stt-121)//2
-				if stt%2==1 and x<20 then for y=0,28 do
+				local x=(lvl_t-121)//2
+				if lvl_t%2==1 and x<20 then for y=0,28 do
 					setpix(93-x,y+99,5)
 					if x>0 and x<19 then setpix(92-x,y+99,4) end
 				end end
 			end
-			if stt>190 then
+			if lvl_t>190 then
 				plr.x=plr.x-x0
 				plr.y=plr.y-y0
 				plr.z=plr.z-z0
@@ -5893,12 +5891,12 @@ function TIC()
 
 	 --death
 	 	if plr.hp<=0 and maps[save.lvl2][save.lvl].lift[1] then
-			plr.d=true
-			stt=max(stt,121)
+			plr.death=true
+			lvl_t=max(lvl_t,121)
 		end
-		if stt>120 and plr.d then
-			darkpal(1-(stt-120)/30)
-			if stt>150 then
+		if lvl_t>120 and plr.death then
+			darkpal(1-(lvl_t-120)/30)
+			if lvl_t>150 then
 				plr.x,plr.y,plr.z=0,64,0
 				if     maps[save.lvl2][save.lvl].lift[2][4]==0 then plr.ty=pi2
 				elseif maps[save.lvl2][save.lvl].lift[2][4]==1 then plr.ty=-pi2
@@ -5911,32 +5909,32 @@ function TIC()
 	 --text
 		local text="Level "..save.lvl
 		local text_size=print(text,240,0)
-		if stt<60 then
+		if lvl_t<60 then
 			for i=0,1 do
-				print(text:sub(1,stt//4),120-text_size/2,130-i,i*6+1)
+				print(text:sub(1,lvl_t//4),120-text_size/2,130-i,i*6+1)
 			end
-		elseif stt<120 then
+		elseif lvl_t<120 then
 			for i=0,1 do
-				print(text:sub(1,(59-stt)//4),120-text_size/2,130-i,i*6+1)
+				print(text:sub(1,(59-lvl_t)//4),120-text_size/2,130-i,i*6+1)
 			end
 		end
 	 --
-		if l_t2.draw then
-			local text=l_t[l_t2.id][l_t2.i]
+		if lvl_text_2.draw then
+			local text=lvl_text[lvl_text_2.id][lvl_text_2.i]
 			local text_size=print(text,240,0,1,false,1,true)
-			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if keyp(26,20,1) then l_t2.t=l_t2.t+0.5 end if (l_t2.t%1==0 or l_t2.t%1~=0 and keyp(26,20,2)) and l_t2.t//1<#text then sfx_(19)end end
+			if not lvl_text_2.pause then lvl_text_2.t=lvl_text_2.t+0.25 if keyp(26,20,1) then lvl_text_2.t=lvl_text_2.t+0.5 end if (lvl_text_2.t%1==0 or lvl_text_2.t%1~=0 and keyp(26,20,2)) and lvl_text_2.t//1<#text then sfx_(19)end end
 			rect(120-text_size/2-1,113,text_size+2,8,2)
 			for i=0,1 do
-				print(text:sub(1,F(l_t2.t)),120-text_size/2,115-i,i*6+1,false,1,true)
+				print(text:sub(1,F(lvl_text_2.t)),120-text_size/2,115-i,i*6+1,false,1,true)
 			end
-			if l_t2.t>#text+10 then
-				l_t2.t=0
-				l_t2.i=l_t2.i+1
-				if l_t2.i>#l_t[l_t2.id] then l_t2.draw=false end
+			if lvl_text_2.t>#text+10 then
+				lvl_text_2.t=0
+				lvl_text_2.i=lvl_text_2.i+1
+				if lvl_text_2.i>#lvl_text[lvl_text_2.id] then lvl_text_2.draw=false end
 			end
 		end
 	 --
-		pmem(4,save.ct+(tstamp()-st_t))
+		pmem(4,save.cur_t+(tstamp()-st_t))
 	 --PCM
 		if st.pcm and save.lvl == 1 then
 			pcm.addr = pcm.addr + 1
@@ -5950,20 +5948,20 @@ function TIC()
 			pcm.update(vol)
 		end
 	 --pause
-		if keyp(44) and p.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) state="pause" ms.b = menu_options.p for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
-		p.t=0
+		if keyp(44) and pause.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) state="pause" main_screen.b = menu_options.p for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
+		pause.t=0
 	 --debug
 	 	local debug_text={
 			{
-				"FPS:  " .. F(1000 / (fr[3]+fr[2])*2),
+				"FPS:  " .. F(1000 / (framerate[3]+framerate[2])*2),
 				"dt:   " .. dt*1000//1/1000
 			},
 			{
-				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5),
+				"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5),
 			},
 			{
-				"FPS:  " .. F(1000 / fr[1]).."|"..F(1000 / (fr[3]+fr[2])*2).." Frame:"..F(t2).." ms.",
-				"Av: "..F(fr[1]+0.5).."|"..F((fr[3]+fr[2])/2+0.5).." ms. min: "..F(fr[2]+0.5).." ms. max: "..F(fr[3]+0.5).." ms.",
+				"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(fr_draw_t).." ms.",
+				"Av: "..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5).." ms. min: "..F(framerate[2]+0.5).." ms. max: "..F(framerate[3]+0.5).." ms.",
 				"Other:"..max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0).." ms. portals:"..F(fps_.t5-fps_.t4).."|"..F(fps_.t6-fps_.t5).." ms.",
 				"Update:"..F(fps_.t7-fps_.t6).." ms. draw:"..F(fps_.t8-fps_.t7).." ms."
 			},
@@ -5973,15 +5971,15 @@ function TIC()
 			}
 		}
 
-		if keyp(49) then plr.dt=(plr.dt+1)%(#debug_text+1) end
+		if keyp(49) then plr.debug_text=(plr.debug_text+1)%(#debug_text+1) end
 		
 		vbank(1)
-		if plr.dt~=0 and debug then
-			for i=1,#debug_text[plr.dt] do
-				local text_size=print(debug_text[plr.dt][i], 240,0)
+		if plr.debug_text~=0 and debug then
+			for i=1,#debug_text[plr.debug_text] do
+				local text_size=print(debug_text[plr.debug_text][i], 240,0)
 				rect(0,7*(i-1),text_size+2,8,2)
 				for j=0,1 do
-					print(debug_text[plr.dt][i], 1, 7*(i-1)+j+1, j*6+1)
+					print(debug_text[plr.debug_text][i], 1, 7*(i-1)+j+1, j*6+1)
 				end
 			end
 		end
@@ -5989,8 +5987,6 @@ function TIC()
 			if plr.noclip then print("Noclip", 104, 85, 7) end
 		vbank(0)
 	end
-
-	while time()-t1<32 and lag_mode do end
 	--------------------------
 	-- settings menu ---------
 	--------------------------
@@ -6001,23 +5997,23 @@ function TIC()
 
 		if whl~=0 then st.vx = whl * 3 else st.vx = st.vx * 0.8 end
 
-		st.scr = st.scr - min(max(st.vx, -3),3)
+		st.scroll = st.scroll - min(max(st.vx, -3),3)
 
 		local max_y = 12 * 10 - 90 --constant
 
-		if st.scr<0 then st.scr = max(min(st.scr+1.1 ,0),-10) end
+		if st.scroll<0 then st.scroll = max(min(st.scroll+1.1 ,0),-10) end
 		
-		if st.scr> max_y then st.scr = min(max(st.scr-1.1 ,max_y),max_y+10) end
+		if st.scroll> max_y then st.scroll = min(max(st.scroll-1.1 ,max_y),max_y+10) end
 
 		for i = 1, 12 do
-			menu_options.s[i].y = 12 + i * 10 - F(st.scr)
+			menu_options.s[i].y = 12 + i * 10 - F(st.scroll)
 		end
 		
 		--GUI
 		--slider
 		rect(239, 21, 1, 88, 1)
 		clip(239,21,1,88)
-		rect(239, 21 + max(st.scr/max_y*68, -15) , 1, 20, 7)
+		rect(239, 21 + max(st.scroll/max_y*68, -15) , 1, 20, 7)
 		clip()
 		--buttons
 		print("Back",4,125,7)
@@ -6045,20 +6041,20 @@ function TIC()
 
 		for i = 1, #texts do
 			if not st.r_p and (i==5 or i==6) then
-				print(texts[i][2],4,12+i*10 - F(st.scr),3)
+				print(texts[i][2],4,12+i*10 - F(st.scroll),3)
 				if st[texts[i][1]] then
-					print("On",140,12+i*10 - F(st.scr),4)
+					print("On",140,12+i*10 - F(st.scroll),4)
 				else
-					print("Off",140,12+i*10 - F(st.scr),4)
+					print("Off",140,12+i*10 - F(st.scroll),4)
 				end
 			else
-				print(texts[i][2],4,12+i*10 - F(st.scr),7)
+				print(texts[i][2],4,12+i*10 - F(st.scroll),7)
 				if st[texts[i][1]]==true then
-					print("On",140,12+i*10 - F(st.scr),13)
+					print("On",140,12+i*10 - F(st.scroll),13)
 				elseif st[texts[i][1]]==false then
-					print("Off",140,12+i*10 - F(st.scr),11)
+					print("Off",140,12+i*10 - F(st.scroll),11)
 				else
-					print(st[texts[i][1]],140,12+i*10 - F(st.scr),4)
+					print(st[texts[i][1]],140,12+i*10 - F(st.scroll),4)
 				end
 			end
 		end
@@ -6071,9 +6067,9 @@ function TIC()
 		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
 
 		--settings hints
-		if sh_i ~= -1 and sh_i<13 then
-			print(texts[sh_i][3][1],70,115,7,false,1,true)
-			print(texts[sh_i][3][2],70,125,7,false,1,true)
+		if setting_hint_i ~= -1 and setting_hint_i<13 then
+			print(texts[setting_hint_i][3][1],70,115,7,false,1,true)
+			print(texts[setting_hint_i][3][2],70,125,7,false,1,true)
 		end
 
 
@@ -6087,13 +6083,13 @@ function TIC()
 	-- darkening -------------
 	--------------------------
 	if state=="darkening" then
-		d_t=d_t+1
+		darkening=darkening+1
 		for vb=0,1 do
 			vbank(vb)
 			respal()
-			darkpal(1-d_t/30)
+			darkpal(1-darkening/30)
 		end
-		if d_t==30 then
+		if darkening==30 then
 			state="still alive"
 			music(7)
 			vbank(0)cls()respal()
@@ -6106,8 +6102,8 @@ function TIC()
 	if state=="still alive" then
 		vbank(0)
 		--pal
-		d_t=max(d_t-1,0)
-		respal()darkpal(1-d_t/30)
+		darkening=max(darkening-1,0)
+		respal()darkpal(1-darkening/30)
 		--GUI
 		cls(0)
 		rectb(1,1,120,133,13)
@@ -6132,19 +6128,19 @@ function TIC()
 		line(182,70 ,203,84 ,0)
 		--text
 		if t%3==0 then
-			s_t2[1]=s_t2[1]+1
-			if s_t2[1]>#s_t[s_t2[2]] then s_t2[2]=s_t2[2]+1 s_t2[1]=0 end
-			if s_t2[2]>#s_t then s_t2[2]=#s_t s_t2[1]=#s_t[#s_t] end
+			song_text_2[1]=song_text_2[1]+1
+			if song_text_2[1]>#song_text[song_text_2[2]] then song_text_2[2]=song_text_2[2]+1 song_text_2[1]=0 end
+			if song_text_2[2]>#song_text then song_text_2[2]=#song_text song_text_2[1]=#song_text[#song_text] end
 		end
 
-		for i=max(s_t2[2]-17,1),s_t2[2] do
-			if i~=s_t2[2] then
-				print(s_t[i],3,(i-max(s_t2[2]-15,1))*7+3,13)
+		for i=max(song_text_2[2]-17,1),song_text_2[2] do
+			if i~=song_text_2[2] then
+				print(song_text[i],3,(i-max(song_text_2[2]-15,1))*7+3,13)
 			else
 				if t%20<10 then
-					print(s_t[i]:sub(1,s_t2[1]).."_",3,(i-max(s_t2[2]-17,1))*7+3,13)
+					print(song_text[i]:sub(1,song_text_2[1]).."_",3,(i-max(song_text_2[2]-17,1))*7+3,13)
 				else
-					print(s_t[i]:sub(1,s_t2[1]),3,(i-max(s_t2[2]-17,1))*7+3,13)
+					print(song_text[i]:sub(1,song_text_2[1]),3,(i-max(song_text_2[2]-17,1))*7+3,13)
 				end
 			end
 		end
@@ -6277,17 +6273,19 @@ function TIC()
 	--cursor id
 	vbank(0)
 	poke4(0x07FF6,cid)
+	--lag mode
+	while time()-frame_t<32 and lag_mode do end
 	--fps (2)
 	do
-		avf[t%60]=t2
-		t2 = time() - t1
-		fr = {0,math.huge,0}
-		for i=1,#avf do
-			fr[1]=fr[1]+avf[i]
-			if avf[i]<fr[2] then fr[2]=avf[i] end
-			if avf[i]>fr[3] then fr[3]=avf[i] end
+		av_frame[t%60]=fr_draw_t
+		fr_draw_t = time() - frame_t
+		framerate = {0,math.huge,0}
+		for i=1,#av_frame do
+			framerate[1]=framerate[1]+av_frame[i]
+			if av_frame[i]<framerate[2] then framerate[2]=av_frame[i] end
+			if av_frame[i]>framerate[3] then framerate[3]=av_frame[i] end
 		end
-		fr[1]=fr[1]/#avf
+		framerate[1]=framerate[1]/#av_frame
 	end
 end
 
@@ -6297,15 +6295,15 @@ function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
 	if state=="pause" then
 		vbank(1)poke(0x03FF9,0)respal()vbank(0)poke(0x03FF9,0)
-		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-p.t/30,0.4))if stt<60 then darkpal(stt/60)end end)
+		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-pause.t/30,0.4))if lvl_t<60 then darkpal(lvl_t/60)end end)
 	end
 
 	if state=="pause|accept" then
-		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2)if stt<60 then darkpal(stt/60)end end)
+		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2)if lvl_t<60 then darkpal(lvl_t/60)end end)
 	end
 
 	if state=="main" then
-		upd_buttons_bdr(scn_y, function()respal()darkpal(min(ms.t/60,0.5)) end)
+		upd_buttons_bdr(scn_y, function()respal()darkpal(min(main_screen.t/60,0.5)) end)
 	end
 	if state=="main|newgame" then
 		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2) end)
@@ -6316,23 +6314,23 @@ function BDR(scn_y) scn_y=scn_y-4
 
 	if state=="main|settings" or state=="pause|settings" then
 		local function reset_pal()
-			respal()darkpal(0.2)if state=="pause|settings" and stt<60 then darkpal(stt/60) end
+			respal()darkpal(0.2)if state=="pause|settings" and lvl_t<60 then darkpal(lvl_t/60) end
 		end
 
 		if scn_y==0 or scn_y==20 or scn_y==111 or scn_y==123 or scn_y==133 then reset_pal()end
 		if scn_y==19 or scn_y==110 then reset_pal() darkpal(0.7)end
 
 		for i = 1, 13 do
-			if scn_y==max(F(10 + i*10 - st.scr), 20) and scn_y<110 then reset_pal() if i<13 then darkpal(ms.b[i].t) end end
+			if scn_y==max(F(10 + i*10 - st.scroll), 20) and scn_y<110 then reset_pal() if i<13 then darkpal(main_screen.b[i].t) end end
 		end
 
-		if scn_y==113 then darkpal(ms.b[13].t) end
-		if scn_y==123 then darkpal(ms.b[14].t) end
+		if scn_y==113 then darkpal(main_screen.b[13].t) end
+		if scn_y==123 then darkpal(main_screen.b[14].t) end
 	end
 	
 
 	if state=="game" then
-		local disp=256 +R(-1,1) * R(0, plr.cd2//2)
+		local disp=256 +R(-1,1) * R(0, plr.bf_t//2)
 		for vb=0,1 do
 			vbank(vb)
 
