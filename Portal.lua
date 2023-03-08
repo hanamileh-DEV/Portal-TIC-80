@@ -5144,6 +5144,30 @@ state="logo" sync(25 ,1,false) music(0)
 
 
 local lag_mode = false
+
+function BOOT()
+	--[[each line is 5 text variables.
+	if there is "1" after the text it means this text in the small font]]
+	surv_t={{"Enter the current time."},{"Is this the exact time?"},{"How accurate is this time?"},{"Pull the slider until the given number becomes prime",1},{"Pull the slider until the number becomes more than 50",1},
+	{"How many numbers from 0 to 100 have 3 divisors exist?",1},{"Pull the slider until the number becomes completely by chance",1},{"Do you know the authors of this game?"},{"Do the authors of this game know you?"},{""},
+	{"Have you just answered   yes   to the last empty question?",1},{"Why did you answer   yes\n\n to the last question?"},{"Do you consider yourself happy?"},{"Have you ever thought that you have mental disorders?",1},{"Do you think you have a lot of friends?"},
+	{"How many friends do you have?"},{"Do you really like this game?"},{"Have you answered the truth?"},{"Do you want to start the game?"},{"Do you like this survey?"},
+	{"Are you positive to the chairs?"},{"Is there a Chinese layout on your keyboard?"},{"Why?"},{"_"},{""},{""},{"Have you ever found HanamileH\n\n   rather cute and pretty?"},
+	{" Have you ever had dreams with\n\nthe participation of HanamileH?"},{"Would you like to ever meet HanamileH live?"},{"Why are you still answering this survey?"},{"Do you want me to help you?"},{"Press any button to start the game"},{""},{""},{""}}
+
+ --lets define global table with lengths of text
+	len_t={}
+	for i in ipairs(surv_t) do
+	 local small=false
+		local size=1
+	 if surv_t[i][2]~=nil then
+			small=true
+		end
+		--to get the text lenght we can't just use string.len, we need it in pixels and output of print() function will help us
+ 	len_t[i]=print(surv_t[i][1],0,-100,0,false,size,small)
+ end
+end
+
 function TIC()
 	if st.dt_c then
 		dt=1
@@ -5414,30 +5438,14 @@ function TIC()
 			print(text,120-text_size//2,76,7)
 		end
 
-		if sts.t==11 then
-			if sts.q==1 then
-				print([[]],19,3,7,false,1,true)
-			else
-				print([[Have you just answered "no" to the last empty question?]],19,3,7,false,1,true)
+  local yn='"no"'
+  if sts.t>=11 and sts.t<=12 then
+  	if sts.q==1 then
+		  yn='"yes"'
 			end
+			surv_t[11][1]='Have you just answered '..yn..' to the last empty question?'
+		 surv_t[12][1]='Why did you answer '..yn..'\n\n  to the last question?'
 		end
-		if sts.t==12 then
-			if sts.q==1 then
-				print([[Why did you answer "yes"]].."\n\n "..[[to the last question?]],55,3,7,false,1,false)
-			else
-				print([[Why did you answer "no"]] .."\n\n "..[[to the last question?]],55,3,7,false,1,false)
-			end
-		end
-		local texts={{"Enter the current time."},{"Is this the exact time?"},{"How accurate is this time?"},{"Pull the slider until the given number becomes prime",1},{"Pull the slider until the number becomes more than 50",1},
-		{"How many numbers from 0 to 100 have 3 divisors exist?",1},{"Pull the slider until the number becomes completely by chance",1},{"Do you know the authors of this game?"},
-		{"Do the authors of this game know you?"},{""},{[[]]Have you just answered]] "yes" [[to the last empty question?]]},{""},
-		{"Do you consider yourself happy?"},{"Have you ever thought that you have mental disorders?",1},{"Do you think you have a lot of friends?"},
-		{"How many friends do you have?"},{"Do you really like this game?"},{"Have you answered the truth?"},{"Do you want to start the game?"},
-		{"Do you like this survey?"},{"Are you positive to the chairs?"},{"Is there a Chinese layout on your keyboard?"},{"Why?"},{"_"},
-		{"Have you ever found HanamileH\n\n   rather cute and pretty?"},{"Have you ever had dreams with\n\nthe participation of HanamileH?"},{"Would you like to ever meet HanamileH live?"},
-		{"Why are you still answering this survey?"},{"Do you want me to help you?"},{"Press any button to start the game"}}
-
-		local tYesNo={"yes","no"}
 
 		--[[We're no strangers to love
 			⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -5485,13 +5493,14 @@ function TIC()
 			print("Press the buttons \"no\" : "..sts.n.." times",31,44,7)
 			print("Are you satisfied with your results?",20,97,7)
 		end
-
-  trace(sts.t)
-		local thick=false
-		if texts[sts.t][2]~=nil then
-		 thick=true
+  workinghere
+  --check if the text supposed to be small font
+		local small=false
+		if surv_t[sts.t][2]~=nil then
+		 small=true
 		end
-		print(texts[sts.t][1],20,3,7,false,1,thick)
+  --print all the survey text from the table
+		print(surv_t[sts.t][1],120-len_t[sts.t]/2,3,7,false,1,small)
 
 		if sts.t==35 then state="main|settings" music(2) end
 	end
