@@ -5381,7 +5381,6 @@ function TIC()
 		cls(1)
 		--
 		if sts.t==1 then
-			--print(,51,3,7)
 			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],80,50,6,true,2)
 			if sts.i<2 then
 			line(79+sts.i*12,61,91+sts.i*12,61,7)
@@ -5440,13 +5439,13 @@ function TIC()
 			print(text,120-text_size//2,76,7)
 		end
 
-  local yn='"no"'
-  if sts.t>=11 and sts.t<=12 then
-  	if sts.q==1 then
-		  yn='"yes"'
+		local yn='"no"'
+		if sts.t>=11 and sts.t<=12 then
+ 			if sts.q==1 then
+				yn='"yes"'
 			end
 			surv_t[11][1]='Have you just answered '..yn..' to the last empty question?'
-		 surv_t[12][1]='Why did you answer '..yn..'\n\n  to the last question?'
+			surv_t[12][1]='Why did you answer '..yn..'\n\n  to the last question?'
 		end
 
 		--[[We're no strangers to love
