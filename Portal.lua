@@ -1602,7 +1602,7 @@ local lvl_text_2={
 	t=0
 }
 --funcions
-local addwall, addobj, respal, updpal, darkpal
+local addwall, addobj, respal, updpal, darkpal, addp
 --time
 local frame_t=0 -- The start time of the frame drawing
 local fr_draw_t=0 -- Frame drawing time
@@ -1626,6 +1626,74 @@ local function getpix(sx,sy)
 end
 
 --maps
+local script = { --functions for lvl scripts
+	add_wall = addwall, --add a wall     (X, Y, Z, angle, face, type)
+	add_obj  = addobj,  --add a object   (X, Y, Z, type, [additional parameters])
+	add_p    = addp,    --add a particle (X, Y, Z, vel_X, vel_Y, vel_Z, life_time, color)
+	update_world= update_world, -- Updates the geometry of the level
+
+	get_obj_data = function(obj_type, obj_i,obj_parameter)
+		if type(obj_type)~="string" then error("The object type must be a string") end
+		if type(obj_i)~="number"    then error("The object index must be a integer") end
+
+		if not draw.objects[obj_type] then error(obj_type.." does not exist") end
+		if not draw.objects[obj_type][obj_i] then error("The object with index ["..obj_i.."] does not exist") end
+
+		if not draw.objects[obj_type][obj_i][obj_parameter] then error("Parameter "..obj_parameter.." does not exist") end
+
+		return draw.objects[obj_type][obj_i][obj_parameter]
+	end,
+
+	set_obj_data = function(obj_type, obj_i,obj_parameter, value)
+		if type(obj_type)~="string" then error("The object type must be a string") end
+		if type(obj_i)~="number"    then error("The object index must be a integer") end
+
+		if not draw.objects[obj_type] then error(obj_type.." does not exist") end
+		if not draw.objects[obj_type][obj_i] then error("The object with index ["..obj_i.."] does not exist") end
+
+		if not draw.objects[obj_type][obj_i][obj_parameter] then error("Parameter "..obj_parameter.." does not exist") end
+
+		draw.objects[obj_type][obj_i][obj_parameter] = value
+	end
+}
+--[[
+	objects and their parameters:
+		general parameters:
+			x,y,z -- coorditanes (float / integer)
+			type  -- object type (integer)
+			draw  -- is the object diplayed (boolean) (does not affect the collision)
+			id    -- the ordinal index of the object (integer) (what is the account of this object among the objects of the same type)
+			model -- yes, this is an object model (table)
+		
+		cubes ("c"):
+			x1,y1,z1 -- Coordinates relative to the portal (float / integer)
+			inp      -- whether the cube is located in the portal (boolean)
+			held     -- is the cube in the hand (boolean)
+			vx,vy,vz -- velocity (float / integer)
+			disp     -- cube dispenser ID (integer / nil)
+
+		cube dispensers ("cd"):
+			ct  --cube type (integer)
+
+		buttons ("b"):
+			t    -- button press time (int / math.huge)
+			t1   -- cuttent press time (int)
+			tick -- sends a signal 1 tick long while pressing the button (boolean)
+			s    -- button signal (boolean)
+
+		floor button ("fb"):
+			tick -- sends a signal 1 tick long while pressing the button (boolean)
+			s    -- button signal (boolean)
+
+		displays ("d"):
+			s    -- displayed signal (boolean)
+
+	what is the additional parameter in add_obj responsible for:
+		cubes -- the ordinal index of the dispenser (integer) (in with dispenser will the cube appear)
+		buttons -- how long will the signal be considered pressed (60 - 1 second) (math.huge for a constant signal, -1 for the switch mode)
+
+		in other cases its not used
+]]
 local maps={[0]={},[1]={}}
 
 --[[
@@ -2597,7 +2665,7 @@ local song_text_2={1,1} --some data to display the text above
 local function sfx_(...)
 if st.sfx then sfx(...) end
 end
-local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
+function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
 end
 
@@ -4443,22 +4511,7 @@ function addobj(x, y, z, type,t1) --objects
 		vx=0, vy=0, vz=0, --velocity
 		draw=true, --whether to display the model
 		disp=t1, -- cube dispenser ID
-		model={v={},f={}}}
-		for i=1,#model[type].v do
-			draw.objects.c[#draw.objects.c].model.v[i]={model[type].v[i][1],model[type].v[i][2],model[type].v[i][3]}
-		end
-		for i=1,#model[type].f do
-			draw.objects.c[#draw.objects.c].model.f[i]={
-				model[type].f[i][1],
-				model[type].f[i][2],
-				model[type].f[i][3],
-				uv={
-					{model[type].f[i].uv[1][1],model[type].f[i].uv[1][2]},
-					{model[type].f[i].uv[2][1],model[type].f[i].uv[2][2]},
-					{model[type].f[i].uv[3][1],model[type].f[i].uv[3][2]},-1
-				},
-				f=model[type].f[i].f}
-		end
+		model=model[type]}
 	elseif type==3 then --cube dispenser
 		draw.objects.cd[#draw.objects.cd+1]=
 		{type=type,
