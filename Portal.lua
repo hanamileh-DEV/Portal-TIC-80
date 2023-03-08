@@ -5154,7 +5154,7 @@ local surv_t={{"Enter the current time."},{"Is this the exact time?"},{"How accu
 local len_t={}
 for i in ipairs(surv_t) do
 	local size=1
- local small=surv_t[i][2]~=nil
+	local small=surv_t[i][2]~=nil
 
 	--to get the text lenght we can't just use string.len, we need it in pixels and output of print() function will help us
 	len_t[i]=print(surv_t[i][1],0,-100,0,false,size,small)
@@ -5496,13 +5496,9 @@ function TIC()
 			print("Are you satisfied with your results?",20,97,7)
 		end
 
-  --check if the text supposed to be small font
-		--[[local small=false
-		if surv_t[sts.t][2]~=nil then
-		 small=true
-		end]]
+		--check if the text supposed to be small font
 		small=surv_t[sts.t][2]~=nil
-  --print all the survey text from the table
+		--print all the survey text from the table
 		print(surv_t[sts.t][1],120-len_t[sts.t]/2,3,7,false,1,small)
 
 		if sts.t==35 then state="main|settings" music(2) end
