@@ -5302,7 +5302,7 @@ function TIC()
 			
 			rect(0,28,240,21,1)
 			if pt>250 then
-			 for i=0,1 do
+				for i=0,1 do
 					print("Rendering of both portals is chosen",23,36-i,i*7)
 				end
 				st.d_r=true
