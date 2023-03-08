@@ -5140,10 +5140,31 @@ local is={t=0,t1=0,t2=0} --init setting
 local sn={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 local sn_k={3,1,11,5}
 
+--[[each line is 5 text variables.
+if there is "1" after the text it means this text in the small font]]
+local surv_t={{"Enter the current time."},{"Is this the exact time?"},{"How accurate is this time?"},{"Pull the slider until the given number becomes prime",1},{"Pull the slider until the number becomes more than 50",1},
+{"How many numbers from 0 to 100 have 3 divisors exist?",1},{"Pull the slider until the number becomes completely by chance",1},{"Do you know the authors of this game?"},{"Do the authors of this game know you?"},{""},
+{"Have you just answered   yes   to the last empty question?",1},{"Why did you answer   yes\n\n to the last question?"},{"Do you consider yourself happy?"},{"Have you ever thought that you have mental disorders?",1},{"Do you think you have a lot of friends?"},
+{"How many friends do you have?"},{"Do you really like this game?"},{"Have you answered the truth?"},{"Do you want to start the game?"},{"Do you like this survey?"},
+{"Are you positive to the chairs?"},{"Is there a Chinese layout on your keyboard?"},{"Why?"},{"_"},{""},
+{""},{"Have you ever found HanamileH\n\n   rather cute and pretty?"},{" Have you ever had dreams with\n\nthe participation of HanamileH?"},{"Would you like to ever meet HanamileH live?"},{"Why are you still answering this survey?"},
+{"Do you want me to help you?"},{"Press any button to start the game"},{""},{""},{""}}
+
+--lets define global table with lengths of text
+local len_t={}
+for i in ipairs(surv_t) do
+	local size=1
+	local small=surv_t[i][2]~=nil
+
+	--to get the text lenght we can't just use string.len, we need it in pixels and output of print() function will help us
+	len_t[i]=print(surv_t[i][1],0,-100,0,false,size,small)
+end
+
 state="logo" sync(25 ,1,false) music(0)
 
 
 local lag_mode = false
+
 function TIC()
 	if st.dt_c then
 		dt=1
@@ -5281,23 +5302,27 @@ function TIC()
 			
 			rect(0,28,240,21,1)
 			if pt>250 then
-				print("Rendering of both portals is chosen",23,36,0)
-				print("Rendering of both portals is chosen",23,35,7)
+				for i=0,1 do
+					print("Rendering of both portals is chosen",23,36-i,i*7)
+				end
 				st.d_r=true
 				st.r_both=true
 			elseif pt>165 then
-				print("Rendering of one portal is chosen",30,36,0)
-				print("Rendering of one portal is chosen",30,35,7)
+				for i=0,1 do
+					print("Rendering of one portal is chosen",30,36-i,i*7)
+				end
 				st.d_r=true
 				st.r_both=false
 			elseif pt>45 then
-				print("The rendering of portals is disabled",23,36,0)
-				print("The rendering of portals is disabled",23,35,7)
+				for i=0,1 do
+					print("The rendering of portals is disabled",23,36-i,i*7)
+				end
 				st.d_r=false
 				st.r_both=false
 			else
-				print("You have a potato pc",63,36,0)
-				print("You have a potato pc",63,35,7)
+				for i=0,1 do
+					print("You have a potato pc",63,36-i,i*7)
+				end
 				st.d_r=false
 				st.r_both=false
 			end
@@ -5306,8 +5331,9 @@ function TIC()
 			print("later in the settings menu",49,75,4)
 
 			rect(94,122,41,9,2)
-			print("Accept",97,124,0)
-			print("Accept",97,123,7)
+			for i=0,1 do
+				print("Accept",97,124-i,i*7)
+			end
 			vbank(0)
 			if mx>93 and my>121 and mx<135 and my<131 then cid=1 if clp1 then music(2) state="main" ms.b = menu_options.ms clp1=false save_settings() end end
 		end
@@ -5355,7 +5381,6 @@ function TIC()
 		cls(1)
 		--
 		if sts.t==1 then
-			print("Enter the current time.",51,3,7)
 			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],80,50,6,true,2)
 			if sts.i<2 then
 			line(79+sts.i*12,61,91+sts.i*12,61,7)
@@ -5402,12 +5427,10 @@ function TIC()
 
 		------------
 		if sts.t==2 then
-			print("Is this the exact time?",51,3,7)
 			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
 		end
 
 		if sts.t==3 then
-			print("How accurate is this time?",51,3,7)
 			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
 			print("not accurate",12,76,7)
 			print("accurate",160,76,7)
@@ -5416,43 +5439,15 @@ function TIC()
 			print(text,120-text_size//2,76,7)
 		end
 
-		if sts.t==4 then print("Pull the slider until the given number becomes prime",29,3,7,false,1,true) end
-		if sts.t==5 then print("Pull the slider until the number becomes more than 50",29,3,7,false,1,true) end
-		if sts.t==6 then print("How many numbers from 0 to 100 have 3 divisors exist?",29,3,7,false,1,true) end
-		if sts.t==7 then print("Pull the slider until the number becomes completely by chance",11,3,7,false,1,true) end
-		if sts.t==8 then print("Do you know the authors of this game?",19,3,7,false,1,false) end
-		if sts.t==9 then print("Do the authors of this game know you?",19,3,7,false,1,false) end
-		if sts.t==11 then
-			if sts.q==1 then
-				print([[Have you just answered "yes" to the last empty question?]],19,3,7,false,1,true)
-			else
-				print([[Have you just answered "no" to the last empty question?]],19,3,7,false,1,true)
+		local yn='"no"'
+		if sts.t>=11 and sts.t<=12 then
+ 			if sts.q==1 then
+				yn='"yes"'
 			end
+			surv_t[11][1]='Have you just answered '..yn..' to the last empty question?'
+			surv_t[12][1]='Why did you answer '..yn..'\n\n  to the last question?'
 		end
-		if sts.t==12 then
-			if sts.q==1 then
-				print([[Why did you answer "yes"]].."\n\n "..[[to the last question?]],55,3,7,false,1,false)
-			else
-				print([[Why did you answer "no"]] .."\n\n "..[[to the last question?]],55,3,7,false,1,false)
-			end
-		end
-		if sts.t==13 then print("Do you consider yourself happy?",30,3,7,false,1,false) end
-		if sts.t==14 then print("Have you ever thought that you have mental disorders?",20,3,7,false,1,true) end
-		if sts.t==15 then print("Do you think you have a lot of friends?",10,3,7,false,1,false) end
-		if sts.t==16 then print("How many friends do you have?",35,3,7,false,1,false) end
-		if sts.t==17 then print("Do you really like this game?",35,3,7,false,1,false) end
-		if sts.t==18 then print("Have you answered the truth?",35,3,7,false,1,false) end
-		if sts.t==19 then print("Do you want to start the game?",35,3,7,false,1,false) end
-		if sts.t==20 then print("Do you like this survey?",40,3,7,false,1,false) end
-		if sts.t==21 then print("Are you positive to the chairs?",35,3,7,false,1,false) end
-		if sts.t==22 then print("Is there a Chinese layout on your keyboard?",1,3,7,false,1,false) end
-		if sts.t==23 then print("Why?",107,3,7,false,1,false) end
-		if sts.t==24 then print("_",107,3,7,false,1,false) end
-		if sts.t==27 then print("Have you ever found HanamileH\n\n   rather cute and pretty?",42,3,7,false,1,false) end
-		if sts.t==28 then print(" Have you ever had dreams with\n\nthe participation of HanamileH?",36,3,7,false,1,false) end
-		if sts.t==29 then print("Would you like to ever meet HanamileH live?",6,3,7,false,1,false) end
-		if sts.t==30 then print("Why are you still answering this survey?",10,3,7,false,1,false) end
-		if sts.t==31 then print("Do you want me to help you?",44,3,7,false,1,false) end
+
 		--[[We're no strangers to love
 			⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 			⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⠞⣋⠉⣿⣯⣿⢿⣖⠦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -5476,7 +5471,6 @@ function TIC()
 			⢀⣿⣿⣿⣿⣿⣿⣿⣿⡟⠁⠀⠀⣇⣤⣾⣿⣿⣗⠒⠒⠲⣶⠦⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇
 		]]--You know the rules and so do I
 		if sts.t==32 then
-			print("Press any button to start the game",22,3,7,false,1,false)
 
 			clip(1,10,238,125)
 			for x=0,240,23 do for y=0,135,13 do
@@ -5500,6 +5494,11 @@ function TIC()
 			print("Press the buttons \"no\" : "..sts.n.." times",31,44,7)
 			print("Are you satisfied with your results?",20,97,7)
 		end
+
+		--check if the text supposed to be small font
+		small=surv_t[sts.t][2]~=nil
+		--print all the survey text from the table
+		print(surv_t[sts.t][1],120-len_t[sts.t]/2,3,7,false,1,small)
 
 		if sts.t==35 then state="main|settings" music(2) end
 	end
@@ -5796,10 +5795,10 @@ function TIC()
 			circ(75 ,127+ach.y,7,2)
 			circ(185,127+ach.y,7,2)
 			spr(380+ach.t//30%2*2,75-5,122+ach.y,0,1,0,0,2,2)
-			print("achievement unlocked!",82,122+ach.y,1,false,1,true)
-			print("achievement unlocked!",82,121+ach.y,7,false,1,true)
-			print("150G - Come back to the start",82,129+ach.y,1,false,1,true)
-			print("150G - Come back to the start",82,128+ach.y,6,false,1,true)
+			for i=0,1 do  --shadows for the text
+				print("achievement unlocked!",82,122+ach.y-i,i*6+1,false,1,true)
+				print("150G - Come back to the start",82,129+ach.y-i,i*5+1,false,1,true)
+			end
 		end
 	 --portal gun
 		pcall(portal_gun)
@@ -5913,11 +5912,13 @@ function TIC()
 		local text="Level "..save.lvl
 		local text_size=print(text,240,0)
 		if stt<60 then
-			print(text:sub(1,stt//4),120-text_size/2,130,1)
-			print(text:sub(1,stt//4),120-text_size/2,129,7)
+			for i=0,1 do
+				print(text:sub(1,stt//4),120-text_size/2,130-i,i*6+1)
+			end
 		elseif stt<120 then
-			print(text:sub(1,(59-stt)//4),120-text_size/2,130,1)
-			print(text:sub(1,(59-stt)//4),120-text_size/2,129,7)
+			for i=0,1 do
+				print(text:sub(1,(59-stt)//4),120-text_size/2,130-i,i*6+1)
+			end
 		end
 	 --
 		if l_t2.draw then
@@ -5925,8 +5926,9 @@ function TIC()
 			local text_size=print(text,240,0,1,false,1,true)
 			if not l_t2.pause then l_t2.t=l_t2.t+0.25 if keyp(26,20,1) then l_t2.t=l_t2.t+0.5 end if (l_t2.t%1==0 or l_t2.t%1~=0 and keyp(26,20,2)) and l_t2.t//1<#text then sfx_(19)end end
 			rect(120-text_size/2-1,113,text_size+2,8,2)
-			print(text:sub(1,F(l_t2.t)),120-text_size/2,115,1,false,1,true)
-			print(text:sub(1,F(l_t2.t)),120-text_size/2,114,7,false,1,true)
+			for i=0,1 do
+				print(text:sub(1,F(l_t2.t)),120-text_size/2,115-i,i*6+1,false,1,true)
+			end
 			if l_t2.t>#text+10 then
 				l_t2.t=0
 				l_t2.i=l_t2.i+1
@@ -5978,8 +5980,9 @@ function TIC()
 			for i=1,#debug_text[plr.dt] do
 				local text_size=print(debug_text[plr.dt][i], 240,0)
 				rect(0,7*(i-1),text_size+2,8,2)
-				print(debug_text[plr.dt][i], 1, 2+7*(i-1), 1)
-				print(debug_text[plr.dt][i], 1, 1+7*(i-1), 7)
+				for j=0,1 do
+					print(debug_text[plr.dt][i], 1, 7*(i-1)+j+1, j*6+1)
+				end
 			end
 		end
 			if plr.godmode then print("Godmode" ,1,130,7) else print("HP: "..max(plr.hp ,0),1,130,7) end
