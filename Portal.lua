@@ -5355,7 +5355,7 @@ function TIC()
 		cls(1)
 		--
 		if sts.t==1 then
-			print("Enter the current time.",51,3,7)
+			--print(,51,3,7)
 			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],80,50,6,true,2)
 			if sts.i<2 then
 			line(79+sts.i*12,61,91+sts.i*12,61,7)
@@ -5402,12 +5402,10 @@ function TIC()
 
 		------------
 		if sts.t==2 then
-			print("Is this the exact time?",51,3,7)
 			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
 		end
 
 		if sts.t==3 then
-			print("How accurate is this time?",51,3,7)
 			print(sts.time[1]..sts.time[2]..":"..sts.time[3]..sts.time[4],98,65,6,true,1)
 			print("not accurate",12,76,7)
 			print("accurate",160,76,7)
@@ -5416,15 +5414,9 @@ function TIC()
 			print(text,120-text_size//2,76,7)
 		end
 
-		if sts.t==4 then print("Pull the slider until the given number becomes prime",29,3,7,false,1,true) end
-		if sts.t==5 then print("Pull the slider until the number becomes more than 50",29,3,7,false,1,true) end
-		if sts.t==6 then print("How many numbers from 0 to 100 have 3 divisors exist?",29,3,7,false,1,true) end
-		if sts.t==7 then print("Pull the slider until the number becomes completely by chance",11,3,7,false,1,true) end
-		if sts.t==8 then print("Do you know the authors of this game?",19,3,7,false,1,false) end
-		if sts.t==9 then print("Do the authors of this game know you?",19,3,7,false,1,false) end
 		if sts.t==11 then
 			if sts.q==1 then
-				print([[Have you just answered "yes" to the last empty question?]],19,3,7,false,1,true)
+				print([[]],19,3,7,false,1,true)
 			else
 				print([[Have you just answered "no" to the last empty question?]],19,3,7,false,1,true)
 			end
@@ -5436,23 +5428,17 @@ function TIC()
 				print([[Why did you answer "no"]] .."\n\n "..[[to the last question?]],55,3,7,false,1,false)
 			end
 		end
-		if sts.t==13 then print("Do you consider yourself happy?",30,3,7,false,1,false) end
-		if sts.t==14 then print("Have you ever thought that you have mental disorders?",20,3,7,false,1,true) end
-		if sts.t==15 then print("Do you think you have a lot of friends?",10,3,7,false,1,false) end
-		if sts.t==16 then print("How many friends do you have?",35,3,7,false,1,false) end
-		if sts.t==17 then print("Do you really like this game?",35,3,7,false,1,false) end
-		if sts.t==18 then print("Have you answered the truth?",35,3,7,false,1,false) end
-		if sts.t==19 then print("Do you want to start the game?",35,3,7,false,1,false) end
-		if sts.t==20 then print("Do you like this survey?",40,3,7,false,1,false) end
-		if sts.t==21 then print("Are you positive to the chairs?",35,3,7,false,1,false) end
-		if sts.t==22 then print("Is there a Chinese layout on your keyboard?",1,3,7,false,1,false) end
-		if sts.t==23 then print("Why?",107,3,7,false,1,false) end
-		if sts.t==24 then print("_",107,3,7,false,1,false) end
-		if sts.t==27 then print("Have you ever found HanamileH\n\n   rather cute and pretty?",42,3,7,false,1,false) end
-		if sts.t==28 then print(" Have you ever had dreams with\n\nthe participation of HanamileH?",36,3,7,false,1,false) end
-		if sts.t==29 then print("Would you like to ever meet HanamileH live?",6,3,7,false,1,false) end
-		if sts.t==30 then print("Why are you still answering this survey?",10,3,7,false,1,false) end
-		if sts.t==31 then print("Do you want me to help you?",44,3,7,false,1,false) end
+		local texts={{"Enter the current time."},{"Is this the exact time?"},{"How accurate is this time?"},{"Pull the slider until the given number becomes prime",1},{"Pull the slider until the number becomes more than 50",1},
+		{"How many numbers from 0 to 100 have 3 divisors exist?",1},{"Pull the slider until the number becomes completely by chance",1},{"Do you know the authors of this game?"},
+		{"Do the authors of this game know you?"},{""},{[[]]Have you just answered]] "yes" [[to the last empty question?]]},{""},
+		{"Do you consider yourself happy?"},{"Have you ever thought that you have mental disorders?",1},{"Do you think you have a lot of friends?"},
+		{"How many friends do you have?"},{"Do you really like this game?"},{"Have you answered the truth?"},{"Do you want to start the game?"},
+		{"Do you like this survey?"},{"Are you positive to the chairs?"},{"Is there a Chinese layout on your keyboard?"},{"Why?"},{"_"},
+		{"Have you ever found HanamileH\n\n   rather cute and pretty?"},{"Have you ever had dreams with\n\nthe participation of HanamileH?"},{"Would you like to ever meet HanamileH live?"},
+		{"Why are you still answering this survey?"},{"Do you want me to help you?"},{"Press any button to start the game"}}
+
+		local tYesNo={"yes","no"}
+
 		--[[We're no strangers to love
 			⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 			⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⠞⣋⠉⣿⣯⣿⢿⣖⠦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -5476,7 +5462,6 @@ function TIC()
 			⢀⣿⣿⣿⣿⣿⣿⣿⣿⡟⠁⠀⠀⣇⣤⣾⣿⣿⣗⠒⠒⠲⣶⠦⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇
 		]]--You know the rules and so do I
 		if sts.t==32 then
-			print("Press any button to start the game",22,3,7,false,1,false)
 
 			clip(1,10,238,125)
 			for x=0,240,23 do for y=0,135,13 do
@@ -5500,6 +5485,13 @@ function TIC()
 			print("Press the buttons \"no\" : "..sts.n.." times",31,44,7)
 			print("Are you satisfied with your results?",20,97,7)
 		end
+
+  trace(sts.t)
+		local thick=false
+		if texts[sts.t][2]~=nil then
+		 thick=true
+		end
+		print(texts[sts.t][1],20,3,7,false,1,thick)
 
 		if sts.t==35 then state="main|settings" music(2) end
 	end
@@ -5796,10 +5788,10 @@ function TIC()
 			circ(75 ,127+ach.y,7,2)
 			circ(185,127+ach.y,7,2)
 			spr(380+ach.t//30%2*2,75-5,122+ach.y,0,1,0,0,2,2)
-			print("achievement unlocked!",82,122+ach.y,1,false,1,true)
-			print("achievement unlocked!",82,121+ach.y,7,false,1,true)
-			print("150G - Come back to the start",82,129+ach.y,1,false,1,true)
-			print("150G - Come back to the start",82,128+ach.y,6,false,1,true)
+			for i=0,1 do  --shadows for the text
+				print("achievement unlocked!",82,122+ach.y-i,i*6+1,false,1,true)
+			 print("150G - Come back to the start",82,129+ach.y-i,i*5+1,false,1,true)
+			end
 		end
 	 --portal gun
 		pcall(portal_gun)
