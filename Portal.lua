@@ -5979,7 +5979,7 @@ function TIC()
 				local text_size=print(debug_text[plr.debug_text][i], 240,0)
 				rect(0,7*(i-1),text_size+2,8,2)
 				for j=0,1 do
-					print(debug_text[plr.debug_text][i], 1, 7*(i-1)+j+1, j*6+1)
+					print(debug_text[plr.debug_text][i], 1, 7*(i-1)+ 2 - j, j*6+1)
 				end
 			end
 		end
