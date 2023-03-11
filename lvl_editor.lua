@@ -1652,30 +1652,26 @@ function unitic.update()
 		} end
 	--objects (1)--
 	local i2=0
-	for i=1,#draw.objects.c  do
-		i2=i2+1 unitic.obj[i2]=draw.objects.c [i]
-		if draw.objects.c[i].inp then
-			i2=i2+1 unitic.obj[i2]={
-				type = draw.objects.c[i].type,
-				draw = draw.objects.c[i].draw,
-				model= draw.objects.c[i].model,
+	
+	local highlighting = nil
+	local obj_index = {
+		"c",
+		"cd",
+		"b",
+		"fb",
+		"t",
+		"d",
+		"lb",
+		"l",
+	}
 
-				x = draw.objects.c[i].x1,
-				y = draw.objects.c[i].y1,
-				z = draw.objects.c[i].z1,
-			
-			}
+	for ind = 1,#obj_index do
+		for i = 1,#draw.objects[obj_index[ind]] do
+			i2 = i2 + 1
+			if menu.open and menu.type==2 and menu.o.tab == ind and menu.o.sel[menu.o.tab]==i then highlighting = i2 end
+			unitic.obj[i2]=draw.objects[obj_index[ind]][i]
 		end
 	end
-
-
-	for i=1,#draw.objects.cd do i2=i2+1 unitic.obj[i2]=draw.objects.cd[i] end
-	for i=1,#draw.objects.lb do i2=i2+1 unitic.obj[i2]=draw.objects.lb[i] end
-	for i=1,#draw.objects.l  do i2=i2+1 unitic.obj[i2]=draw.objects.l [i] end
-	for i=1,#draw.objects.b  do i2=i2+1 unitic.obj[i2]=draw.objects.b[i]  end
-	for i=1,#draw.objects.t  do i2=i2+1 unitic.obj[i2]=draw.objects.t[i]  end
-	for i=1,#draw.objects.fb do i2=i2+1 unitic.obj[i2]=draw.objects.fb[i] end
-	for i=1,#draw.objects.d  do i2=i2+1 unitic.obj[i2]=draw.objects.d[i]  end
 	--objects (2)--
 	local i2=#unitic.poly.f
 
@@ -1690,7 +1686,17 @@ function unitic.update()
 			end
 			for ind2=1,#unitic.obj[ind1].model.f do
 				i2=i2+1
-				unitic.poly.f[i2]={unitic.obj[ind1].model.f[ind2][1]+vt, unitic.obj[ind1].model.f[ind2][2]+vt, unitic.obj[ind1].model.f[ind2][3]+vt, f=unitic.obj[ind1].model.f[ind2].f,uv={x={unitic.obj[ind1].model.f[ind2].uv[1][1],unitic.obj[ind1].model.f[ind2].uv[2][1],unitic.obj[ind1].model.f[ind2].uv[3][1]},y={unitic.obj[ind1].model.f[ind2].uv[1][2],unitic.obj[ind1].model.f[ind2].uv[2][2],unitic.obj[ind1].model.f[ind2].uv[3][2]}}}
+				unitic.poly.f[i2]={
+					unitic.obj[ind1].model.f[ind2][1]+vt,
+					unitic.obj[ind1].model.f[ind2][2]+vt,
+					unitic.obj[ind1].model.f[ind2][3]+vt,
+					f=unitic.obj[ind1].model.f[ind2].f,
+					uv={
+						x={unitic.obj[ind1].model.f[ind2].uv[1][1],unitic.obj[ind1].model.f[ind2].uv[2][1],unitic.obj[ind1].model.f[ind2].uv[3][1]},
+						y={unitic.obj[ind1].model.f[ind2].uv[1][2],unitic.obj[ind1].model.f[ind2].uv[2][2],unitic.obj[ind1].model.f[ind2].uv[3][2]}
+					},
+					hl = (highlighting == ind1)
+				}
 			end
 		end
 	end
@@ -1817,14 +1823,24 @@ function unitic.draw()
 						end
 					end
 			end
-			if poly.w[6] == menu.w.m_sel then
-				line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],13)
-				line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],13)
-				line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],13)
-			elseif poly.w[6] == menu.w.sel then
-				line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],7)
-				line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],7)
-				line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],7)
+			if menu.open then
+				if menu.type==1 and poly.w then
+					if poly.w[6] == menu.w.m_sel then
+						line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],13)
+						line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],13)
+						line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],13)
+					elseif poly.w[6] == menu.w.sel then
+						line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],7)
+						line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],7)
+						line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],7)
+					end
+				elseif menu.type==2 then
+					if poly.hl then
+						line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],12)
+						line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],12)
+						line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],12)
+					end
+				end
 			end
 		end
 	end
@@ -1838,7 +1854,9 @@ function unitic.draw()
 				local color1= color % 4
 				local color2= color //4
 				local size = 1/unitic.p[i][6]*2.4*unitic.fov
-				size = 1
+
+				if color == 0 then size = 1 end
+
 				local z0 = unitic.p[i][3]
 
 				ttri(
@@ -2348,6 +2366,8 @@ function upd_walls()
 end
 
 function addobj(x, y, z, type,t1) --objects
+	local bytes = 0 --converting a object to bytes
+
 	if type==1 or type==2 then --cubes
 		draw.objects.c[#draw.objects.c+1]=
 		{type=type, --type
@@ -2356,22 +2376,7 @@ function addobj(x, y, z, type,t1) --objects
 		vx=0, vy=0, vz=0, --velocity
 		draw=true, --whether to display the model
 		disp=t1, -- cube dispenser ID
-		model={v={},f={}}}
-		for i=1,#model[type].v do
-			draw.objects.c[#draw.objects.c].model.v[i]={model[type].v[i][1],model[type].v[i][2],model[type].v[i][3]}
-		end
-		for i=1,#model[type].f do
-			draw.objects.c[#draw.objects.c].model.f[i]={
-				model[type].f[i][1],
-				model[type].f[i][2],
-				model[type].f[i][3],
-				uv={
-					{model[type].f[i].uv[1][1],model[type].f[i].uv[1][2]},
-					{model[type].f[i].uv[2][1],model[type].f[i].uv[2][2]},
-					{model[type].f[i].uv[3][1],model[type].f[i].uv[3][2]},-1
-				},
-				f=model[type].f[i].f}
-		end
+		model=model[type]}
 	elseif type==3 then --cube dispenser
 		draw.objects.cd[#draw.objects.cd+1]=
 		{type=type,
@@ -2429,6 +2434,15 @@ function addobj(x, y, z, type,t1) --objects
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
 
+function upd_objs()
+	draw.objects = {c={},cd={},lb={},b={},t={},fb={},l={},d={}}
+
+	for i=1,#objects do
+		for i2=1,#objects[i] do
+			bytes = addobj(objects[i][i2][1],objects[i][i2][2],objects[i][i2][3],objects[i][i2][4])
+		end
+	end
+end
 
 function update_world()
 	draw.world.f={}
@@ -2752,6 +2766,7 @@ local function clip_val(val, min_v,max_v)
 	if val>max_v then return max_v end
 	return val
 end
+
 menu = {
 	open = true,
 	type = 1,
@@ -2763,20 +2778,44 @@ menu = {
 	o={ --object editor
 		tab = 1,
 		sel = {}, --unique for each tab
+		sl = {id=0, val=0, val_2=0 , t=0, n= false}, --slider
+		magnet = false
 	}
 }
 
-local object_names = {
-	"cube",
-	"cube dispenser",
-	"button",
-	"floor button",
-	"turret",
-	"display",
-	"light bridge gerenator"
+local objects_data = {
+	names={
+		"cube",
+		"cube dispenser",
+		"button",
+		"floor button",
+		"turret",
+		"display",
+		"light bridge gerenator",
+		"lift"
+	},
+	types={
+		{1,2},
+		{3},
+		{8,9,10,11},
+		{16},
+		{12,13,14,15},
+		{21,22,23,24},
+		nil, --special cases
+		nil
+	},
+	m_step={ -- magnet step multiplier (the minimum lenght of 1 step)
+		{24,24 ,24},
+		{24,32 ,24},
+		{24,128,24},
+		{48,128,48},
+		{48,128,48},
+		{96,128,96},
+		{96,128,96}
+	}
 }
 
-for i = 1,#object_names do menu.o.sel[i] = 0 objects[i]={} end
+for i = 1,#objects_data.names do menu.o.sel[i] = 0 objects[i]={} end
 
 state="map_bank_check"
 
@@ -2911,7 +2950,7 @@ function TIC()
 
 		if cl2 then f_m = true
 		elseif nclp2 then f_m = false end
-		if not menu.w.sl.n then
+		if not menu.w.sl.n and not menu.o.sl.n then
 			if f_m then
 				poke(0x7FC3F,1,1)
 			else
@@ -3011,7 +3050,7 @@ function TIC()
 			xyz_pointer(x_p.x, x_p.y, (x_p.type-1)%2 + 1)
 		end
 
-		if (button(x_p.x,x_p.y,30,30) or x_p.drag) and not f_m then
+		if (button(x_p.x,x_p.y,30,30) or x_p.drag) and not f_m and not menu.w.sl.n and not menu.o.sl.n then
 			ins = false
 			if x_p.drag then
 				rectb(x_p.x,x_p.y,30,30,13)
@@ -3057,8 +3096,8 @@ function TIC()
 
 
 				if menu.w.sel~=0 then
-					if btnp(0,30,2) or btnp(2,30,2) then menu.w.sel = max(1, menu.w.sel-1) end
-					if btnp(1,30,2) or btnp(3,30,2) then menu.w.sel = min(#walls, menu.w.sel+1) end
+					if btnp(1,30,2) or btnp(2,30,2) then menu.w.sel = max(1, menu.w.sel-1) end
+					if btnp(0,30,2) or btnp(3,30,2) then menu.w.sel = min(#walls, menu.w.sel+1) end
 
 					local wall = walls[menu.w.sel]
 					print("X:",164,19,11)
@@ -3186,36 +3225,125 @@ function TIC()
 			-- objects menu --
 			if menu.type==2 then
 				local tab = menu.o.tab
-				rect(162,7,78,68,0)
+				local objs = objects[tab]
+				rect(162,7,78,75,0)
 				if f_m then vbank(0) end
 
 				if button(162,7,78,68,false) then ins = false end
 				
-				rectb(153+menu.o.tab*11,7,9,9,14)
+				rectb(155+menu.o.tab*9,7,9,9,14)
 
-				for i=1,#object_names do
-					spr(402+i,154+i*11,8,15)
-					if button(152+i*11,7,11,9) then
-						rectb(153+i*11,7,9,9,7)
-						top_text = "["..i.."] "..object_names[i].."s tab"
+				for i=1,#objects_data.names do
+					spr(402+i,156+i*9,8,15)
+					if button(155+i*9,7,9,9) then
+						rectb(155+i*9,7,9,9,7)
+						top_text = "["..i.."] "..objects_data.names[i].."s tab"
 						if clp1 then menu.o.tab = i end
 					end
 
 					if keyp(27+i) then menu.o.tab = i end
 				end
 
-				if keyp(24) then menu.o.sel[tab]=R(0,99) end
+				if menu.o.tab <7 then
+					print("Objects: "..menu.o.sel[tab].."/"..#objects[tab],164,18,7,false,1,true)
 
-				print("Objects: "..menu.o.sel[tab].."/"..#objects[tab],164,18,7,false,1,true)
+					print("Add",220,18,4)
+					if button(218,17,21,7) then
+						print("Add",220,18,7)
+						top_text = "Add a new "..objects_data.names[tab]
+						if clp1 then
+							objs[#objs+1] = {48,64,48,objects_data.types[tab][1]} --X Y Z type t1
+							menu.o.sel[tab] = #objs
+							upd_objs()
+						end
+					end
 
-				print("Add",220,18,4)
-				if button(218,17,21,7) then
-					print("Add",220,18,7)
-					top_text = "Add a new "..object_names[tab]
-					if clp1 then
+					if #objs~=0 then
+						if btnp(1,30,2) or btnp(2,30,2) then menu.o.sel[tab] = max(1, menu.o.sel[tab]-1) end
+						if btnp(0,30,2) or btnp(3,30,2) then menu.o.sel[tab] = min(#objs, menu.o.sel[tab]+1) end
+						local obj = objs[menu.o.sel[tab]] --current object
+						local sl = menu.o.sl --slider
+						--type
+						print("type: "..obj[4],176,25,7,false,1,true)
+						if f_m then
+							if menu.o.magnet then --magnet button
+								spr(451,164,25,15)
+							else
+								spr(435,164,25,15)
+							end
+							if tab==1 then spr(418+obj[4],226,25,15) end --change skin button
+						else
+							
+							for vb = 0,1 do
+								vbank(vb)
+								if menu.o.magnet then --magnet button
+									spr(451,164,25,15)
+								else
+									spr(435,164,25,15)
+								end
+								if tab==1 then spr(418+obj[4],226,25,15) end --change skin button
+							end
+						end
+						--magnet button
+						if button(164,25,6,7) then
+							top_text = "Alignment of coordinates on the grid"
+							if clp1 then menu.o.magnet = not menu.o.magnet end
+						end
+						--change skin button
+						if tab==1 and button(226,25,7,7) then
+							top_text = "Change the object's skin"
+							if clp1 then
+								obj[4] = obj[4] % 2 + 1
+								upd_objs()
+							end
+						end
+						--rotate buttons
+
+						--X Y Z
+						print("X:",164,39,11)
+						print("Y:",164,47,14)
+						print("Z:",164,55,9 )
+						for i = 1,3 do
+							rectb(198,29+i*8,27,9,15)
+							print_mid(obj[i],212,31+i*8,7)
+							if button(199,30+i*8,25,7) then
+								if clp1 then
+									sl.n = true
+									sl.id = i
+									sl.val = obj[i]
+									sl.val_2 = 0
+									sl.t = 0
+									mx = 0
+									poke(0x7FC3F,1,1)
+								end
+							end
+						end
+						--slider
+						if sl.n then
+							if cl1 then
+								sl.t = sl.t + 1
+								if sl.t>2 then
+									sl.val_2 = sl.val_2 + mx
+									if mx ~=0 then
+										upd_objs()
+									end
+									obj[sl.id] = sl.val + sl.val_2
+									if menu.o.magnet then
+										local step = objects_data.m_step[tab][sl.id]
+										obj[sl.id] = obj[sl.id] // step * step
+									end
+								end
+							elseif not cl1 then
+								sl.t = 0
+								poke(0x7FC3F,0,1)
+								sl.n = false
+							end
+						end
+					else
+						print([[Click "Add" to]],165,29+7,4)
+						print([[add a object]],167,36+7,4)
 					end
 				end
-
 			end
 
 		end
@@ -3760,12 +3888,12 @@ end
 -- 146:00000fff08880fff00080fff00800fff08000fff08880fff00000fffffffffff
 -- 147:6646466f6444446f44bbb44f64b4b46f44bbb44f6444446f6646466fffffffff
 -- 148:2222222f2333332f2333332f2222222f7fffffcf7fffffcf22bbb22fffffffff
--- 149:ffffffffff9fffffff79ffffff77ffffff77ffffff77fffff1111fffffffffff
+-- 149:ffffffffff9fffffff79ffffff77ffffff77ffffff77fffff2222fffffffffff
 -- 150:9999999f9889889f9899989f9998999f9899989f9889889f9999999fffffffff
--- 151:fff7ffffff777fffff787fffff777fffff777ffff1f7f1fff1fff1ffffffffff
+-- 151:fff7ffffff777fffff787fffff777fffff777ffff2f7f2fff2fff2ffffffffff
 -- 152:3333333f3aaaaa3f3a0a0a3f3aa0aa3f3a0a0a3f3aaaaa3f3333333fffffffff
 -- 153:aaaaaaaffbfbfbffbfbfbfbffbfbfbffbfbfbfbffbfbfbffaaaaaaafffffffff
--- 154:0000000010101010000000001010101000000000101010100000000010101010
+-- 154:2222222ff1b1b1fff1b1b1fff1b1b1fff1b1b1fff1b1b1ff2222222fffffffff
 -- 155:0000000010101010000000001010101000000000101010100000000010101010
 -- 156:0000000010101010000000001010101000000000101010100000000010101010
 -- 157:0000000010101010000000001010101000000000101010100000000010101010
@@ -3774,8 +3902,8 @@ end
 -- 160:a0a00000a0a000000a000000a0a00000a0a00000000000000000000000000000
 -- 161:d0d00000d0d00000ddd0000000d00000ddd00000000000000000000000000000
 -- 162:8880000000800000080000008000000088800000000000000000000000000000
--- 163:0000000010101010000000001010101000000000101010100000000010101010
--- 164:0000000010101010000000001010101000000000101010100000000010101010
+-- 163:77f7f77f7fffff7fffbbbfff7fbfbf7fffbbbfff7fffff7f77f7f77fffffffff
+-- 164:77f7f77f7fffff7fff9f9fff7f999f7ffff9ffff7fffff7f77f7f77fffffffff
 -- 165:0000000010101010000000001010101000000000101010100000000010101010
 -- 166:0000000010101010000000001010101000000000101010100000000010101010
 -- 167:0000000010101010000000001010101000000000101010100000000010101010
@@ -3790,8 +3918,8 @@ end
 -- 176:78888fffd0008fffdfff8fffdfff8fffdddd7fff00000fffffffffffffffffff
 -- 177:7aaaafff8000afff8fffafff8fffafff88887fff00000fffffffffffffffffff
 -- 178:7ddddfffa000dfffafffdfffafffdfffaaaa7fff00000fffffffffffffffffff
--- 179:0000000010101010000000001010101000000000101010100000000010101010
--- 180:0000000010101010000000001010101000000000101010100000000010101010
+-- 179:22ff22ff00ff00ff22ff22ff22ff22ff222222ff022220fff0000fffffffffff
+-- 180:ff777ffff7fff7ff7ffff7ff7fff777f7ffff7fff7ffffffff777fffffffffff
 -- 181:0000000010101010000000001010101000000000101010100000000010101010
 -- 182:0000000010101010000000001010101000000000101010100000000010101010
 -- 183:0000000010101010000000001010101000000000101010100000000010101010
@@ -3806,8 +3934,8 @@ end
 -- 192:f1111fff70111fff77011fff77701fff77770fff0000ffffffffffffffffffff
 -- 193:f7777fff10777fff11077fff11107fff11110fff0000ffffffffffffffffffff
 -- 194:f7777fff70777fff77077fff77707fff77770fff0000ffffffffffffffffffff
--- 195:0000000010101010000000001010101000000000101010100000000010101010
--- 196:0000000010101010000000001010101000000000101010100000000010101010
+-- 195:77ff77ff00ff00ff77ff77ff77ff77ff777777ff077770fff0000fffffffffff
+-- 196:ff777ffff7fff7fff7ffff7f777fff7ff7ffff7ffffff7ffff777fffffffffff
 -- 197:0000000010101010000000001010101000000000101010100000000010101010
 -- 198:0000000010101010000000001010101000000000101010100000000010101010
 -- 199:0000000010101010000000001010101000000000101010100000000010101010
