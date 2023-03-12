@@ -2856,7 +2856,7 @@ function TIC()
 	local nclp2 = not clp2 and tm2~=0
 	ins = true --is the cursor in the scene
 
-	sc1 = tm1 < 10 and tm1>0 and not cl1 --short click
+	sc1 = tm1 <= 15 and tm1>0 and not cl1 --short click
 
 	if cl1 then tm1 = tm1 + 1 else tm1 = 0 end
 	if cl2 then tm2 = tm2 + 1 else tm2 = 0 end
