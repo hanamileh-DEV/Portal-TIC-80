@@ -1539,15 +1539,40 @@ local function ray_object(x, y, z, rx, ry, rz, obj)
 	end
 end
 
+-- Check if a ray hits a box
+local function ray_aabb(x, y, z, rx, ry, rz, cx1, cy1, cz1, cx2, cy2, cz2)
+	cx1, cy1, cz1 = (cx1 - x) / rx, (cy1 - y) / ry, (cz1 - z) / rz
+	cx2, cy2, cz2 = (cx2 - x) / rx, (cy2 - y) / ry, (cz2 - z) / rz
+	if cx1 > cx2 then cx1, cx2 = cx2, cx1 end
+	if cy1 > cy2 then cy1, cy2 = cy2, cy1 end
+	if cz1 > cz2 then cz1, cz2 = cz2, cz1 end
+	local near, far = max(cx1, cy1, cz1), min(cx2, cy2, cz2)
+	if near > 0 and near <= far then
+		return near
+	end
+end
+
 local function raycast(x, y, z, rx, ry, rz, len, params)
 	-- normalised ray vector
 	local dist = math.sqrt(rx^2 + ry^2 + rz^2)
 	local nx, ny, nz = rx / dist, ry / dist, rz / dist
 	local tilehit
-	local newx, newy, newz, newrx, newrz
 
 	-- allow passing an end point instead
 	len = len or dist
+
+	-- if we are starting out of bounds, adjust start
+	if x < 0 or x > world_size[1] * 96 or y < 0 or y > world_size[2] * 128 or z < 0 or z > world_size[3] * 96 then
+		local hit_len = ray_aabb(
+			x, y, z, rx, ry, rz,
+			-1, -1, -1,
+			world_size[1] * 96 - 95, world_size[2] * 128 - 95, world_size[3] * 96 - 95
+		)
+		if hit_len and hit_len * dist < len then
+			len = len - hit_len * dist
+			x, y, z = x + rx * hit_len, y + ry * hit_len, z + rz * hit_len
+		end
+	end
 
 	-- current scan coordinates and remaining length
 	local cx, cy, cz = x, y, z
