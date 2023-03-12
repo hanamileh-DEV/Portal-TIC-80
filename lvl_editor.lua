@@ -2302,11 +2302,26 @@ function unitic.render() --------
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 	unitic.update_pr()
 	unitic.update()
+	unitic.draw_grid()
 	unitic.draw()
 	--cross
 	pix(120,68,7)
 end
 
+function unitic.draw_grid()
+	for x = 0, world_size[1]-1 do
+		for z = 0, world_size[3]-2 do
+			local p1=unitic.poly.v[x + z*world_size[4]+1]
+			local p2=unitic.poly.v[x + (z+1)*world_size[4]+1]
+
+			line(p1[1],p1[2], p2[1],p2[2],0)
+
+			local p3=unitic.poly.v[z + x*world_size[4]+1]
+			local p4=unitic.poly.v[z + x*world_size[4]+2]
+			line(p3[1],p3[2], p4[1],p4[2],0)
+		end
+	end
+end
 --map
 local walls = {}
 local objects = {}
@@ -2581,7 +2596,7 @@ local function load_world() --Loads the world from the map RAM
 
 	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
 		table.insert(draw.world.v,{x*96,y*128,z*96,false}) --this boolean is resposible for whether the point needs to be updated or not
-		addp(x*96,y*128,z*96,0,0,0, math.huge,0)
+		--addp(x*96,y*128,z*96,0,0,0, math.huge,0)
 	end end end
 
 	import()
