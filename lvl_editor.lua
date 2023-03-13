@@ -2684,6 +2684,14 @@ local function xyz_pointer(p_x,p_y, type)
 	end
 end
 
+local fix_mouse = false
+local function show_cursor()
+	if peek(0x7FC3F, 1) == 0 then return end
+
+	poke(0x7FC3F, 0, 1)
+	fix_mouse = true
+end
+
 local avf={} --average frame
 local fr={0,0,0} --framerate
 
@@ -2994,7 +3002,7 @@ function TIC()
 			if f_m then
 				poke(0x7FC3F,1,1)
 			else
-				poke(0x7FC3F,0,1)
+				show_cursor()
 			end
 		end
 
@@ -3022,7 +3030,7 @@ function TIC()
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) and s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end
 	 --pause
-		if keyp(44) and p.t==0 then vbank(0) memcpy(0x8000,0x0000,240*136/2) state="pause" ms.b = menu_options.p for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
+		if keyp(44) and p.t==0 then vbank(0) memcpy(0x8000,0x0000,240*136/2) state="pause" ms.b = menu_options.p for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) show_cursor() end
 		p.t=0
 	 --debug
 	 	local debug_text={
@@ -3191,7 +3199,7 @@ function TIC()
 							end
 						elseif not cl1 then
 							sl.t = 0
-							poke(0x7FC3F,0,1)
+							show_cursor()
 							sl.n = false
 						end
 					end
@@ -3379,7 +3387,7 @@ function TIC()
 								end
 							elseif not cl1 then
 								sl.t = 0
-								poke(0x7FC3F,0,1)
+								show_cursor()
 								sl.n = false
 							end
 						end
@@ -3446,7 +3454,12 @@ function TIC()
 	------------------
 	--cursor id
 	vbank(0)
-	poke4(0x07FF6,cid)
+	if fix_mouse then
+		poke(0x3FFB, 0)
+		fix_mouse = false
+	else
+		poke(0x3FFB, 128 + cid)
+	end
 	--fps (2)
 	do
 		avf[t%60]=t2
