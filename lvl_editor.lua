@@ -3363,11 +3363,15 @@ function TIC()
 							if cl1 then
 								sl.t = sl.t + 1
 								if sl.t>2 then
-									sl.val_2 = sl.val_2 + mx
+									if key(64) then
+										sl.val_2 = sl.val_2 + mx / 30
+									else
+										sl.val_2 = sl.val_2 + mx
+									end
 									if mx ~=0 then
 										upd_objs()
 									end
-									obj[sl.id] = sl.val + sl.val_2
+									obj[sl.id] = sl.val + F(sl.val_2)
 									if menu.o.magnet then
 										local step = objects_data.m_step[tab][sl.id]
 										obj[sl.id] = obj[sl.id] // step * step
