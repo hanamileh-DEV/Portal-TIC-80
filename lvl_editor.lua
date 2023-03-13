@@ -3240,8 +3240,8 @@ function TIC()
 						print("Delete",203,67,7)
 						top_text = "Delete the current wall"
 						if clp1 then
+							table.remove(walls, menu.w.sel)
 							menu.w.sel = menu.w.sel - 1
-							table.remove(walls)
 							upd_walls()
 						end
 					end
