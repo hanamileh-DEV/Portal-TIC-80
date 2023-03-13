@@ -2949,9 +2949,9 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 			lookup, axis = params.walls, 3
 		end
 		-- stop if we've travelled far enough
-		if len < 0 then break end
+		if remaining_len < 0 then break end
 		-- fetch and check the current tile
-		local tx, ty, tz = cx//96, cy//128, cz//96
+		local tx, ty, tz = (cx+0.01)//96, (cy+0.01)//128, (cz+0.01)//96
 		tile = get_tile(axis, tx, ty, tz)
 		if not tile then break end
 		-- Check for, and prepare to pass through portals (if enabled)

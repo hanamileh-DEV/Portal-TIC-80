@@ -1599,9 +1599,9 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 			lookup, axis = params.walls, 3
 		end
 		-- stop if we've travelled far enough
-		if len < 0 then break end
+		if remaining_len < 0 then break end
 		-- fetch and check the current tile
-		local tx, ty, tz = cx//96, cy//128, cz//96
+		local tx, ty, tz = (cx+0.01)//96, (cy+0.01)//128, (cz+0.01)//96
 		tile = get_tile(axis, tx, ty, tz)
 		if not tile then break end
 		if lookup[tile[2]] then
@@ -3431,7 +3431,7 @@ function TIC()
 				floors = {true,true,true,true,true,true,true,true,true,true},
 				objs = {}
 			  }
-			  local hit = raycast(x1,y1,z1,x2,y2,z2,9999,ray_params)
+			  local hit = raycast(x1,y1,z1,x2,y2,z2,1/0,ray_params)
 			  if hit then
 				  menu.w.m_sel = hit.tile[3]
 				  cid = 1
