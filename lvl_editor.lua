@@ -1553,6 +1553,11 @@ local function ray_aabb(x, y, z, rx, ry, rz, cx1, cy1, cz1, cx2, cy2, cz2)
 end
 
 local function raycast(x, y, z, rx, ry, rz, len, params)
+	-- allow passing an end point instead
+	if not len then
+		rx, ry, rz = rx - x, ry - y, rz - z
+	end
+
 	-- normalised ray vector
 	local dist = math.sqrt(rx^2 + ry^2 + rz^2)
 	local nx, ny, nz = rx / dist, ry / dist, rz / dist

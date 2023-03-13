@@ -2915,6 +2915,11 @@ local function ray_object(x, y, z, rx, ry, rz, obj)
 end
 
 local function raycast(x, y, z, rx, ry, rz, len, params)
+	-- allow passing an end point instead
+	if not len then
+		rx, ry, rz = rx - x, ry - y, rz - z
+	end
+
 	-- normalised ray vector
 	local dist = math.sqrt(rx^2 + ry^2 + rz^2)
 	local nx, ny, nz = rx / dist, ry / dist, rz / dist
@@ -4264,7 +4269,7 @@ function unitic.turret_update()
 			local ang = math.atan(x0-v[i2][1], z0-v[i2][3])-t_ang
 
 			if abs(ang)<pi2*0.7 or abs(ang-(math.pi*2))<pi2*0.7 then
-				local hit = raycast(x0,y0+35,z0, v[i2][1]-x0,v[i2][2]-(y0+35),v[i2][3]-z0, nil, turrets_params)
+				local hit = raycast(x0,y0+35,z0, v[i2][1],v[i2][2],v[i2][3], nil, turrets_params)
 				if hit and hit.player then hits = true end
 			end
 		end
