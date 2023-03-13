@@ -3398,11 +3398,11 @@ function TIC()
 			  local y1 = plr.y
 			  local z1 = plr.z
 			  
-			  local x2 = -(mx - 120) * 100000 / unitic.fov
-			  local y2 = -(my - 68 ) * 100000 / unitic.fov
+			  local x2 = -(mx - 120) / unitic.fov
+			  local y2 = -(my - 68 ) / unitic.fov
 
 			  if cl2 then x2,y2 = 0,0 end
-			  local z2 = - 100000
+			  local z2 = -1
 
 			  local a1=x2
 			  local b1=y2
@@ -3416,9 +3416,9 @@ function TIC()
 			  local a3=c2*math.sin(cam.ty)+a2*math.cos(cam.ty)
 			  local b3=b2
 
-				x2 = a3 + plr.x
-				y2 = b3 + plr.y
-				z2 = c3 + plr.z
+				x2 = a3
+				y2 = b3
+				z2 = c3
 			  
 				--debug
 
