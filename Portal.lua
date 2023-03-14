@@ -2544,7 +2544,7 @@ maps[0][2]={ --main gameroom
 maps[0][1]={ --world from the main menu
 w={
 	{2,0,2,1,3,4},
-	{4,0,2,1,1,5},
+	{4,0,2,1,1,2},
 	{2,0,3,1,3,4},
 	{4,0,3,1,1,2},
 	{2,0,2,3,3,4},
@@ -2552,7 +2552,7 @@ w={
 	{2,0,4,3,3,4},
 	{3,0,4,3,3,4},
 	{4,0,1,1,1,2},
-	{4,0,0,1,1,6},
+	{4,0,0,1,1,2},
 	{5,0,5,1,1,13},
 	{5,0,4,1,1,14},
 	{4,0,4,3,1,2},
@@ -2579,12 +2579,12 @@ w={
 
 },
 o={},
-p={},
+p={{4,0,2,1,1,0},{4,0,0,1,1,0}},
 lg={},
 lift={nil,nil},
-pg_lvl=0, --portal gun lvl
+pg_lvl=2, --portal gun lvl
 init=function()end,
-scripts=function()end
+scripts=function() lvl_text_2={draw=false,pause=false,id=1,i=1,t=0}end
 }
 do
 	for x=0,10 do
@@ -4396,16 +4396,14 @@ local function portal_gun()
 		if clp1 and plr.pg_lvl>0 and not (draw.p[2] and draw.p[2][1]==x and draw.p[2][2]==y and draw.p[2][3]==z and draw.p[2][4]==f) then
 			p_g.cd1=10
 			portal_check(1)
-
-			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) end
 			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1],0}
+			trace(x.." "..y.." "..z.." "..f.." "..draw.map[f][x][y][z][1].." 0",15)
 			update_world()
 		elseif clp2 and plr.pg_lvl>1 and not (draw.p[1] and draw.p[1][1]==x and draw.p[1][2]==y and draw.p[1][3]==z and draw.p[1][4]==f) then
 			p_g.cd2=10
 			portal_check(2)
-
-			if draw.p[2] then addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2) end
 			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1],0}
+			trace(x.." "..y.." "..z.." "..f.." "..draw.map[f][x][y][z][1].." 0",15)
 			update_world()
 		end
 
@@ -4436,14 +4434,12 @@ local function portal_gun()
 	if debug and (keyp(6) or (plr.bf_t>1 and save.lvl~=3 and save.lvl2~=1)) then
 		if draw.p[1] then
 			portal_check(1)
-			addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2)
 			draw.p[1]=nil
 			update_world()
 		end
 		-----------------
 		if draw.p[2] then
 			portal_check(2)
-			addwall(draw.p[2][1],draw.p[2][2],draw.p[2][3],draw.p[2][4],draw.p[2][5],2)
 			draw.p[2]=nil
 			update_world()
 		end
@@ -4838,11 +4834,11 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 		addobj(maps[set_id][world_id].o[i][1],maps[set_id][world_id].o[i][2],maps[set_id][world_id].o[i][3],maps[set_id][world_id].o[i][4],maps[set_id][world_id].o[i][5])
 	end
 	for i=1,#maps[set_id][world_id].lg do
-		draw.lg[i]=maps[set_id][world_id].lg[i]
+		draw.lg[i] = maps[set_id][world_id].lg[i]
 	end
 
-	if maps[set_id][world_id].p then
-		draw.p=maps[set_id][world_id].p
+	for i=1,#maps[set_id][world_id].p do
+		draw.p[i] = maps[set_id][world_id].p[i]
 	end
 	--lift
 	for i=1,2 do
@@ -5235,7 +5231,55 @@ function TIC()
 		cam.ty=math.sin(main_screen.t/100)*0.1-math.pi/4
 		unitic.update()
 		unitic.draw()
+		--portal drawing
+		do
+			local v_id={{},{}}
+			local p2d={{},{}}
+			local tri_face={}
 
+			for i = 1,2 do
+				if draw.p[i] then
+					v_id[i][1] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + 1
+					v_id[i][2] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[3]+1
+
+					if draw.p[i][4]==1 then
+						v_id[i][3] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[4]+1
+						v_id[i][4] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[4]+world_size[3]+1
+					else
+						v_id[i][3] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + 2
+						v_id[i][4] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[3]+2
+					end
+
+					p2d[i] = {x={},y={},z={},z2={}}
+
+					for i2 = 1,4 do
+						p2d[i].x [i2]=unitic.poly.v[v_id[i][i2]][1]
+						p2d[i].y [i2]=unitic.poly.v[v_id[i][i2]][2]
+						p2d[i].z [i2]=unitic.poly.v[v_id[i][i2]][3]
+						p2d[i].z2[i2]=unitic.poly.v[v_id[i][i2]][4]
+					end
+					
+					tri_face[i] = (p2d[i].x[2] - p2d[i].x[1]) * (p2d[i].y[3] - p2d[i].y[1]) - (p2d[i].x[3] - p2d[i].x[1]) * (p2d[i].y[2] - p2d[i].y[1]) < 0
+				end
+			end
+			for i=1,2 do
+				if draw.p[i] and (tri_face[i] == (draw.p[i][5]==1)) and not (p2d[i].z2[1] and p2d[i].z2[2] and p2d[i].z2[3] and p2d[i].z2[4]) then
+					--portal border
+					if i==1 then
+						ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],120,32,120,0,96,32,0,15,p2d[i].z[1]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+						ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],96 ,0 ,120,0,96,32,0,15,p2d[i].z[4]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+						ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,232,24,200,0,232,0,15,p2d[i].z[1]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98) --blue
+						ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],0 ,200,24,200,0,232,0,15,p2d[i].z[4]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98)
+					else
+						ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,64,24,32,0,64,0,15,p2d[i].z[1]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+						ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],0 ,32,24,32,0,64,0,15,p2d[i].z[4]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+						ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],48,232,48,200,24,232,0,15,p2d[i].z[1]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98) --orange
+						ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,200,48,200,24,232,0,15,p2d[i].z[4]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98)
+					end
+				end
+			end
+
+		end
 		--GUI
 		vbank(1) cls(0)
 		if state~="main|settings" then spr(256,min(-104+main_screen.t*6,8),4,0,1,0,0,13,3) upd_buttons() end
@@ -5393,7 +5437,7 @@ function TIC()
 		snake={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.cur_t=save.cur_t+(tstamp()-st_t) end
 		save.lvl2=0
-		save.lvl =2
+		save.lvl =1
 		pmem(4,save.cur_t)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
