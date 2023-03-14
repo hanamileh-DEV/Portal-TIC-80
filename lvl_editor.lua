@@ -1301,8 +1301,6 @@ local s = { --sounds
 	n={0,0,0} --The exact position of the current track
 }
 
---enigma configuration: [5,8,7][2,19,6][7,24,9][3} [AO][QP][MN][EZ][XU]
-
 local world_size={12,4,12}
 world_size[4]=world_size[2]*world_size[3]
 world_size[5]=world_size[1]*world_size[2]*world_size[3]
@@ -3489,8 +3487,6 @@ function BDR(scn_y) scn_y=scn_y-4
 	if state=="edit" then
 	end
 end
-
---config: [5,7,1][1,5,1][4,24,1][1} []
 
 -- <TILES>
 -- 000:4444444443333333434333334333333343333433433333334343334343333333
