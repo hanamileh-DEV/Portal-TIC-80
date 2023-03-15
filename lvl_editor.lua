@@ -1510,11 +1510,15 @@ end
 
 -- Calculate the difference between a value and the next step in a direction
 local function to_next(val, interval, dir)
+	-- Round to remove fp error
+	local nval = F(val + 0.5)
+	local next_pos
 	if dir > 0 then
-		return interval - val % interval
+		next_pos = F(nval / interval) * interval + interval
 	else
-		return (interval - val) % interval - interval
+		next_pos = math.ceil(nval / interval) * interval - interval
 	end
+	return next_pos - val
 end
 
 -- Check if a ray hits an object's colliders
