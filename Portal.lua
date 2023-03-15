@@ -3956,6 +3956,63 @@ function unitic.render() --------
 	local tysin = math.sin(-plr.ty)
 	local tycos = math.cos(-plr.ty)
 	
+	-- calculation of the position of the portal points
+	local p3d={} -- 3d coordinates
+	local p2d={} -- 2d cooridnates
+	local tri_face={nil,nil}
+
+	for i=1,2 do
+		if draw.p[i] then
+			p3d[i] = {}
+			p2d[i] = {}
+
+			-- X Y Z
+			if draw.p[i][4]==1 then
+				p3d[i] = {
+					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96},
+					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96},
+					
+					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96 + 96},
+					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96 + 96},
+				}
+			elseif draw.p[i][4]==3 then
+				p3d[i] = {
+					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96},
+					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96},
+					
+					{draw.p[i][1]*96 + 96, draw.p[i][2] * 128      , draw.p[i][3]*96},
+					{draw.p[i][1]*96 + 96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96},
+				}
+			end
+
+			for i2 = 1, #p3d[i] do
+				-- rotating
+				local a1 = p3d[i][i2][1] - plr.x
+				local b1 = p3d[i][i2][2] - plr.y
+				local c1 = p3d[i][i2][3] - plr.z
+		
+				local c2 = c1 * tycos - a1 * tysin
+		
+				local a3 = c1 * tysin + a1 * tycos
+				local b3 = b1 * txcos - c2 * txsin
+				local c3 = b1 * txsin + c2 * txcos
+				
+				p3d[i][i2] = {a3, b3, c3}
+
+				local c4 = c3
+				-- 3d into 2d
+				if c4>-0.001 then c4=-0.001 end
+				local z0 = unitic.fov / c4
+
+				local x0 = a3 * z0 + 120
+				local y0 = b3 * z0 + 68
+
+				p2d[i][i2] = {x0, y0, -c4, c3>0}
+			end
+
+			tri_face[i] = (p2d[i][2][1] - p2d[i][1][1]) * (p2d[i][3][2] - p2d[i][1][2]) - (p2d[i][3][1] - p2d[i][1][1]) * (p2d[i][2][2] - p2d[i][1][2]) < 0
+		end
+	end
 	--distance calculating
 	if draw.p[1] then
 		local x1, y1, z1 = portalcenter(1)
@@ -4046,7 +4103,9 @@ function unitic.render() --------
 		elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
 		elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
 		end
+
 		fps_.t4=time()
+
 		if st.h_q_p or min(dist13d,dist23d)<96 or t%2==0 then
 				if (dist2d and not st.r_both) or (dist3d and st.r_both) then
 					cam.x = 96*x2 + relx1
@@ -4168,57 +4227,27 @@ function unitic.render() --------
 	unitic.draw(true)
 	fps_.t8=time()
 
-	local v_id={{},{}}
-	local p2d={{},{}}
-	local tri_face={}
-
-	for i = 1,2 do
-		if draw.p[i] then
-			v_id[i][1] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + 1
-			v_id[i][2] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[3]+1
-
-			if draw.p[i][4]==1 then
-				v_id[i][3] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[4]+1
-				v_id[i][4] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[4]+world_size[3]+1
-			else
-				v_id[i][3] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + 2
-				v_id[i][4] = draw.p[i][1] + draw.p[i][2]*world_size[3] + draw.p[i][3]*world_size[4] + world_size[3]+2
-			end
-
-			p2d[i] = {x={},y={},z={},z2={}}
-
-			for i2 = 1,4 do
-				p2d[i].x [i2]=unitic.poly.v[v_id[i][i2]][1]
-				p2d[i].y [i2]=unitic.poly.v[v_id[i][i2]][2]
-				p2d[i].z [i2]=unitic.poly.v[v_id[i][i2]][3]
-				p2d[i].z2[i2]=unitic.poly.v[v_id[i][i2]][4]
-			end
-			
-			tri_face[i] = (p2d[i].x[2] - p2d[i].x[1]) * (p2d[i].y[3] - p2d[i].y[1]) - (p2d[i].x[3] - p2d[i].x[1]) * (p2d[i].y[2] - p2d[i].y[1]) < 0
-		end
-	end
-
 	--portal overlays
-	if (draw.p[1] or draw.p[2]) then
+	if draw.p[1] or draw.p[2] then
 		for i=1,2 do
-			if draw.p[i] and (tri_face[i] == (draw.p[i][5]==1)) and not (p2d[i].z2[1] and p2d[i].z2[2] and p2d[i].z2[3] and p2d[i].z2[4]) then
+			if draw.p[i] and (tri_face[i] == (draw.p[i][5]==1)) and not (p2d[i][1][4] and p2d[i][2][4] and p2d[i][3][4] and p2d[i][4][4]) then
 				--portal border
 				if i==1 then
-					ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],120,32,120,0,96,32,0,15,p2d[i].z[1]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
-					ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],96 ,0 ,120,0,96,32,0,15,p2d[i].z[4]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+					ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],120,32,120,0,96,32,0,15,p2d[i][1][3]*0.99,p2d[i][2][3]*0.99,p2d[i][3][3]*0.99)
+					ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],96 ,0 ,120,0,96,32,0,15,p2d[i][4][3]*0.99,p2d[i][2][3]*0.99,p2d[i][3][3]*0.99)
 				else
-					ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,64,24,32,0,64,0,15,p2d[i].z[1]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
-					ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],0 ,32,24,32,0,64,0,15,p2d[i].z[4]*0.99,p2d[i].z[2]*0.99,p2d[i].z[3]*0.99)
+					ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,64,24,32,0,64,0,15  ,p2d[i][1][3]*0.99,p2d[i][2][3]*0.99,p2d[i][3][3]*0.99)
+					ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,32,24,32,0,64,0,15  ,p2d[i][4][3]*0.99,p2d[i][2][3]*0.99,p2d[i][3][3]*0.99)
 				end
 
 				--portal center
 				if (not st.r_p or dist2d ~= (i==1)) and not st.r_both then
 					if i==1 then
-						ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,232,24,200,0,232,0,15,p2d[i].z[1]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98) --blue
-						ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],0 ,200,24,200,0,232,0,15,p2d[i].z[4]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98)
+						ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,232,24,200,0,232,0,15,p2d[i][1][3]*0.98,p2d[i][2][3]*0.98,p2d[i][3][3]*0.98) --blue
+						ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,200,24,200,0,232,0,15,p2d[i][4][3]*0.98,p2d[i][2][3]*0.98,p2d[i][3][3]*0.98)
 					else
-						ttri(p2d[i].x[1],p2d[i].y[1],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],48,232,48,200,24,232,0,15,p2d[i].z[1]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98) --orange
-						ttri(p2d[i].x[4],p2d[i].y[4],p2d[i].x[2],p2d[i].y[2],p2d[i].x[3],p2d[i].y[3],24,200,48,200,24,232,0,15,p2d[i].z[4]*0.98,p2d[i].z[2]*0.98,p2d[i].z[3]*0.98)
+						ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],48,232,48,200,24,232,0,15,p2d[i][1][3]*0.98,p2d[i][2][3]*0.98,p2d[i][3][3]*0.98) --orange
+						ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,200,48,200,24,232,0,15,p2d[i][4][3]*0.98,p2d[i][2][3]*0.98,p2d[i][3][3]*0.98)
 					end
 				end
 
@@ -4401,13 +4430,11 @@ local function portal_gun()
 			p_g.cd1=10
 			portal_check(1)
 			draw.p[1]={x,y,z,f,draw.map[f][x][y][z][1],0}
-			trace(x.." "..y.." "..z.." "..f.." "..draw.map[f][x][y][z][1].." 0",15)
 			update_world()
 		elseif clp2 and plr.pg_lvl>1 and not (draw.p[1] and draw.p[1][1]==x and draw.p[1][2]==y and draw.p[1][3]==z and draw.p[1][4]==f) then
 			p_g.cd2=10
 			portal_check(2)
 			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1],0}
-			trace(x.." "..y.." "..z.." "..f.." "..draw.map[f][x][y][z][1].." 0",15)
 			update_world()
 		end
 
@@ -5441,7 +5468,7 @@ function TIC()
 		snake={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.cur_t=save.cur_t+(tstamp()-st_t) end
 		save.lvl2=0
-		save.lvl =1
+		save.lvl =2
 		pmem(4,save.cur_t)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
