@@ -428,7 +428,8 @@ local unitic = {
 	--system tables (dont touch)
 	poly = {},
 	obj  = {}, --objects
-	p    = {} --particles
+	p    = {}, --particles
+	debug_p = {} --debug points
 }
 -- portal radio PCM data
 local radio={
@@ -1546,6 +1547,7 @@ local draw={
 	world_op={f={}}, --the world for the orange portal
 	map={},
 	pr={}, --particles
+	debug_p={}, --debug points
 	pr_g={}, --particle generator (for a light bridge)
 	p={nil,nil}, --portals
 	p_verts={}, --portal vertices
@@ -2529,6 +2531,10 @@ maps[0][2]={ --main gameroom
 	pg_lvl=2, --portal gun lvl
 	init=function()end,
 	scripts=function()
+		debug_addp(64, math.sin(time()/1000)*64+128, 64, {"lorem ipsum","dolor sit","amet"}, 1)
+
+		debug_addp(512,60,512,"hi",2)
+
 		lvl_text_2={draw=false,pause=false,id=1,i=1,t=0}
 		if draw.objects.fb[1].tick then
 			if draw.objects.fb[1].s then
@@ -2668,6 +2674,13 @@ function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 	draw.pr[#draw.pr+1]={x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,lt=lifetime,t=0,c=color}
 end
 
+
+function debug_addp(x, y, z, text, i)
+	-- 'text' is a string or a table with strings, that will be displayed near this point
+	-- 'i' is a index of this point (if nil, this point is added, otherwise the existing point is changed)
+	if not i then i = #draw.debug_p + 1 end
+	draw.debug_p[i] = {x=x, y=y, z=z, text=text}
+end
 --Texture cache
 
 local blue_field={} --Texture for the blue field
@@ -3184,6 +3197,33 @@ function unitic.update(draw_portal,p_id)
 
 		unitic.p[ind]={x1, y1, -z0, draw_p, draw.pr[ind].c, dist}
 	end
+	--debug points
+	for ind = 1, #draw.debug_p do
+		local a1 = draw.debug_p[ind].x - cam.x
+		local b1 = draw.debug_p[ind].y - cam.y
+		local c1 = draw.debug_p[ind].z - cam.z
+
+		local c2 = c1 * tycos - a1 * tysin
+
+		local x0 = c1 * tysin + a1 * tycos
+		local y0 = b1 * txcos - c2 * txsin
+		local z0 = b1 * txsin + c2 * txcos
+		
+		local dist=math.sqrt(x0^2+y0^2+z0^2)
+
+		local draw_p=false
+		if z0<0 then draw_p=true end
+
+		if z0>-0.001 then z0=-0.001 end
+
+		local z1 = unitic.fov / z0 --this saves one division (very important optimization)
+
+		local x1 = x0 * z1 + 120
+		local y1 = y0 * z1 + 68
+
+		unitic.debug_p[ind]={x1, y1, draw_p, draw.debug_p[ind].text, dist}
+
+	end
 end
 
 function unitic.update_pr() --update particles
@@ -3272,6 +3312,43 @@ function unitic.draw(particles)
 					25 + color1*2,248 + color2*2,
 					0,-1,z0,z0,z0)
 			end
+		end
+	end
+
+	for i = 1, #unitic.debug_p do
+		if unitic.debug_p[i][3] then
+			local p2d = {x = unitic.debug_p[i][1], y = unitic.debug_p[i][2]}
+			local text = unitic.debug_p[i][4]
+
+			local size = min(max( 1/unitic.debug_p[i][5]*40*unitic.fov, 5), 20)
+
+			if not text or type(text)~="table" then
+				circ (p2d.x, p2d.y,2,7)
+				circb(p2d.x, p2d.y,2,1)
+				pix  (p2d.x, p2d.y,1)
+				
+				if text then
+					local text_size = print(text,240,0)
+					rect(p2d.x - text_size//2-1, p2d.y + 5, text_size + 1, 8, 2)
+
+					print(text, p2d.x - text_size//2, p2d.y + 7, 0)
+					print(text, p2d.x - text_size//2, p2d.y + 6, 7)
+				end
+			else
+				circb(p2d.x, p2d.y,size,11)
+				circ (p2d.x, p2d.y,3,4)
+				circb(p2d.x, p2d.y,3,2)
+				pix  (p2d.x, p2d.y,14)
+				
+				for i2 = 1,#text do
+					local text_size = print(text[i2],240,0)
+					rect(p2d.x - text_size//2-1, p2d.y - 3 + i2 * 8, text_size + 1, 8, 2)
+
+					print(text[i2], p2d.x - text_size//2, p2d.y - 1 + i2 * 8, 0)
+					print(text[i2], p2d.x - text_size//2, p2d.y - 2 + i2 * 8, 7)
+				end
+			end
+
 		end
 	end
 end
@@ -3985,7 +4062,9 @@ function unitic.render() --------
 				}
 			end
 
+
 			for i2 = 1, #p3d[i] do
+				debug_addp(p3d[i][i2][1],p3d[i][i2][2],p3d[i][i2][3],nil,i2 + 2)
 				-- rotating
 				local a1 = p3d[i][i2][1] - plr.x
 				local b1 = p3d[i][i2][2] - plr.y
