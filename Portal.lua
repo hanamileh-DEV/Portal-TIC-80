@@ -2531,9 +2531,6 @@ maps[0][2]={ --main gameroom
 	pg_lvl=2, --portal gun lvl
 	init=function()end,
 	scripts=function()
-		debug_addp(64, math.sin(time()/1000)*64+128, 64, {"lorem ipsum","dolor sit","amet"}, 1)
-
-		debug_addp(512,60,512,"hi",2)
 
 		lvl_text_2={draw=false,pause=false,id=1,i=1,t=0}
 		if draw.objects.fb[1].tick then
@@ -4052,6 +4049,42 @@ function unitic.render() --------
 					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96 + 96},
 					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96 + 96},
 				}
+			elseif draw.p[i][4]==2 then
+
+				if draw.p[i][6]==1 then
+					p3d[i] = {
+						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
+						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
+						
+						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
+						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
+					}
+				elseif draw.p[i][6]==2 then
+					p3d[i] = {
+						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96},
+						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96},
+						
+						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
+						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
+					}
+				elseif draw.p[i][6]==3 then
+					p3d[i] = {
+						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
+						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
+						
+						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
+						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
+					}
+				else
+					p3d[i] = {
+						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
+						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
+						
+						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96},
+						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96},
+					}
+				end
+
 			elseif draw.p[i][4]==3 then
 				p3d[i] = {
 					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96},
@@ -4064,7 +4097,7 @@ function unitic.render() --------
 
 
 			for i2 = 1, #p3d[i] do
-				debug_addp(p3d[i][i2][1],p3d[i][i2][2],p3d[i][i2][3],nil,i2 + 2)
+			-- 	debug_addp(p3d[i][i2][1],p3d[i][i2][2],p3d[i][i2][3],nil,i2)
 				-- rotating
 				local a1 = p3d[i][i2][1] - plr.x
 				local b1 = p3d[i][i2][2] - plr.y
@@ -4310,23 +4343,29 @@ function unitic.render() --------
 	if draw.p[1] or draw.p[2] then
 		for i=1,2 do
 			if draw.p[i] and (tri_face[i] == (draw.p[i][5]==1)) and not (p2d[i][1][4] and p2d[i][2][4] and p2d[i][3][4] and p2d[i][4][4]) then
+				local z_coef = 0.99
+				if draw.p[i][4]==2 then
+					z_coef = 0.95
+				end
+
+				local z_coef_2 = z_coef - 0.01
 				--portal border
 				if i==1 then
-					ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],120,32,120,0,96,32,0,15,p2d[i][1][3]*0.99,p2d[i][2][3]*0.99,p2d[i][3][3]*0.99)
-					ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],96 ,0 ,120,0,96,32,0,15,p2d[i][4][3]*0.99,p2d[i][2][3]*0.99,p2d[i][3][3]*0.99)
+					ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],120,32,120,0,96,32,0,15,p2d[i][1][3]*z_coef,p2d[i][2][3]*z_coef,p2d[i][3][3]*z_coef)
+					ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],96 ,0 ,120,0,96,32,0,15,p2d[i][4][3]*z_coef,p2d[i][2][3]*z_coef,p2d[i][3][3]*z_coef)
 				else
-					ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,64,24,32,0,64,0,15  ,p2d[i][1][3]*0.99,p2d[i][2][3]*0.99,p2d[i][3][3]*0.99)
-					ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,32,24,32,0,64,0,15  ,p2d[i][4][3]*0.99,p2d[i][2][3]*0.99,p2d[i][3][3]*0.99)
+					ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,64,24,32,0,64,0,15  ,p2d[i][1][3]*z_coef,p2d[i][2][3]*z_coef,p2d[i][3][3]*z_coef)
+					ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,32,24,32,0,64,0,15  ,p2d[i][4][3]*z_coef,p2d[i][2][3]*z_coef,p2d[i][3][3]*z_coef)
 				end
 
 				--portal center
 				if (not st.r_p or dist2d ~= (i==1)) and not st.r_both then
 					if i==1 then
-						ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,232,24,200,0,232,0,15,p2d[i][1][3]*0.98,p2d[i][2][3]*0.98,p2d[i][3][3]*0.98) --blue
-						ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,200,24,200,0,232,0,15,p2d[i][4][3]*0.98,p2d[i][2][3]*0.98,p2d[i][3][3]*0.98)
+						ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,232,24,200,0,232,0,15,p2d[i][1][3]*z_coef_2,p2d[i][2][3]*z_coef_2,p2d[i][3][3]*z_coef_2) --blue
+						ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,200,24,200,0,232,0,15,p2d[i][4][3]*z_coef_2,p2d[i][2][3]*z_coef_2,p2d[i][3][3]*z_coef_2)
 					else
-						ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],48,232,48,200,24,232,0,15,p2d[i][1][3]*0.98,p2d[i][2][3]*0.98,p2d[i][3][3]*0.98) --orange
-						ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,200,48,200,24,232,0,15,p2d[i][4][3]*0.98,p2d[i][2][3]*0.98,p2d[i][3][3]*0.98)
+						ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],48,232,48,200,24,232,0,15,p2d[i][1][3]*z_coef_2,p2d[i][2][3]*z_coef_2,p2d[i][3][3]*z_coef_2) --orange
+						ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,200,48,200,24,232,0,15,p2d[i][4][3]*z_coef_2,p2d[i][2][3]*z_coef_2,p2d[i][3][3]*z_coef_2)
 					end
 				end
 
@@ -4503,6 +4542,7 @@ local function portal_gun()
 	p_g.cd1=max(p_g.cd1-1,0)
 	p_g.cd2=max(p_g.cd2-1,0)
 
+	local draw_particles = x and (clp1 or clp2)
 	--portal gun (portals)
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 and plr.pg_lvl>0 and not (draw.p[2] and draw.p[2][1]==x and draw.p[2][2]==y and draw.p[2][3]==z and draw.p[2][4]==f) then
@@ -4516,11 +4556,44 @@ local function portal_gun()
 			draw.p[2]={x,y,z,f,draw.map[f][x][y][z][1],0}
 			update_world()
 		end
+		draw_particles = false
+	elseif x and f==2 then
+		if clp1 or clp2 then
+			local plr_rotate = (plr.ty + pi2/2) % (math.pi*2)
+			local face = 1
+			local portal_id = 1
+			if plr.tx>0 then face = 2 end
+			if clp2 then portal_id = 2 end
+
+			if     plr_rotate < pi2     then portal_rotate = 1 if z3 % 96 < 48 then z = z -1 end
+			elseif plr_rotate < math.pi then portal_rotate = 2 if x3 % 96 < 48 then x = x -1 end
+			elseif plr_rotate < pi2 * 3 then portal_rotate = 3 if z3 % 96 < 48 then z = z -1 end
+			else                             portal_rotate = 4 if x3 % 96 < 48 then x = x -1 end end
+
+			if portal_rotate==2 or portal_rotate==4 then
+				x = min(max(0,x),9)
+				if draw.map[f][x][y][z][2]==2 and draw.map[f][x+1][y][z][2]==2 and draw.map[1][x+1][y][z][2]==0 then
+					draw.p[portal_id]={x, y, z, 2, face ,portal_rotate}
+					p_g.cd2=10
+					update_world()
+					draw_particles = false
+				end
+			else
+				z = min(max(0,z),9)
+				if draw.map[f][x][y][z][2]==2 and draw.map[f][x][y][z+1][2]==2 and draw.map[3][x][y][z+1][2]==0 then
+					draw.p[portal_id]={x, y, z, 2, face ,portal_rotate}
+					p_g.cd2=10
+					update_world()
+					draw_particles = false
+				end
+			end
+		end
+	end
 
 	--particles
-	elseif x and (clp1 or clp2) then
+	if draw_particles then
 		if clp1 and plr.pg_lvl>0 then
-			for i=0,99 do
+			for i=0,50 do
 				addp(x3,y3,z3,
 				(R()-0.5)*5,
 				(R()-0.5)*5,
@@ -4529,7 +4602,7 @@ local function portal_gun()
 				R(10,11))
 			end
 		elseif clp2 and plr.pg_lvl>1 then
-			for i=0,99 do
+			for i=0,50 do
 				addp(x3,y3,z3,
 				(R()-0.5)*5,
 				(R()-0.5)*5,
@@ -4566,42 +4639,6 @@ local function portal_gun()
 	end
 
 	if p_g.t1>0 then p_g.x=p_g.x+5 p_g.y=p_g.y+5 end
-
-	if draw.p[1] then draw.p[1][6] = draw.p[1][6] + 1 end
-	if draw.p[2] then draw.p[2][6] = draw.p[2][6] + 1 end
-
-	--updating textures
-	--[[
-	for i = 1,2 do
-		local px,py ,sc --set color
-		--Blue(95; 0) Orange(0; 32)
-		if i==1 then px,py = 96,0 sc=10 else px,py = 0,32 sc=13 end
-		--
-		if draw.p[i] and draw.p[i][6]<5 then
-			for x2=0,23 do for y2=0,31 do
-				dx,dy = px+x2, py+y2
-
-				local uv_x=(x2 - 11.5) / 12
-				local uv_y=(y2 - 15.5) / 16
-
-				if draw.p[i][6]==1 then
-					setpix(dx,dy, getpix(24+x2,y2))
-				elseif draw.p[i][6]~=4 then
-					local pt=draw.p[i][6]/4
-					local dist=math.sqrt(uv_x*uv_x + uv_y*uv_y)
-					if dist*1.2<pt then
-						setpix(dx,dy,0)
-					elseif dist<pt then
-						setpix(dx,dy,sc)
-					end
-					
-				else
-					setpix(dx,dy, p_t[i][y2][x2])
-				end
-			end end
-		end
-	end]]
-
 end
 
 --map
@@ -5838,7 +5875,7 @@ function TIC()
 			end
 		end
 	 --portal gun
-		pcall(portal_gun)
+		portal_gun()
 	 --sounds
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1*dt  if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
