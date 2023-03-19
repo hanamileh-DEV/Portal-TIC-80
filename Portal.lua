@@ -5087,7 +5087,7 @@ menu_options = {
 		{draw = true, y =105, t=1, text = "Cancel", func = function() sfx_(17) state="main" main_screen.b = menu_options.ms end},
 	},
 	ma = { --main|authors
-		{draw = true, y=115, t=1, text = "Back", func = function() sfx_(17) state="main" main_screen.b = menu_options.ms end}
+		{draw = true, y=125, t=1, text = "Back", func = function() sfx_(17) state="main" main_screen.b = menu_options.ms end}
 	},
 	s = { --settings
 		{draw = true, y = 25 , t=1, text="", func = function() sfx_(18) if state=="main|settings" then music(2)else music(3,7,0)end st.music=not st.music end},
@@ -5186,6 +5186,29 @@ for i in ipairs(surv_t) do
 	--to get the text lenght we can't just use string.len, we need it in pixels and output of print() function will help us
 	len_t[i]=print(surv_t[i][1],0,-100,0,false,size,small)
 end
+
+local authors_text = {
+	"3D engine: Unitic v 1.3 (MIT license)",
+	"",
+	"Coders:",
+	"HanamileH, soxfox42",
+	"",
+	"Level designers:",
+	"HamamileH, BuoYancy_dabl",
+	"",
+	"Beta testers:",
+	"BuoYancy_dabl, tan4iq",
+	"",
+	"Music composers:",
+	"HanamileH",
+	"",
+	"Lorem ipsum",
+	"Dolor sit amet"
+}
+local at = { --authors text data
+	scroll=30,
+	vy    =40, --Y velocity
+}
 
 state="logo"
 sync(25 ,1,false)
@@ -5429,7 +5452,7 @@ function TIC()
 		end
 		--GUI
 		vbank(1) cls(0)
-		if state~="main|settings" then spr(256,min(-104+main_screen.t*6,8),4,0,1,0,0,13,3) upd_buttons() end
+		if state~="main|settings" and state~="main|authors" then spr(256,min(-104+main_screen.t*6,8),4,0,1,0,0,13,3) upd_buttons() end
 
 		if state=="main" then
 			menu_options.ms[1].draw = not save.i
@@ -5440,11 +5463,31 @@ function TIC()
 			print("will be removed.",4,55,7)
 			print("Continue?",4,65,7)
 		elseif state=="main|authors" then
-			print("3D engine: UniTIC v 1.3 (MIT license)"   ,1,45,7)
-			print("Author of the engine: HanamileH"         ,1,55,7)
-			print("Coders:             HanamileH & soxfox42",1,75,7)
-			print("Level designers: HanamileH"              ,1,85,7)
-			print("Testers:            BuoYancy_dabl"       ,1,95,7)
+			upd_buttons()
+			
+			--scrolling
+			if btn(0) or key(54) or key(58) or key(23) then whl = 1 end
+			if btn(1) or key(55) or key(59) or key(19) then whl =-1 end
+			
+			if whl~=0 then at.vy = whl * 3 else at.vy = at.vy * 0.85 end
+			
+			at.scroll = at.scroll - min(max(at.vy, -3),3)
+
+			local max_y = #authors_text * 10 - 117
+
+			if at.scroll<0     then at.scroll = max(min(at.scroll+1.1 ,0),-10) end
+			if at.scroll>max_y then at.scroll = min(max(at.scroll-1.1 ,max_y),max_y+10) end
+			--text
+			clip(0,4,240,116)
+			for i = 1, #authors_text do
+				print(authors_text[i],4, -5 + i * 10 - F(at.scroll),7)
+			end
+			clip()
+			--slider
+			rect(239, 5, 1, 114, 1)
+			clip(239, 5, 1, 114)
+			rect(239, 5 + max(at.scroll/max_y*94, -15) , 1, 20, 7)
+			clip()
 		end
 	end
 	--------------------------
@@ -6383,7 +6426,16 @@ function BDR(scn_y) scn_y=scn_y-4
 		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2) end)
 	end
 	if state=="main|authors" then
-		upd_buttons_bdr(scn_y, function()respal()darkpal(0.2) end)
+		local function reset_pal()
+			respal()darkpal(0.2)
+		end
+		upd_buttons_bdr(scn_y, reset_pal)
+
+		if scn_y == 3 then darkpal(0.7) end
+		if scn_y == 4 then reset_pal()  end
+		
+		if scn_y == 120 then darkpal(0.7) end
+		if scn_y == 121 then reset_pal()  end
 	end
 
 	if state=="main|settings" or state=="pause|settings" then
