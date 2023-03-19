@@ -4180,7 +4180,7 @@ function unitic.render() --------
 	end
 
 	vbank(0)
-	cls()
+	cls(1)
 	fps_.t4=time()
 	fps_.t5=fps_.t4
 	fps_.t6=fps_.t4
