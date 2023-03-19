@@ -3711,7 +3711,7 @@ function unitic.cube_update() --all physics related to cubes
 			end
 
 			-- walls (2) --
-			if draw.map[3][x0][y0][z0][2]==2 or draw.p[1] and draw.p[2] and -- portals
+			if draw.map[3][x0][y0][z0][2]==2 and draw.p[1] and draw.p[2] and -- portals
 				((draw.p[1][1] == x0 and draw.p[1][2] == y0 and draw.p[1][3] == z0 and draw.p[1][4]==3) or
 				 (draw.p[2][1] == x0 and draw.p[2][2] == y0 and draw.p[2][3] == z0 and draw.p[2][4]==3))
 			then
