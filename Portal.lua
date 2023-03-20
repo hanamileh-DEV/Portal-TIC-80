@@ -1550,7 +1550,6 @@ local draw={
 	debug_p={}, --debug points
 	pr_g={}, --particle generator (for a light bridge)
 	p={nil,nil}, --portals
-	p_verts={}, --portal vertices
 	lg={}--light bridge generators
 }
 
@@ -4138,7 +4137,6 @@ function unitic.render() --------
 
 
 			for i2 = 1, #p3d[i] do
-			-- 	debug_addp(p3d[i][i2][1],p3d[i][i2][2],p3d[i][i2][3],nil,i2)
 				-- rotating
 				local a1 = p3d[i][i2][1] - plr.x
 				local b1 = p3d[i][i2][2] - plr.y
@@ -4280,32 +4278,8 @@ function unitic.render() --------
 				if st.r_both and draw.p[1] and draw.p[2] then
 				vbank(1) do
 					cls(0)
-					local p_verts = dist3d and draw.p_verts[1] or draw.p_verts[2]
-					local portal = {draw.world.v[p_verts[1][1]], draw.world.v[p_verts[1][2]], draw.world.v[p_verts[1][3]], draw.world.v[p_verts[2][2]]}
+					local portal = dist3d and p2d[1] or p2d[2]
 
-					local txsin = math.sin(plr.tx)
-					local txcos = math.cos(plr.tx)
-					local tysin = math.sin(-plr.ty)
-					local tycos = math.cos(-plr.ty)
-					for ind = 1, 4 do
-						local a1 = portal[ind][1] - plr.x
-						local b1 = portal[ind][2] - plr.y
-						local c1 = portal[ind][3] - plr.z
-
-						local c2 = c1 * tycos - a1 * tysin
-
-						local a3 = c1 * tysin + a1 * tycos
-						local b3 = b1 * txcos - c2 * txsin
-						local c3 = b1 * txsin + c2 * txcos
-						local c4 = c3
-						if c4>-0.001 then c4=-0.001 end
-						local z0 = unitic.fov / c4
-
-						local x0 = a3 * z0 + 120
-						local y0 = b3 * z0 + 68
-
-						portal[ind] = {x0, y0, -c4, c3 > 0}
-					end
 					local mz1, mz2, mz3, mz4 = portal[1][3], portal[2][3], portal[3][3], portal[4][3]
 					local minz = min(mz1, mz2, mz3, mz4)
 					if minz > 1e-10 then
@@ -4809,13 +4783,6 @@ function update_world()
 					draw.world.f[idx].uv.x[i] = (2 * type1 + 1) * 24 - draw.world.f[idx].uv.x[i]
 				end
 			end
-		end
-
-		local last = #draw.world.f
-		if type == 4 and angle ~= 2 then
-			draw.p_verts[1] = {draw.world.f[last - 1], draw.world.f[last]}
-		elseif type == 5 and angle ~= 2 then
-			draw.p_verts[2] = {draw.world.f[last - 1], draw.world.f[last]}
 		end
 		------
 	end end end end
