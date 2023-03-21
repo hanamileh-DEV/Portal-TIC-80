@@ -5859,45 +5859,47 @@ function TIC()
 		plr.bf_t=max(plr.bf_t-1,0)
 		plr.hp_t_2=max(plr.hp_t_2-1,0)
 	 --palette
-		local r = 1
-		local g = 1
-		local b = 1
+		do
+			local r = 1
+			local g = 1
+			local b = 1
 
-		if lvl_t<50 and save.lvl == 1 and save.lvl2 ==1 then
-			local val = lvl_t/50
-			r = r * val
-			g = g * val
-			b = b * val
-		end
+			if lvl_t<50 and save.lvl == 1 and save.lvl2 ==1 then
+				local val = lvl_t/50
+				r = r * val
+				g = g * val
+				b = b * val
+			end
 
-		if plr.hp<40 then
-			local val = max(abs(math.sin(time()/200))*0.7+0.3,plr.hp/50)
-			r = r
-			g = g * val
-			b = b * val
-		end
-		--
-		if plr.bf_t>0 then
-			r = r * (10-plr.bf_t)/10*0.7+0.3
-			g = g
-			b = b
-		end
-		--
-		if plr.hp_t_2>0 and not plr.godmode then
-			local val = 0.2*(3-plr.hp_t_2*0.2)
-			r = r
-			g = g * val
-			b = b * val
-		end
-		
-		r = max(min(r, 1 ), 0)
-		g = max(min(g, 1 ), 0)
-		b = max(min(b, 1 ), 0)
-		
-		for i = 0,1 do
-			vbank(i)
-			respal()
-			updpal(r,g,b)
+			if plr.hp<40 then
+				local val = max(abs(math.sin(time()/200))*0.7+0.3,plr.hp/50)
+				r = r
+				g = g * val
+				b = b * val
+			end
+			--
+			if plr.bf_t>0 then
+				r = r * (10-plr.bf_t)/10*0.7+0.3
+				g = g
+				b = b
+			end
+			--
+			if plr.hp_t_2>0 and not plr.godmode then
+				local val = 0.2*(3-plr.hp_t_2*0.2)
+				r = r
+				g = g * val
+				b = b * val
+			end
+			
+			r = max(min(r, 1 ), 0)
+			g = max(min(g, 1 ), 0)
+			b = max(min(b, 1 ), 0)
+			
+			for i = 0,1 do
+				vbank(i)
+				respal()
+				updpal(r,g,b)
+			end
 		end
 	 --camera rotation
 	 	if pause.t==0 and lvl_t>2 then
@@ -5918,6 +5920,7 @@ function TIC()
 		unitic.cube_update()
 		unitic.button_update()
 		unitic.turret_update()
+		portal_gun()
 		fps_.t3=time()
     --snake
 	 	do
@@ -5997,8 +6000,6 @@ function TIC()
 				print("150G - Come back to the start",82,129+achievement.y-i,i*5+1,false,1,true)
 			end
 		end
-	 --portal gun
-		portal_gun()
 	 --sounds
 		s.t1=max(s.t1-1,0)
 		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1*dt  if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
@@ -6106,72 +6107,88 @@ function TIC()
 			end
 		end
 	 --text
-		local text="Level "..save.lvl
-		local text_size=print(text,240,0)
-		if lvl_t<60 then
-			for i=0,1 do
-				print(text:sub(1,lvl_t//4),120-text_size/2,130-i,i*6+1)
+	 	do
+			local text="Level "..save.lvl
+			local text_size=print(text,240,0)
+			if lvl_t<60 then
+				for i=0,1 do
+					print(text:sub(1,lvl_t//4),120-text_size/2,130-i,i*6+1)
+				end
+			elseif lvl_t<120 then
+				for i=0,1 do
+					print(text:sub(1,(59-lvl_t)//4),120-text_size/2,130-i,i*6+1)
+				end
 			end
-		elseif lvl_t<120 then
-			for i=0,1 do
-				print(text:sub(1,(59-lvl_t)//4),120-text_size/2,130-i,i*6+1)
-			end
-		end
-	 --
-		if lvl_text_2.draw then
-			local text=lvl_text[lvl_text_2.id][lvl_text_2.i]
-			local text_size=print(text,240,0,1,false,1,true)
-			if not lvl_text_2.pause then lvl_text_2.t=lvl_text_2.t+0.25 if keyp(26,20,1) then lvl_text_2.t=lvl_text_2.t+0.5 end if (lvl_text_2.t%1==0 or lvl_text_2.t%1~=0 and keyp(26,20,2)) and lvl_text_2.t//1<#text then sfx_(19)end end
-			rect(120-text_size/2-1,113,text_size+2,8,2)
-			for i=0,1 do
-				print(text:sub(1,F(lvl_text_2.t)),120-text_size/2,115-i,i*6+1,false,1,true)
-			end
-			if lvl_text_2.t>#text+10 then
-				lvl_text_2.t=0
-				lvl_text_2.i=lvl_text_2.i+1
-				if lvl_text_2.i>#lvl_text[lvl_text_2.id] then lvl_text_2.draw=false end
+			--
+			if lvl_text_2.draw then
+				local text=lvl_text[lvl_text_2.id][lvl_text_2.i]
+				local text_size=print(text,240,0,1,false,1,true)
+				if not lvl_text_2.pause then lvl_text_2.t=lvl_text_2.t+0.25 if keyp(26,20,1) then lvl_text_2.t=lvl_text_2.t+0.5 end if (lvl_text_2.t%1==0 or lvl_text_2.t%1~=0 and keyp(26,20,2)) and lvl_text_2.t//1<#text then sfx_(19)end end
+				rect(120-text_size/2-1,113,text_size+2,8,2)
+				for i=0,1 do
+					print(text:sub(1,F(lvl_text_2.t)),120-text_size/2,115-i,i*6+1,false,1,true)
+				end
+				if lvl_text_2.t>#text+10 then
+					lvl_text_2.t=0
+					lvl_text_2.i=lvl_text_2.i+1
+					if lvl_text_2.i>#lvl_text[lvl_text_2.id] then lvl_text_2.draw=false end
+				end
 			end
 		end
 	 --
 		pmem(4,save.cur_t+(tstamp()-st_t))
 	 --pause
-		if keyp(44) and pause.t==0 then vbank(1) memcpy(0x8000,0x0000,240*136/2) vbank(0) state="pause" main_screen.b = menu_options.p for i=1,3 do s.n[i]=peek(0x13FFB+i) end music(3,7,0) poke(0x7FC3F,0,1) end
+		if keyp(44) and pause.t==0 then
+			vbank(1)
+			memcpy(0x8000,0x0000,240*136/2)
+			vbank(0)
+			state="pause"
+			main_screen.b = menu_options.p
+			for i=1,3 do
+				s.n[i]=peek(0x13FFB+i)
+			end
+			music(3,7,0)
+			poke(0x7FC3F,0,1)
+		end
 		pause.t=0
 	 --debug
-	 	local debug_text={
-			{
-				"FPS:  " .. F(1000 / (framerate[3]+framerate[2])*2),
-				"dt:   " .. dt*1000//1/1000
-			},
-			{
-				"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5),
-			},
-			{
-				"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(fr_draw_t).." ms.",
-				"Av: "..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5).." ms. min: "..F(framerate[2]+0.5).." ms. max: "..F(framerate[3]+0.5).." ms.",
-				"Other:"..max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0).." ms. portals:"..F(fps_.t5-fps_.t4).."|"..F(fps_.t6-fps_.t5).." ms.",
-				"Update:"..F(fps_.t7-fps_.t6).." ms. draw:"..F(fps_.t8-fps_.t7).." ms."
-			},
-			{
-				"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
-				"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
+	 	do
+			local debug_text={
+				{
+					"FPS:  " .. F(1000 / (framerate[3]+framerate[2])*2),
+					"dt:   " .. dt*1000//1/1000
+				},
+				{
+					"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5),
+				},
+				{
+					"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(fr_draw_t).." ms.",
+					"Av: "..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5).." ms. min: "..F(framerate[2]+0.5).." ms. max: "..F(framerate[3]+0.5).." ms.",
+					"Other:"..max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0).." ms. portals:"..F(fps_.t5-fps_.t4).."|"..F(fps_.t6-fps_.t5).." ms.",
+					"Update:"..F(fps_.t7-fps_.t6).." ms. draw:"..F(fps_.t8-fps_.t7).." ms."
+				},
+				{
+					"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
+					"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
+				}
 			}
-		}
 
-		if keyp(49) then plr.debug_text=(plr.debug_text+1)%(#debug_text+1) end
-		
-		vbank(1)
-		if plr.debug_text~=0 and debug then
-			for i=1,#debug_text[plr.debug_text] do
-				local text_size=print(debug_text[plr.debug_text][i], 240,0)
-				rect(0,7*(i-1),text_size+2,8,2)
-				for j=0,1 do
-					print(debug_text[plr.debug_text][i], 1, 7*(i-1)+ 2 - j, j*6+1)
+			if keyp(49) then plr.debug_text=(plr.debug_text+1)%(#debug_text+1) end
+			
+			vbank(1)
+			if plr.debug_text~=0 and debug then
+				for i=1,#debug_text[plr.debug_text] do
+					local text_size=print(debug_text[plr.debug_text][i], 240,0)
+					rect(0,7*(i-1),text_size+2,8,2)
+					for j=0,1 do
+						print(debug_text[plr.debug_text][i], 1, 7*(i-1)+ 2 - j, j*6+1)
+					end
 				end
 			end
-		end
+
 			if plr.godmode then print("Godmode" ,1,130,7) else print("HP: "..max(plr.hp ,0),1,130,7) end
 			if plr.noclip then print("Noclip", 104, 85, 7) end
+		end
 		vbank(0)
 	end
 	--------------------------
