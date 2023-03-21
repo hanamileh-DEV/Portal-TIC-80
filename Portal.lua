@@ -2825,12 +2825,26 @@ end
 
 local function portalcenter(i)
 	local x, y, z = table.unpack(draw.p[i])
-	if draw.p[i][4] == 3 then
-		x = x + 0.5
-	else
+	if draw.p[i][4] == 1 then
+		x = x
+		y = y + 0.5
 		z = z + 0.5
+	elseif draw.p[i][4] == 3 then
+		x = x + 0.5
+		y = y + 0.5
+		z = z
+	elseif draw.p[i][4] == 2 then
+		if draw.p[i][6] == 1 or draw.p[i][6] == 3 then
+			x = x + 0.5
+			y = y
+			z = z + 1
+		elseif draw.p[i][6] == 2 or draw.p[i][6] == 4 then
+			x = x + 1
+			y = y
+			z = z + 0.5
+		end
 	end
-	y = y + 0.5
+
 	return x, y, z
 end
 
@@ -4586,7 +4600,7 @@ local function portal_gun()
 				x = min(max(0,x),9)
 				if draw.map[f][x][y][z][2]==2 and draw.map[f][x+1][y][z][2]==2 and draw.map[1][x+1][y][z][2]==0 then
 					draw.p[portal_id]={x, y, z, 2, face ,portal_rotate}
-					p_g.cd2=10
+					p_g.cd1=10
 					update_world()
 					draw_particles = false
 				end
