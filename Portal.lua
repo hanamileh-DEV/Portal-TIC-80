@@ -10,7 +10,7 @@ local lag_mode = false
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
 --automatically loads the selected level (leave nil to load the default levels)
--- local load_lvl = {0, 2}
+local load_lvl = {0, 2}
 
 --[[
 license:
@@ -2848,7 +2848,9 @@ local function portalcenter(i)
 	return x, y, z
 end
 
-local function teleport(pid --[[portal id]],x,y,z,tx,ty)
+local function teleport(pid --[[portal id]],x,y,z,tx,ty, vx, vy, vz)
+	if not vx then vx,vy,vz = 0,0,0 end
+
 	local x1, y1, z1 = portalcenter(1)
 	local x2, y2, z2 = portalcenter(2)
 
@@ -2867,28 +2869,28 @@ local function teleport(pid --[[portal id]],x,y,z,tx,ty)
 	local rotd2 = (2 + rot1 - rot2) % 4
 
 	if     rotd1 == 0 then
-	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
-	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
-	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
+	elseif rotd1 == 1 then relx1,relz1=relz1,-relx1  if pid==1 then vx,vz =  vz,-vx end
+	elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1 if pid==1 then vx,vz = -vx,-vz end
+	elseif rotd1 == 3 then relx1,relz1=-relz1,relx1  if pid==1 then vx,vz = -vz, vx end
   	end
 
 	if     rotd2 == 0 then
-	elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
-	elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
-	elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
+	elseif rotd2 == 1 then relx2,relz2=relz2,-relx2  if pid==2 then vx,vz =  vz,-vx end
+	elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2 if pid==2 then vx,vz = -vx,-vz end
+	elseif rotd2 == 3 then relx2,relz2=-relz2,relx2  if pid==2 then vx,vz = -vz, vx end
   	end
 
 	if tx then
 		if pid==1 then
-			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1,tx,ty + math.pi * rotd1 / 2
+			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1,tx,ty + math.pi * rotd1 / 2, vx, vy, vz
 		elseif pid==2 then
-			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2,tx,ty + math.pi * rotd2 / 2
+			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2,tx,ty + math.pi * rotd2 / 2, vx, vy, vz
 		end
 	else
 		if pid==1 then
-			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1
+			return 96*x2 + relx1, 128*y2 + rely1, 96*z2 + relz1, vx, vy, vz
 		elseif pid==2 then
-			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2
+			return 96*x1 + relx2,128*y1 + rely2,96*z1 + relz2, vx, vy, vz
 		end
 	end
 end
@@ -4040,10 +4042,22 @@ function unitic.portal_collision()
 	--teleporting
 	if bp and op==false then
 		--p_g.cd1=15
-		plr.x,plr.y,plr.z,plr.tx,plr.ty=teleport(1,plr.x,plr.y,plr.z,plr.tx,plr.ty)
+		plr.x,plr.y,plr.z,
+		plr.tx,plr.ty,
+		plr.vx, plr.vy, plr.vz=
+		teleport(1,
+		plr.x,plr.y,plr.z,
+		plr.tx,plr.ty,
+		plr.vx,plr.vy,plr.vz)
 	elseif op and bp==false then
 		--p_g.cd2=15
-		plr.x,plr.y,plr.z,plr.tx,plr.ty=teleport(2,plr.x,plr.y,plr.z,plr.tx,plr.ty)
+		plr.x,plr.y,plr.z,
+		plr.tx,plr.ty,
+		plr.vx, plr.vy, plr.vz=
+		teleport(2,
+		plr.x,plr.y,plr.z,
+		plr.tx,plr.ty,
+		plr.vx,plr.vy,plr.vz)
 	end
 end
 
