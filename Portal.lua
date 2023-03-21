@@ -401,12 +401,20 @@ local plr = {
 	x = 0,
 	y = 64,
 	z = 0,
+	--last coordinates
+	lx = 0,
+	ly = 64,
+	lz = 0,
+	--velocity
+	vx = 0,
+	vy = 0,
+	vz = 0,
 	--rotation
 	tx = 0, --vertical
 	ty = 0, --horizontal
 	--cheats
-	godmode = false,
-	noclip = false ,
+	godmode = true,
+	noclip =  false,
 	--hp
 	hp = 100 ,
 	l_hp = 100, --last hp
@@ -415,10 +423,9 @@ local plr = {
 	hp_t_2 = 0,
 	bf_t = 0, --blue field
 	--stuff
-	vy=0, --vertical speed
 	debug_text = 0,
 	holding = false,
-	on_ground=false,
+	on_ground=true,
 	death = false, --is the player dead
 	pg_lvl = 2 --portal gun level
 }
@@ -2720,6 +2727,10 @@ local function min_abs(a, b)
 	if abs(a) < abs(b) then return a else return b end
 end
 
+local function max_abs(a, b)
+	if abs(a) > abs(b) then return a else return b end
+end
+
 local function coll_shift(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, axis)
 	if not coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) then
 		return 0
@@ -3403,7 +3414,102 @@ end
 
 local wall_coll={[1]=true,[2]=true,[3]=true,[4]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[16]=true,[17]=true,[18]=true}
 
-function unitic.player_collision()
+function unitic.player_physics()
+	if plr.death then return end
+	--control
+	plr.lx, plr.ly, plr.lz = plr.x, plr.y, plr.z
+
+	plr.speed = 4
+
+	if (plr.godmode or plr.hp_t_2==0) then
+		if key(64) and key(23) then
+			plr.speed = 8
+		end
+	else
+		plr.speed = 4
+	end
+
+	if plr.noclip then plr.speed = 12 end
+
+	local vec = {x=0, y=0, z=0} --vector
+
+	if (plr.hp_t_2==0 or R()>0.05 or plr.godmode) then
+		if key(23) then vec.z = vec.z - 1 end -- W
+		if key(19) then vec.z = vec.z + 1 end -- S
+		if key(1 ) then vec.x = vec.x + 1 end -- A
+		if key(4 ) then vec.x = vec.x - 1 end -- D
+		if plr.noclip then
+			if key(48) then vec.y = vec.y + 1 end -- space
+			if key(63) then vec.y = vec.y - 1 end -- CTRL
+		end
+	end
+
+	local vec_len = math.sqrt(vec.x^2 + vec.y^2 + vec.z^2)
+	if vec_len~=0 then --normalization
+		vec.x = vec.x / vec_len * plr.speed * dt
+		vec.y = vec.y / vec_len * plr.speed * dt
+		vec.z = vec.z / vec_len * plr.speed * dt
+	end
+	--rotation
+	
+	local vx =  vec.x * math.cos(plr.ty) + vec.z * math.sin(plr.ty)
+	local vz	= -vec.x * math.sin(plr.ty) + vec.z * math.cos(plr.ty)
+
+	vec.x, vec.z = vx,vz
+
+	--jump
+	if plr.on_ground then
+		plr.vy = -1
+		if keyp(48) then plr.vy = 8 end
+	end
+
+	plr.vy = max(plr.vy - 0.5 * dt, -20) --gravity
+
+	--horizontal velociy
+	if plr.on_ground then
+		plr.vx = max_abs(plr.vx * 0.8, vec.x)
+		plr.vz = max_abs(plr.vz * 0.8, vec.z)
+	else
+		if abs(plr.vx) > 9 or abs(plr.vz) > 9 then
+			if vec.x~=0 or vec.z~=0 then
+				plr.vx = plr.vx * 0.95 + vec.x * 0.05
+				plr.vz = plr.vz * 0.95 + vec.z * 0.05
+			end
+		else
+			plr.vx = max_abs(plr.vx * 0.9, vec.x)
+			plr.vz = max_abs(plr.vz * 0.9, vec.z)
+		end
+	end
+	--noclip
+	if plr.noclip then
+		plr.vx = vec.x
+		plr.vy = vec.y
+		plr.vz = vec.z
+	end
+
+	if keyp(7) then plr.vx = 20 end
+
+
+	plr.vx = max(min(plr.vx, 20), -20)
+	plr.vy = max(min(plr.vy, 20), -20)
+	plr.vz = max(min(plr.vz, 20), -20)
+
+	plr.x = plr.x + plr.vx
+	plr.y = plr.y + plr.vy
+	plr.z = plr.z + plr.vz
+	
+	--cheats
+	if keyp(57) or keyp(22) then plr.y = plr.y + 2 plr.noclip = not plr.noclip end
+	if keyp(2) then plr.godmode = not plr.godmode end
+
+	--zoom
+	if key(65) then
+		unitic.fov=min(unitic.fov*1.2*dt,800)
+	else
+		unitic.fov=max(unitic.fov/1.2/dt,80)
+	end
+	
+	--collision
 	local colx = false
 	local coly = false
 	local colz = false
@@ -3412,10 +3518,10 @@ function unitic.player_collision()
 
 	local function plr_collide(x1,y1,z1,x2,y2,z2)
 		local ti=false
-		if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then
-			if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x1,y1,z1, x2,y2,z2) then ti = true colx=true end
-			if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x1,y1,z1, x2,y2,z2) then ti = true coly=true end
-			if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x1,y1,z1, x2,y2,z2) then ti = true colz=true end
+		if not coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x1,y1,z1, x2,y2,z2) then
+			if coll(plr.x - 16, plr.ly - 64, plr.lz - 16, plr.x + 16, plr.ly + 16, plr.lz + 16, x1,y1,z1, x2,y2,z2) then ti = true colx=true end
+			if coll(plr.lx - 16, plr.y - 64, plr.lz - 16, plr.lx + 16, plr.y + 16, plr.lz + 16, x1,y1,z1, x2,y2,z2) then ti = true coly=true end
+			if coll(plr.lx - 16, plr.ly - 64, plr.z - 16, plr.lx + 16, plr.ly + 16, plr.z + 16, x1,y1,z1, x2,y2,z2) then ti = true colz=true end
 			if not ti and coll(plr.x - 16, plr.y - 64, plr.z - 16, plr.x + 16, plr.y + 16, plr.z + 16, x1,y1,z1, x2,y2,z2) then
 				if y1~=y2 and z1~=z2 then colx=true end
 				if x1~=x2 and z1~=z2 then coly=true end
@@ -3434,10 +3540,10 @@ function unitic.player_collision()
 			x3,x4=min(x3,x4),max(x3,x4)
 			y3,y4=min(y3,y4),max(y3,y4)
 			z3,z4=min(z3,z4),max(z3,z4)
-			if not coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x3,y3,z3, x4,y4,z4) then
-				if coll(plr.x - 16, ly - 64, lz - 16, plr.x + 16, ly + 16, lz + 16, x3,y3,z3, x4,y4,z4) then colx=true end
-				if coll(lx - 16, plr.y - 64, lz - 16, lx + 16, plr.y + 16, lz + 16, x3,y3,z3, x4,y4,z4) then coly=true end
-				if coll(lx - 16, ly - 64, plr.z - 16, lx + 16, ly + 16, plr.z + 16, x3,y3,z3, x4,y4,z4) then colz=true end
+			if not coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x3,y3,z3, x4,y4,z4) then
+				if coll(plr.x - 16, plr.ly - 64, plr.lz - 16, plr.x + 16, plr.ly + 16, plr.lz + 16, x3,y3,z3, x4,y4,z4) then colx=true end
+				if coll(plr.lx - 16, plr.y - 64, plr.lz - 16, plr.lx + 16, plr.y + 16, plr.lz + 16, x3,y3,z3, x4,y4,z4) then coly=true end
+				if coll(plr.lx - 16, plr.ly - 64, plr.z - 16, plr.lx + 16, plr.ly + 16, plr.z + 16, x3,y3,z3, x4,y4,z4) then colz=true end
 			end
 
 		end
@@ -3472,13 +3578,13 @@ function unitic.player_collision()
 		elseif wall_coll[draw.map[1][x0][y0][z0][2]] then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94)
 		elseif draw.map[1][x0][y0][z0][2]==11 then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 62, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) -- doorway (1)
 		elseif draw.map[1][x0][y0][z0][2]==12 then plr_collide(x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 34) -- doorway (2)
-		elseif draw.map[1][x0][y0][z0][2]==7  then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.bf_t=10 end -- blue field
-		elseif draw.map[1][x0][y0][z0][2]==15 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end -- red field
+		elseif draw.map[1][x0][y0][z0][2]==7  then if coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.bf_t=10 end -- blue field
+		elseif draw.map[1][x0][y0][z0][2]==15 then if coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 * 96, y0 * 128 + 2, z0 * 96 + 2, x0 * 96, y0 * 128 + 126, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end -- red field
 		end
 
 		-- floors --
-		if     draw.map[2][x0][y0][z0][2]==5 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end -- red field
-		elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.vy=12 sfx_(0,"C-6",-1,1) end
+		if     draw.map[2][x0][y0][z0][2]==5 then if coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.hp=0 sfx_(2,"C-3",-1,1) end -- red field
+		elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then if coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then plr.vy=12 sfx_(0,"C-6",-1,1) end
 		elseif draw.map[2][x0][y0][z0][2]~=0 then plr_collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) end
 
 		-- walls (2) --
@@ -3493,8 +3599,8 @@ function unitic.player_collision()
 		elseif wall_coll[draw.map[3][x0][y0][z0][2]] then plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 		elseif draw.map[3][x0][y0][z0][2]==11 then plr_collide(x0 * 96 + 62, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96)
 		elseif draw.map[3][x0][y0][z0][2]==12 then plr_collide(x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 34, y0 * 128 + 126, z0 * 96)
-		elseif draw.map[3][x0][y0][z0][2]==7  then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.bf_t=10 end
-		elseif draw.map[3][x0][y0][z0][2]==15 then if coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx_(2,"C-3",-1,1) end
+		elseif draw.map[3][x0][y0][z0][2]==7  then if coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.bf_t=10 end
+		elseif draw.map[3][x0][y0][z0][2]==15 then if coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 * 96 + 2, y0 * 128 + 2, z0 * 96, x0 * 96 + 94, y0 * 128 + 126, z0 * 96) then plr.hp=0 sfx_(2,"C-3",-1,1) end
 		end
 	end end end
 
@@ -3513,7 +3619,7 @@ function unitic.player_collision()
 		local y0=draw.objects.c[i].y
 		local z0=draw.objects.c[i].z
 		obj_collide(1, x0, y0, z0)
-		if draw.objects.c[i].held and coll(lx - 16, ly - 64, lz - 16, lx + 16, ly + 16, lz + 16, x0 - 24, y0 + 24, z0 - 24, x0 + 24, y0 + 24.1, z0 + 24) then draw.objects.c[i].held=false plr.holding=false end
+		if draw.objects.c[i].held and coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 - 24, y0 + 24, z0 - 24, x0 + 24, y0 + 24.1, z0 + 24) then draw.objects.c[i].held=false plr.holding=false end
 		if draw.objects.c[i].inp then
 			local x0=draw.objects.c[i].x1
 			local y0=draw.objects.c[i].y1
@@ -3531,9 +3637,9 @@ function unitic.player_collision()
 	end
 
 	if plr.noclip then return end
-	if colx then plr.x = lx end
-	if coly then plr.y = ly end
-	if colz then plr.z = lz end
+	if colx then plr.x = plr.lx end
+	if coly then plr.y = plr.ly end
+	if colz then plr.z = plr.lz end
 	plr.on_ground=coly
 end
 
@@ -5752,36 +5858,6 @@ function TIC()
 		fps_.t1=time()
 		plr.bf_t=max(plr.bf_t-1,0)
 		plr.hp_t_2=max(plr.hp_t_2-1,0)
-	 --W A S D
-		lx, ly, lz = plr.x, plr.y, plr.z
-		if (plr.hp_t_2==0 or R()>0.05 or plr.godmode) and not plr.death then
-			if key(23) then plr.z = plr.z - math.cos(plr.ty) * plr.speed plr.x = plr.x - math.sin(plr.ty) * plr.speed end
-			if key(19) then plr.z = plr.z + math.cos(plr.ty) * plr.speed plr.x = plr.x + math.sin(plr.ty) * plr.speed end
-			if key(1) then plr.z = plr.z - math.cos(plr.ty - pi2) * plr.speed plr.x = plr.x - math.sin(plr.ty - pi2) * plr.speed end
-			if key(4) then plr.z = plr.z + math.cos(plr.ty - pi2) * plr.speed plr.x = plr.x + math.sin(plr.ty - pi2) * plr.speed end
-		end
-
-		if (plr.hp_t_2==0 or plr.godmode) and key(64) then plr.speed = 8 else plr.speed = 4 end
-		if plr.noclip then plr.speed=12 end
-
-		plr.speed = plr.speed * dt
-	 --cheats
-		if keyp(57) or keyp(22) then plr.noclip = not plr.noclip end
-		if keyp(2) then plr.godmode = not plr.godmode end
-	--zoom
-		if key(65) then unitic.fov=min(unitic.fov*1.2*dt,800) else unitic.fov=max(unitic.fov/1.2/dt,80) end
-	--jump
-		if plr.noclip and not plr.death then
-			if key(48) then plr.y = plr.y + 8 * dt end
-			if key(63) then plr.y = plr.y - 8 * dt end
-			plr.vy=0
-		elseif not plr.death then
-			if plr.on_ground then plr.vy=-1
-				if keyp(48) then plr.vy = 8 end
-			end
-			plr.y = plr.y + plr.vy * dt
-			plr.vy=max(plr.vy-0.5 * dt,-20)
-		end
 	 --palette
 		local r = 1
 		local g = 1
@@ -5837,7 +5913,7 @@ function TIC()
 		plr.tx = max(min(plr.tx, pi2), -pi2)
 	 --update + collision
 		fps_.t2=time()
-		if not plr.death then unitic.player_collision() end
+		if not plr.death then unitic.player_physics() end
 		unitic.portal_collision()
 		unitic.cube_update()
 		unitic.button_update()
