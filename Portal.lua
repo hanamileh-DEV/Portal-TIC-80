@@ -2581,18 +2581,22 @@ pg_lvl=2, --portal gun lvl
 init=function()end,
 scripts=function() lvl_text_2={draw=false,pause=false,id=1,i=1,t=0}end
 }
-do
+
+do --a little guide about the terrible code
 	for x=0,10 do
-		for y=0,2 do
-			maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,R(1,2)}
-			maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,R(1,2)}
-			maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,R(1,2)}
-			maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,R(1,2)}
+		for y=0,3 do
+			if R()>0.7 then maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,1} else maps[0][2].w[#maps[0][2].w+1]={x,y,0 ,3,1,2} end
+			if R()>0.7 then maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,1} else maps[0][2].w[#maps[0][2].w+1]={x,y,11,3,2,2} end
+			if R()>0.7 then maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,1} else maps[0][2].w[#maps[0][2].w+1]={0 ,y,x,1,2,2} end
+			if R()>0.7 then maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,1} else maps[0][2].w[#maps[0][2].w+1]={11,y,x,1,1,2} end
 		end
 
 		for z=0,10 do
 			maps[0][2].w[#maps[0][2].w+1]={x,0,z,2,2,2}
-			if R()>0.5 then maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,R(1,5)} end
+			maps[0][2].w[#maps[0][2].w+1]={x,4,z,2,1,2}
+			if z<3 then
+				maps[0][2].w[#maps[0][2].w+1]={x,2,z,2,3,4}
+			end
 		end
 	end
 
@@ -2615,9 +2619,9 @@ do
 	maps[0][2].w[#maps[0][2].w+1]={8 ,0,6 ,3,3,3}
 	maps[0][2].w[#maps[0][2].w+1]={9 ,0,6 ,3,3,4}
 	maps[0][2].w[#maps[0][2].w+1]={10,0,6 ,3,3,7}
-	maps[0][2].w[#maps[0][2].w+1]={6 ,0,5 ,2,3,9}
-	maps[0][2].w[#maps[0][2].w+1]={6 ,0,6 ,2,3,9}
-	maps[0][2].w[#maps[0][2].w+1]={3 ,0,5 ,2,3,9}
+	maps[0][2].w[#maps[0][2].w+1]={6 ,0,5 ,2,2,9}
+	maps[0][2].w[#maps[0][2].w+1]={6 ,0,6 ,2,2,9}
+	maps[0][2].w[#maps[0][2].w+1]={3 ,0,5 ,2,2,9}
 	maps[0][2].w[#maps[0][2].w+1]={0 ,0,10,1,3,11}
 	maps[0][2].w[#maps[0][2].w+1]={0 ,0,9 ,1,3,12}
 	maps[0][2].w[#maps[0][2].w+1]={0 ,0,0 ,3,3,12}
