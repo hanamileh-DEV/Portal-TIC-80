@@ -5,7 +5,6 @@
 -- saveid: portal3d_unitic_lvl_editor
 
 local save_reminder = true
-local easter_eggs = false
 
 local map_bank = pmem(0)
 local map_bank_state = {false,true,false,false,false,false,false,false} -- false x8
@@ -2830,12 +2829,6 @@ local p={t=0} --pause
 local ms={b={}} --main screen | Table with current buttons
 local ee={t=600, i=0, draw = false} --easter egg
 local mbc = 0 --map bank id
-local ee_text = {
-	"The cake its a lie",
-	"Never gonna give you up",
-	"By HanamileH & soxfox42",
-	"Powered by UniTIC v1.3"
-}
 --buttons
 local menu_options --It must be separate, otherwise local variables inside this table may not see each other
 
@@ -3072,11 +3065,6 @@ function TIC()
 	if state=="edit" then
 	 --counters
 		if stt~=120 then stt=stt+1 end
-	 --easter egg
-		if easter_eggs then
-			ee.t = ee.t - 1
-			if ee.t==0 then ee.t = R(30*60, 120*60) ee.draw = not ee.draw ee.i = R(#ee_text) end
-		end
 	--palette
 		for i = 0,1 do
 			vbank(i)
@@ -3134,17 +3122,9 @@ function TIC()
 		}
 	 --top debug panel
 		if keyp(49) then
-			if ee.draw then
-				ee.draw = false
-				ee.t = R(30*60, 120*60)
-				ee.i = R(#ee_text)
-			else
 				plr.dt=plr.dt%#debug_text+1
-			end
 		end
 		local top_text=debug_text[plr.dt]
-	 --easter egg (2)
-		if ee.draw then top_text = ee_text[ee.i] end
 	 --bottom debug panel
 		if plr.noclip then rect(0,129,35,7,0) print("Noclip", 2, 130, 7) end
 		rect(0,0,240,7,0)
