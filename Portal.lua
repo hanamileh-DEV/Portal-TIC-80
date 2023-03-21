@@ -1531,7 +1531,7 @@ local s = { --sounds
 	n={0,0,0} --The exact position of the current track
 }
 
-local world_size={12,4,12}
+local world_size={12,7,12}
 world_size[4]=world_size[2]*world_size[3]
 world_size[5]=world_size[1]*world_size[2]*world_size[3]
 --world
@@ -5739,8 +5739,7 @@ function TIC()
 			save.lvl2=1
 		end
 		pmem(4,save.cur_t)
-		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
-		
+
 		if save.lvl==0 then save.lvl=1 end
 		pmem(0,save.lvl)
 		if save.lvl>#maps[save.lvl2] then

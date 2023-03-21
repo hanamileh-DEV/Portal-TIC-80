@@ -1322,7 +1322,7 @@ local s = { --sounds
 	n={0,0,0} --The exact position of the current track
 }
 
-local world_size={12,4,12}
+local world_size={12,7,12}
 world_size[4]=world_size[2]*world_size[3]
 world_size[5]=world_size[1]*world_size[2]*world_size[3]
 --world
@@ -3027,7 +3027,6 @@ function TIC()
 	-- load lvl --------------
 	--------------------------
 	if state=="load lvl" then
-		world_size={12,4,12,4*12,12*4*12}
 		load_world()
 		--
 		mx,my=0,0
@@ -3232,7 +3231,7 @@ function TIC()
 					local sl = menu.w.sl
 					--
 					local ind = {1,2,3,6}
-					local min_max={{0,10},{0,2},{0,10},{1,17}}
+					local min_max={{0,10},{0,5},{0,10},{1,17}}
 					for i = 1,4 do
 						-- rect(204,10+i*8,15,7,15)
 						rectb(203,9+i*8,17,9,15)
