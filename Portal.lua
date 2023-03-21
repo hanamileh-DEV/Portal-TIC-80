@@ -10,7 +10,7 @@ local lag_mode = false
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
 --automatically loads the selected level (leave nil to load the default levels)
-local load_lvl = {0, 2}
+-- local load_lvl = {0, 2}
 
 --[[
 license:
@@ -1799,9 +1799,6 @@ maps[1][1]={
 		if lvl_text_2.i>9 then
 			lvl_text_2.i=1
 			lvl_text_2.draw=false
-			addwall(4,0,2,1,1,5)
-			addwall(4,0,0,1,1,6)
-
 			draw.p[1]={4,0,2,1,1,0}
 			draw.p[2]={4,0,0,1,1,0}
 			update_world()
@@ -1919,8 +1916,6 @@ maps[1][2]={
 		if lvl_t==50 then lvl_text_2.draw=true end
 		if lvl_text_2.i>6 then maps[1][2].t=maps[1][2].t+1 end
 		if maps[1][2].t==1 then
-			addwall(2,1,0,3,1,5)
-			addwall(7,1,0,3,1,6)
 			draw.p[1]={2,1,0,3,1,0}
 			draw.p[2]={7,1,0,3,1,0}
 			draw.objects.cd[1].t=2
@@ -1982,7 +1977,7 @@ maps[1][3]={
 		{2,0,0,3,1,10},{2,1,0,3,1,2},
 		{3,0,0,3,3,12},{3,1,0,3,1,2},
 		{4,0,0,3,3,11},{4,1,0,3,1,2},
-		{5,0,0,3,1,6},{5,1,0,3,1,2},
+		{5,0,0,3,1,2},{5,1,0,3,1,2},
 		{6,0,0,3,1,2},{6,1,0,3,1,2},
 		{7,0,0,3,1,2},{7,1,0,3,1,2},
 
@@ -2032,19 +2027,16 @@ maps[1][3]={
 	scripts=function()
 		if draw.objects.b[1].tick and draw.objects.b[1].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
-			addwall(0,0,4,3,2,5)
 			draw.p[1]={0,0,4,3,2,0}
 			update_world()
 		end
 		if draw.objects.b[2].tick and draw.objects.b[2].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
-			addwall(8,0,3,1,1,5)
 			draw.p[1]={8,0,3,1,1,0}
 			update_world()
 		end
 		if draw.objects.b[3].tick and draw.objects.b[3].s then
 			if draw.p[1] then addwall(draw.p[1][1],draw.p[1][2],draw.p[1][3],draw.p[1][4],draw.p[1][5],2) draw.p[1]=nil update_world() end
-			addwall(2,0,5,1,2,5)
 			draw.p[1]={2,0,5,1,2,0}
 			update_world()
 		end
@@ -2131,7 +2123,6 @@ maps[1][4]={
 		if lvl_text_2.i==2 then plr.pg_lvl=1 end
 		if lvl_t==85 or (draw.objects.b[1].tick and draw.objects.b[1].s) then
 			draw.p[2]={0,0,5,3,2,0}
-			addwall(0,0,5,3,2,6)
 			update_world()
 		end
 		if plr.x>500 and plr.y>130 and draw.map[1][7][1][3][2]==14 then
@@ -2234,7 +2225,6 @@ maps[1][5]={
 	end,
 	scripts=function()
 		if lvl_t==50 then
-			addwall(1,2,6,3,1,6)
 			update_world()
 			draw.p[2]={1,2,6,3,1,0}
 		end
@@ -2322,7 +2312,6 @@ maps[1][6]={
 	end,
 	scripts=function()
 		if lvl_t==50 then
-			addwall(0,2,2,1,2,6)
 			draw.p[2]={0,2,2,1,2}
 			update_world()
 		end
