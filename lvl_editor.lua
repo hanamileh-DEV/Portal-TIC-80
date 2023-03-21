@@ -3232,6 +3232,8 @@ function TIC()
 					--
 					local ind = {1,2,3,6}
 					local min_max={{0,10},{0,5},{0,10},{1,17}}
+					min_max[wall[4]][2] = min_max[wall[4]][2]+1
+					
 					for i = 1,4 do
 						-- rect(204,10+i*8,15,7,15)
 						rectb(203,9+i*8,17,9,15)
