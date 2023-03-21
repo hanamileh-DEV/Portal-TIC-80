@@ -9,6 +9,9 @@ local lag_mode = false
 
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
+--automatically loads the selected level (leave nil to load the default levels)
+local load_lvl = {0, 2}
+
 --[[
 license:
 
@@ -5606,8 +5609,15 @@ function TIC()
 		sync(2,0,false)
 		snake={s={{0,0},{0,1},{0,2}},u=1,a={5,5},t=0,state="-",b=1} --snake
 		if st_t then save.cur_t=save.cur_t+(tstamp()-st_t) end
-		save.lvl2=1
-		-- save.lvl =2
+		if load_lvl then
+			assert(maps[load_lvl[1]], "Level "..load_lvl[1].." "..load_lvl[2].." does not exist")
+			assert(maps[load_lvl[1]][load_lvl[2]], "Level "..load_lvl[1].." "..load_lvl[2].." does not exist")
+
+			save.lvl2 = load_lvl[1]
+			save.lvl  = load_lvl[2]
+		else
+			save.lvl2=1
+		end
 		pmem(4,save.cur_t)
 		if save.lvl==5 and save.lvl2==1 then world_size={12,5,12,5*12,12*5*12} else world_size={12,4,12,4*12,12*4*12} end
 		
