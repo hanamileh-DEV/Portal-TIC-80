@@ -1618,15 +1618,15 @@ local mx, my, cl1, cl2, whl
 local cid
 --sprite editor
 local function setpix(sx,sy,color)
-	local id=sx//8+sy//8*16
-	local adr=sx%8+sy%8*8
-	poke4(0x8000+id*64+adr,color)
+	local id  = (sx>>3) + (sy>>3<<4)
+	local adr = (sx&7) + ((sy&7) << 3)
+	poke4(0x8000 + (id<<6) + adr,color)
 end
 
 local function getpix(sx,sy)
-	local id=sx//8+sy//8*16
-	local adr=sx%8+sy%8*8
-	return peek4(0x8000+id*64+adr)
+	local id  = (sx>>3) + (sy>>3<<4)
+	local adr = (sx&7) + ((sy&7) << 3)
+	return peek4(0x8000 + (id<<6) + adr)
 end
 
 --maps
