@@ -4362,26 +4362,54 @@ function unitic.render() --------
 		local relx1 = plr.x - 96 * x1
 		local rely1 = plr.y - 128 * y1
 		local relz1 = plr.z - 96 * z1
+
 		local relx2 = plr.x - 96 * x2
 		local rely2 = plr.y - 128 * y2
 		local relz2 = plr.z - 96 * z2
 
 		-- calculate portal rotation
-		local rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-		local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-		local rotd1 = (2 + rot2 - rot1) % 4
-		local rotd2 = (2 + rot1 - rot2) % 4
-
-		if     rotd1 == 0 then
-		elseif rotd1 == 1 then relx1,relz1=relz1,-relx1
-		elseif rotd1 == 2 then relx1,relz1=-relx1,-relz1
-		elseif rotd1 == 3 then relx1,relz1=-relz1,relx1
+		local XZ_rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
+		local XY_rot1 = 2
+		local XZ_rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
+		local XY_rot2 = 2
+		if draw.p[1][4]==2 then
+			XZ_rot1 = draw.p[1][6] + (draw.p[1][5] - 1) * 2
+			XY_rot1 = 1 + (draw.p[1][5] - 1) * 2
+		end
+		if draw.p[2][4]==2 then
+			XZ_rot2 = draw.p[2][6] + (draw.p[2][5] - 1) * 2
+			XY_rot2 = 1 + (draw.p[2][5] - 1) * 2
 		end
 
-		if     rotd2 == 0 then
-		elseif rotd2 == 1 then relx2,relz2=relz2,-relx2
-		elseif rotd2 == 2 then relx2,relz2=-relx2,-relz2
-		elseif rotd2 == 3 then relx2,relz2=-relz2,relx2
+		local XZ_rotd1 = (2 + XZ_rot2 - XZ_rot1) % 4
+		local XZ_rotd2 = (2 + XZ_rot1 - XZ_rot2) % 4
+
+		local XY_rotd1 = (XY_rot2 + XY_rot1) % 4
+		local XY_rotd2 = (XY_rot1 + XY_rot2) % 4
+
+		if     XY_rotd1 == 0 then
+		elseif XY_rotd1 == 1 then relx1,rely1= rely1,-relx1
+		elseif XY_rotd1 == 2 then relx1,rely1=-relx1,-rely1
+		elseif XY_rotd1 == 3 then relx1,rely1=-rely1, relx1
+		end
+
+		if     XY_rotd2 == 0 then
+		elseif XY_rotd2 == 1 then relx2,rely2= rely2,-relx2
+		elseif XY_rotd2 == 2 then relx2,rely2=-relx2,-rely2
+		elseif XY_rotd2 == 3 then relx2,rely2=-rely2, relx2
+		end
+		------
+
+		if     XZ_rotd1 == 0 then
+		elseif XZ_rotd1 == 1 then relx1,relz1= relz1,-relx1
+		elseif XZ_rotd1 == 2 then relx1,relz1=-relx1,-relz1
+		elseif XZ_rotd1 == 3 then relx1,relz1=-relz1, relx1
+		end
+		
+		if     XZ_rotd2 == 0 then
+		elseif XZ_rotd2 == 1 then relx2,relz2= relz2,-relx2
+		elseif XZ_rotd2 == 2 then relx2,relz2=-relx2,-relz2
+		elseif XZ_rotd2 == 3 then relx2,relz2=-relz2, relx2
 		end
 
 		fps_.t4=time()
@@ -4391,16 +4419,18 @@ function unitic.render() --------
 					cam.x = 96*x2 + relx1
 					cam.y = 128*y2 + rely1
 					cam.z = 96*z2 + relz1
-					cam.ty = plr.ty + math.pi * rotd1 / 2
+					cam.ty = plr.ty + math.pi * XZ_rotd1 / 2
 					cam.tx = plr.tx
-					unitic.update(true,1) unitic.draw(false) --blue portal
+					local tz = XY_rotd1
+					unitic.update(true,1,tz) unitic.draw(false) --blue portal
 				else
 					cam.x = 96*x1 + relx2
 					cam.y = 128*y1 + rely2
 					cam.z = 96*z1 + relz2
-					cam.ty = plr.ty + math.pi * rotd2 / 2
+					cam.ty = plr.ty + math.pi * XZ_rotd2 / 2
 					cam.tx = plr.tx
-					unitic.update(true,2) unitic.draw(false) --orange portal
+					local tz = XY_rotd2
+					unitic.update(true,2,tz) unitic.draw(false) --orange portal
 				end
 				fps_.t5=time()
 
@@ -4446,14 +4476,14 @@ function unitic.render() --------
 					cam.x = 96*x1 + relx2
 					cam.y = 128*y1 + rely2
 					cam.z = 96*z1 + relz2
-					cam.ty = plr.ty + math.pi * rotd2 / 2
+					cam.ty = plr.ty + math.pi * XZ_rotd2 / 2
 					cam.tx = plr.tx
 					unitic.update(true,2) unitic.draw(false) --orange portal
 				else
 					cam.x = 96*x2 + relx1
 					cam.y = 128*y2 + rely1
 					cam.z = 96*z2 + relz1
-					cam.ty = plr.ty + math.pi * rotd1 / 2
+					cam.ty = plr.ty + math.pi * XZ_rotd1 / 2
 					cam.tx = plr.tx
 					unitic.update(true,1) unitic.draw(false) --blue portal
 				end
@@ -4709,10 +4739,10 @@ local function portal_gun()
 			if plr.tx>0 then face = 2 end
 			if clp2 then portal_id = 2 end
 
-			if     plr_rotate < pi2     then portal_rotate = 1 if z3 % 96 < 48 then z = z -1 end
-			elseif plr_rotate < math.pi then portal_rotate = 2 if x3 % 96 < 48 then x = x -1 end
-			elseif plr_rotate < pi2 * 3 then portal_rotate = 3 if z3 % 96 < 48 then z = z -1 end
-			else                             portal_rotate = 4 if x3 % 96 < 48 then x = x -1 end end
+			if     plr_rotate < pi2     then portal_rotate = 1 if z3 % 96 < 48 then z = z - 1 end
+			elseif plr_rotate < math.pi then portal_rotate = 2 if x3 % 96 < 48 then x = x - 1 end
+			elseif plr_rotate < pi2 * 3 then portal_rotate = 3 if z3 % 96 < 48 then z = z - 1 end
+			else                             portal_rotate = 4 if x3 % 96 < 48 then x = x - 1 end end
 
 			if portal_rotate==2 or portal_rotate==4 then
 				x = min(max(0,x),9)
@@ -6176,7 +6206,7 @@ function TIC()
 					"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(fr_draw_t).." ms.",
 					"Av: "..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5).." ms. min: "..F(framerate[2]+0.5).." ms. max: "..F(framerate[3]+0.5).." ms.",
 					"Other:"..max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0).." ms. portals:"..F(fps_.t5-fps_.t4).."|"..F(fps_.t6-fps_.t5).." ms.",
-					"Update:"..F(fps_.t7-fps_.t6).." ms. draw:"..F(fps_.t8-fps_.t7).." ms."
+					"Update:"..F(fps_.t7-fps_.t6).." ms. draw:"..F(fps_.t8-fps_.t7).." ms.",
 				},
 				{
 					"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
@@ -6639,9 +6669,9 @@ end
 -- 057:5fffffff5fffffff5fffffff5fffffff5fffffff5fffffff5555555554444444
 -- 058:fffffffcffffffffffffffffffffffffffffffffffffffff5554444444444444
 -- 059:fffffff4fffffff4fffffff4fffffff4fffffff4fffffff44444444444444444
--- 060:ffaa0000ffaa0000fffaa000ffffaa00fffffaa0ffffffaafffffffaffffffff
+-- 060:ffaa0000ffaa0000fffaa000ffffaa00fffffaa0ffffffaafffffffaaaaaafff
 -- 061:0000000000000000000000000000000000000000a000000aaaaaaaaafaaaaaaf
--- 062:0000aaff0000aaff000aafff00aaffff0aafffffaaffffffafffffffffffffff
+-- 062:0000aaff0000aaff000aafff00aaffff0aafffffaaffffffaffffffffffaaaaa
 -- 063:0000000010101010000000001010101000000000101010100000000010101010
 -- 064:fffffffffffffffdffffffddfffffdd0ffffdd00fffdd000ffdd0000ffdd0000
 -- 065:fddddddfddddddddd000000d0000000000000000000000000000000000000000
@@ -6689,9 +6719,9 @@ end
 -- 109:7777777717177777171777777777777711733711117337117777777733733733
 -- 110:7777765477777654777776547777765473377654733776547777765471177654
 -- 111:0000000010101010000000001010101000000000101010100000000010101010
--- 112:ffdd0000ffdd0000fffdd000ffffdd00fffffdd0ffffffddfffffffdffffffff
+-- 112:ffdd0000ffdd0000fffdd000ffffdd00fffffdd0ffffffddfffffffddddddfff
 -- 113:0000000000000000000000000000000000000000d000000dddddddddfddddddf
--- 114:0000ddff0000ddff000ddfff00ddffff0ddfffffddffffffdfffffffffffffff
+-- 114:0000ddff0000ddff000ddfff00ddffff0ddfffffddffffffdffffffffffddddd
 -- 115:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 -- 116:ffffffffffffffffffffffaafffffffffbbbffffffffffffffffffffffffffff
 -- 117:ffffffffffffffffaffffffffffffffffffffffffbbbffffffffffffffffffff
