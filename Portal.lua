@@ -3069,7 +3069,7 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 	end
 end
 
-function unitic.update(draw_portal,p_id, YZ_rotate)
+function unitic.update(draw_portal,p_id, XY_rotate)
 	--writing all polygons in unitic.poly
 	unitic.poly = { v = {}, f = {}, sp = {} }
 	unitic.obj  = {}
@@ -3157,10 +3157,10 @@ function unitic.update(draw_portal,p_id, YZ_rotate)
 	local tysin = math.sin(-cam.ty)
 	local tycos = math.cos(-cam.ty)
 
-	if not YZ_rotate then YZ_rotate = 0 end
+	if not XY_rotate then XY_rotate = 0 end
 
 
-	if     YZ_rotate == 0 then
+	if     XY_rotate == 0 then
 		for ind = 1, #unitic.poly.v do
 			unitic.poly.v[ind] = {
 				unitic.poly.v[ind][1] - cam.x,
@@ -3169,30 +3169,30 @@ function unitic.update(draw_portal,p_id, YZ_rotate)
 				unitic.poly.v[ind][4]
 			}
 		end
-	elseif YZ_rotate == 1 then
+	elseif XY_rotate == 1 then
 		for ind = 1, #unitic.poly.v do
 			unitic.poly.v[ind] = {
-				 unitic.poly.v[ind][1] - cam.x,
-				 unitic.poly.v[ind][3] - cam.y,
-				-unitic.poly.v[ind][2] - cam.z,
+				 unitic.poly.v[ind][2] - cam.x,
+				-unitic.poly.v[ind][1] - cam.y,
+				 unitic.poly.v[ind][3] - cam.z,
 				 unitic.poly.v[ind][4]
 			}
 		end
-	elseif YZ_rotate == 2 then
+	elseif XY_rotate == 2 then
 		for ind = 1, #unitic.poly.v do
 			unitic.poly.v[ind] = {
-				 unitic.poly.v[ind][1] - cam.x,
+				-unitic.poly.v[ind][1] - cam.x,
 				-unitic.poly.v[ind][2] - cam.y,
-				-unitic.poly.v[ind][3] - cam.z,
+				 unitic.poly.v[ind][3] - cam.z,
 				 unitic.poly.v[ind][4]
 			}
 		end
-	elseif YZ_rotate == 3 then
+	elseif XY_rotate == 3 then
 		for ind = 1, #unitic.poly.v do
 			unitic.poly.v[ind] = {
-				 unitic.poly.v[ind][1] - cam.x,
-				-unitic.poly.v[ind][3] - cam.y,
-				 unitic.poly.v[ind][2] - cam.z,
+				-unitic.poly.v[ind][2] - cam.x,
+				 unitic.poly.v[ind][1] - cam.y,
+				 unitic.poly.v[ind][3] - cam.z,
 				 unitic.poly.v[ind][4]
 			}
 		end
