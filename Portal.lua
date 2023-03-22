@@ -4134,8 +4134,13 @@ end
 function unitic.render() -------- 
 	--dynamic textures
 	if st.d_t then
-		for x0=0,15 do --light bridge
-			for y0=0,11 do setpix(x0,y0+234,15) end
+		--light bridge
+		memset(31240,255,24)
+		memset(31272,255,24)
+		memset(31744,255,24)
+		memset(31776,255,24)
+
+		for x0=0,15 do
 			local y0=(math.sin((-t%30+x0*2)/5)+1)*6
 			local y1=(math.cos((-t%30+x0*2)/5)+1)*6
 			local y2=(math.sin(t/20)+1)*6
