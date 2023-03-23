@@ -219,7 +219,8 @@ local plr = {
 	--stuff
 	on_ground=true,
 	cd=0,
-	dt=1}
+	dt=1
+}
 
 --engine settings:
 local unitic = {
@@ -231,7 +232,6 @@ local unitic = {
 	obj  = {}, --objects
 	p    = {} --particles
 }
-
 
 -- Please note than some objects do not have collisions. (coll={})
 local model={
@@ -1382,7 +1382,6 @@ local function addp(x,y,z,vx,vy,vz,lifetime,color) --add particle
 end
 
 --Texture cache
-
 local b_f={} --Texture for the blue field
 local p_t={{},{}} --portal texture
 for y0=0,31 do
@@ -1406,7 +1405,6 @@ for y0=0,31 do
 end
 
 --collision
-
 local function coll(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) --collision of two cubes
 	return (x1 < x4 and x2 > x3 and y1 < y4 and y2 > y3 and z1 < z4 and z2 > z3)
 end
@@ -2425,8 +2423,9 @@ function unitic.render() --------
 	cam.x, cam.y, cam.z, cam.tx, cam.ty = plr.x, plr.y, plr.z, plr.tx, plr.ty
 	unitic.update_pr()
 	unitic.update()
-	unitic.draw_grid()
+	if plr.y>=0 then unitic.draw_grid() end
 	unitic.draw()
+	if plr.y<0 then unitic.draw_grid() end
 	--cross
 	pix(120,68,7)
 end
@@ -2820,14 +2819,11 @@ local fr={0,0,0} --framerate
 
 local f_m = false --fixed mouse cursor
 local fmt = 0
---player speed
-local speed=4
 --init
 local state
 local tm1,tm2 = 0,0
 local p={t=0} --pause
 local ms={b={}} --main screen | Table with current buttons
-local ee={t=600, i=0, draw = false} --easter egg
 local mbc = 0 --map bank id
 --buttons
 local menu_options --It must be separate, otherwise local variables inside this table may not see each other
@@ -3548,7 +3544,6 @@ function TIC()
 		fr[1]=fr[1]/#avf
 	end
 end
-
 
 function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
