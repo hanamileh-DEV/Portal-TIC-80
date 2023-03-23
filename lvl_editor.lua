@@ -3345,7 +3345,7 @@ function TIC()
 			if menu.type==2 then
 				local tab = menu.o.tab
 				local objs = objects[tab]
-				rect(162,7,78,75,0)
+				rect(162,7,78,68,0)
 				if f_m then vbank(0) end
 
 				if button(162,7,78,68,false) then ins = false end
@@ -3363,7 +3363,8 @@ function TIC()
 					if keyp(27+i) then menu.o.tab = i end
 				end
 
-				if menu.o.tab <7 then
+				if menu.o.tab<7 then
+					menu.o.sel[tab] = min(menu.o.sel[tab], #objects[tab])
 					print("Objects: "..menu.o.sel[tab].."/"..#objects[tab],164,18,7,false,1,true)
 
 					print("Add",220,18,4)
@@ -3417,7 +3418,16 @@ function TIC()
 							end
 						end
 						--rotate buttons
-
+						if tab>1 and tab~=4 then
+							for vb = 0,1 do
+								vbank(vb)
+								spr(436,231,25,15)
+							end
+							if button(231,25,8,8) and clp1 then
+								obj[4] = (obj[4] - objects_data.types[tab][1] + 1)%4 + objects_data.types[tab][1]
+								upd_objs()
+							end
+						end
 						--X Y Z
 						print("X:",164,39,11)
 						print("Y:",164,47,14)
@@ -3462,6 +3472,18 @@ function TIC()
 								sl.n = false
 							end
 						end
+						--delete button
+						print("Delete",203,67,13)
+						if button(203,67,35,5) then
+							print("Delete",203,67,7)
+							top_text = "Delete the current object"
+							if clp1 then
+								table.remove(objs, menu.o.sel[tab])
+								menu.o.sel[tab] = menu.o.sel[tab] - 1
+								upd_objs()
+							end
+						end
+
 					else
 						print([[Click "Add" to]],165,29+7,4)
 						print([[add a object]],167,36+7,4)
@@ -4044,7 +4066,7 @@ end
 -- 177:7aaaafff8000afff8fffafff8fffafff88887fff00000fffffffffffffffffff
 -- 178:7ddddfffa000dfffafffdfffafffdfffaaaa7fff00000fffffffffffffffffff
 -- 179:22ff22ff00ff00ff22ff22ff22ff22ff222222ff022220fff0000fffffffffff
--- 180:ff777ffff7fff7ff7ffff7ff7fff777f7ffff7fff7ffffffff777fffffffffff
+-- 180:ff777ffff70007ff70f7f7f77ff077707fff070f07fff0fff0777fffff000fff
 -- 181:0000000010101010000000001010101000000000101010100000000010101010
 -- 182:0000000010101010000000001010101000000000101010100000000010101010
 -- 183:0000000010101010000000001010101000000000101010100000000010101010
@@ -4060,7 +4082,7 @@ end
 -- 193:f7777fff10777fff11077fff11107fff11110fff0000ffffffffffffffffffff
 -- 194:f7777fff70777fff77077fff77707fff77770fff0000ffffffffffffffffffff
 -- 195:77ff77ff00ff00ff77ff77ff77ff77ff777777ff077770fff0000fffffffffff
--- 196:ff777ffff7fff7fff7ffff7f777fff7ff7ffff7ffffff7ffff777fffffffffff
+-- 196:0000000010101010000000001010101000000000101010100000000010101010
 -- 197:0000000010101010000000001010101000000000101010100000000010101010
 -- 198:0000000010101010000000001010101000000000101010100000000010101010
 -- 199:0000000010101010000000001010101000000000101010100000000010101010
