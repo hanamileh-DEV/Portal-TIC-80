@@ -3069,7 +3069,99 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 	end
 end
 
-function unitic.update(draw_portal,p_id, XY_rotate)
+
+--code compiler
+
+--[[
+	FAQ (Frequently Asked Questions):
+	
+	Q: What is it?
+	A: This is a code compiler.
+
+	Q: What is it for?
+	A: In this case, the compiled code is faster than usual
+		(Please note that the results may vary depending on the situation).
+
+	Q: But Lua is not a compiled programming language, is it?
+	A: Not really, Lua compiles to bytecode, which is faster than the source code, but still requires an interpreter.
+		In this case, we translate the code into bytecode, which gives a good speed boost.
+
+	Q: Wasn't it easier to do ...?
+	A: We are looking for the most optimized and productive ways, not the easiest ones.
+
+	Q: But this will not give an increase in speed because ...
+	A: First check for yourself and compare the speed (and make sure you're doing it right) before making similar conclusions.
+
+	Q: Why not compile the whole code?
+	A: This is not necessary, because the other parts do not significantly affect the fps,
+		and not all of them in the compiled version will be faster.
+]]
+function compile_update()
+	local code = {}
+
+	code[1] = [[
+	function compiled_update(cam, unitic, draw)
+
+	local v = {}
+
+	local txsin=math.sin( cam.tx)
+	local txcos=math.cos( cam.tx)
+	local tysin=math.sin(-cam.ty)
+	local tycos=math.cos(-cam.ty)
+
+	local cam_x = cam.x
+	local cam_y = cam.y
+	local cam_z = cam.z
+	
+	local a1,b1,c1,c2,a3,b3,c3,c4,z0
+	]]
+
+	local i = 0
+	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
+		i = i + 1
+
+		table.insert(draw.world.v,{x*96,y*128,z*96,false})
+		code[i+1]=string.format([[
+		a1 = %i - cam_x
+		b1 = %i - cam_y
+		c1 = %i - cam_z
+
+		c2=c1*tycos-a1*tysin
+
+		a3=c1*tysin+a1*tycos
+		b3=b1*txcos-c2*txsin
+		c3=b1*txsin+c2*txcos
+
+		c4 = c3
+		
+		if c4>-0.001 then c4=-0.001 end
+
+		z0 = unitic.fov / c4
+
+		v[ %i ] = {z0 * a3 + 120 ,z0 * b3 + 68 ,-c4,c3 > 0}
+		]] ,x*96 ,y*128 ,z*96 ,i)
+	end end end
+
+	code[#code+1]= [[
+		
+	return v
+	end]]
+
+	code = table.concat(code)
+
+	--load
+	local func,error_message = load(code)
+	
+	assert(func,error_message)
+
+	func()
+
+	function unitic.update_compiled()
+		unitic.poly.v = compiled_update(cam,unitic,draw)
+	end
+end
+
+function unitic.update(draw_portal,p_id)
 	--writing all polygons in unitic.poly
 	unitic.poly = { v = {}, f = {}, sp = {} }
 	unitic.obj  = {}
@@ -3088,6 +3180,11 @@ function unitic.update(draw_portal,p_id, XY_rotate)
 	else
 		error("unknown function inputs | "..draw_portal.." "..p_id)
 	end
+
+	-- Rotate all vertices (1)
+	unitic.update_compiled()
+
+
 	--objects (1)--
 	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
@@ -3151,79 +3248,40 @@ function unitic.update(draw_portal,p_id, XY_rotate)
 			end
 		end
 	end
-	--rotate all polygons
+
+	--rotate all vertices (2)
+
 	local txsin = math.sin(cam.tx)
 	local txcos = math.cos(cam.tx)
 	local tysin = math.sin(-cam.ty)
 	local tycos = math.cos(-cam.ty)
 
-	if not XY_rotate then XY_rotate = 0 end
+	for ind = world_size[5], #unitic.poly.v do
+		local a1 = unitic.poly.v[ind][1] - cam.x
+		local b1 = unitic.poly.v[ind][2] - cam.y
+		local c1 = unitic.poly.v[ind][3] - cam.z
 
+		local c2 = c1 * tycos - a1 * tysin
 
-	if     XY_rotate == 0 then
-		for ind = 1, #unitic.poly.v do
-			unitic.poly.v[ind] = {
-				unitic.poly.v[ind][1] - cam.x,
-				unitic.poly.v[ind][2] - cam.y,
-				unitic.poly.v[ind][3] - cam.z,
-				unitic.poly.v[ind][4]
-			}
-		end
-	elseif XY_rotate == 1 then
-		for ind = 1, #unitic.poly.v do
-			unitic.poly.v[ind] = {
-				 unitic.poly.v[ind][2] - cam.x,
-				-unitic.poly.v[ind][1] - cam.y,
-				 unitic.poly.v[ind][3] - cam.z,
-				 unitic.poly.v[ind][4]
-			}
-		end
-	elseif XY_rotate == 2 then
-		for ind = 1, #unitic.poly.v do
-			unitic.poly.v[ind] = {
-				-unitic.poly.v[ind][1] - cam.x,
-				-unitic.poly.v[ind][2] - cam.y,
-				 unitic.poly.v[ind][3] - cam.z,
-				 unitic.poly.v[ind][4]
-			}
-		end
-	elseif XY_rotate == 3 then
-		for ind = 1, #unitic.poly.v do
-			unitic.poly.v[ind] = {
-				-unitic.poly.v[ind][2] - cam.x,
-				 unitic.poly.v[ind][1] - cam.y,
-				 unitic.poly.v[ind][3] - cam.z,
-				 unitic.poly.v[ind][4]
-			}
-		end
+		local a3 = c1 * tysin + a1 * tycos
+		local b3 = b1 * txcos - c2 * txsin
+		local c3 = b1 * txsin + c2 * txcos
+
+		local c4 = c3
+
+		if c4>-0.001 then c4=-0.001 end
+		local z0 = unitic.fov / c4 --this saves one division (very important optimization)
+
+		local x0 = a3 * z0 + 120
+		local y0 = b3 * z0 + 68
+
+		unitic.poly.v[ind][1]=x0
+		unitic.poly.v[ind][2]=y0
+		unitic.poly.v[ind][3]=-c4
+		unitic.poly.v[ind][4]=c3>0
 	end
 
-	for ind = 1, #unitic.poly.v do
-		if unitic.poly.v[4]~=false then -- true or nil
-			local a1 = unitic.poly.v[ind][1]
-			local b1 = unitic.poly.v[ind][2]
-			local c1 = unitic.poly.v[ind][3]
-	
-			local c2 = c1 * tycos - a1 * tysin
-	
-			local a3 = c1 * tysin + a1 * tycos
-			local b3 = b1 * txcos - c2 * txsin
-			local c3 = b1 * txsin + c2 * txcos
 
-			local c4 = c3
-
-			if c4>-0.001 then c4=-0.001 end
-			local z0 = unitic.fov / c4 --this saves one division (very important optimization)
-
-			local x0 = a3 * z0 + 120
-			local y0 = b3 * z0 + 68
-
-			unitic.poly.v[ind][1]=x0
-			unitic.poly.v[ind][2]=y0
-			unitic.poly.v[ind][3]=-c4
-			unitic.poly.v[ind][4]=c3>0
-		end
-	end
 
 	--particles
 	for ind = 1, #draw.pr do
@@ -5359,6 +5417,7 @@ state="logo"
 sync(25 ,1,false)
 music(0)
 
+compile_update()
 function TIC()
 	if st.dt_c then
 		dt=1
