@@ -4,20 +4,62 @@
 import os
 import sys
 
-# Get a filename, from the command line or interactively
-if len(sys.argv) > 1:
-    filename = sys.argv[1]
-else:
-    filename = input("Enter the file name: ")
+max_str_len = 50 # Maximum line length (constant)
 
-# Add the .map extension if necessary
-if not filename.endswith(".map"):
-    filename += ".map"
+# Request the file from the user
+current_dir = os.getcwd()
+
+separator = "\\"
+
+# Output the current directory (hiding folder names, if necessary, so that the line length is not longer than the specified one)
+dirs = current_dir.split(separator)
+print_dir = current_dir
+
+if len(current_dir) <= max_str_len:
+    print("Current Dir:",current_dir)
+else:
+   dirs.pop(2)
+   dirs.insert(2,"...")
+   while len(separator.join(dirs)) > max_str_len and len(dirs) > 4:
+      dirs.pop(3)
+   print("Current Dir:",separator.join(dirs))
+
+
+# A list of all .map files
+print() #Empty string
+print("Current file list:")
+
+files = os.listdir(current_dir)
+
+wav_files = [f for f in files if f.endswith(".map")]
+
+for i,f in enumerate(wav_files,1):
+   print(f"[{i}] {f}")
+
+print() #Empty string
+
+# Ask the user for the number of the desired file
+while True:
+   try:
+      sel_file_index = int(input("Please select a file: "))
+      if 1 <= sel_file_index <= len(wav_files):
+         break
+      else:
+         print("Enter the correct file number!")
+   except ValueError:
+      print("Enter the number!")
+      
+
+# Open the selected file
+filename = wav_files[sel_file_index-1]
+print("Opening a file",filename,"...")
+
+
 outfilename = filename[0:-4] + ".lua"
 
 # Check that the file exists, isn't a directory, and its size does not exceed 32640 bytes
 if not os.path.exists(filename):
-    sys.exit(f"The file \"{filename}\" was not found.")
+    sys.exit(f"The file \"{filename}\" was not found.") # I'm not sure if it's necessary now, but it won't be superfluous
 if os.path.isdir(filename):
     sys.exit(f"\"{filename}\" is a directory.")
 if os.path.getsize(filename) > 32640:
