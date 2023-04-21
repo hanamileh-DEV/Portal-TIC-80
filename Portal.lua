@@ -5,7 +5,6 @@
 -- saveid: portal3d_unitic
 
 local debug = true
-local lag_mode = false
 
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
@@ -424,6 +423,7 @@ local plr = {
 	bf_t = 0, --blue field
 	--stuff
 	debug_text = 0,
+	fps_graph = 1,
 	holding = false,
 	on_ground=true,
 	death = false, --is the player dead
@@ -3498,6 +3498,7 @@ function unitic.draw(particles)
 					unitic.poly.v[poly[3]][3]
 				)
 			end
+		elseif unitic.poly.v[poly[1]][3]<0 and unitic.poly.v[poly[2]][3]<0 and unitic.poly.v[poly[3]][3]<0 then
 		else
 			ttri_clip(
 				p2d.x[1], p2d.y[1],
@@ -5340,7 +5341,7 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 	update_world()
 end
 --palette
-local pal="0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6faff8d18ffbe3cff00ff"
+local pal="0000001c181c3838385d5d5d7d7d7dbababad6d6d6fffffff21018ff55553499ba65eef6b2f6faff8d18ffbe3c283040"
 
 function savepal()
 	local pal_1={}
@@ -5377,8 +5378,20 @@ function darkpal(c)
 	end
 end
 
-local av_frame={} --average frame
-local framerate={0,0,0} --framerate
+local frames={} -- Time for drawing the frame
+local frames_2={}
+
+local frame={-- Framerate
+	min = 0,
+	max = 0,
+	mean = 0, -- The average frame for the frame
+
+	median = 0, -- Median value
+	std_dev = 0, -- Standart deviation
+
+	-- Coefficient of variation
+	coef_var = 0,
+} 
 --init
 local state
 local tm1,tm2 = 0,0
@@ -5538,10 +5551,8 @@ function TIC()
 	if st.dt_c then
 		dt=1
 	else
-		dt = min(max((framerate[3]+framerate[2])/ 33.333, 1), 2.5)
+		dt = min(max((frame.mean)/ 33.333, 1), 2.5)
 	end
-
-	if keyp(14) then lag_mode = not lag_mode end
 
 	if keyp(38) and replay.mode == "rec" then -- "="
 		save_replay()
@@ -6369,8 +6380,8 @@ function TIC()
 		pause.t=0
 	 --debug
 	 	do
-			local FPS =  {1000 / framerate[1], 1000 / (framerate[3]+framerate[2])*2}
-			local FRAME = {framerate[1], (framerate[3]+framerate[2])/2}
+			local FPS =  {1000 / frame.mean, 1000 / (frame.max+frame.min)*2}
+			local FRAME = {frame.mean, (frame.max+frame.min)/2}
 
 			-- Yes, I am aware of the existence of %i, but this requires rounding the number, which will make the code more huge
 			local debug_text={
@@ -6384,10 +6395,17 @@ function TIC()
 				},
 				{
 					string.format("FPS:  %.1f | %.1f Frame: %.1f ms.", FPS[2], FPS[1], fr_draw_t),
-					string.format("Av: %.0f|%.0f ms. min: %.0f ms. max: %.0f ms.", FRAME[1], FRAME[2], framerate[2], framerate[3]),
+					string.format("mean: %.0f|%.0f ms. min: %.0f ms. max: %.0f ms.", FRAME[1], FRAME[2], frame.min, frame.max),
 					string.format("Other: %.0f ms. portals: %.0f|%.0f ms.",max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0), fps_.t5-fps_.t4, fps_.t6-fps_.t5),
 					string.format("Update: %.0f ms. draw: %.0f ms.", fps_.t7 - fps_.t6, fps_.t8 - fps_.t7)
 				},
+				{
+					string.format("FPS:  %.1f | %.1f Frame: %.1f ms.", FPS[2], FPS[1], fr_draw_t),
+					string.format("mean: %.0f ms. min: %.0f ms. max: %.0f ms.", FRAME[1], frame.min, frame.max),
+					string.format("median: %.0f ms. std dev: %.2f", frame.median, frame.std_dev),
+					string.format("coef of var: %.3f",frame.coef_var)
+				},
+
 				{
 					string.format("v: %i f: %i sp: %i p: %i | obj:%i", #unitic.poly.v, #unitic.poly.f, #unitic.poly.sp, #unitic.p, #unitic.obj),
 					string.format("camera X: %.0f  Y: %.0f  Z: %.0f", plr.x, plr.y, plr.z)
@@ -6395,7 +6413,7 @@ function TIC()
 			}
 
 			if keyp(49) then plr.debug_text=(plr.debug_text+1)%(#debug_text+1) end
-			
+
 			vbank(1)
 			if plr.debug_text~=0 and debug then
 				for i=1,#debug_text[plr.debug_text] do
@@ -6696,19 +6714,153 @@ function TIC()
 	--cursor id
 	vbank(0)
 	poke4(0x07FF6,cid)
-	--lag mode
-	while time()-frame_t<32 and lag_mode do end
+	--fps graph
+	local fps_graph = {
+		function() --median (briefly)
+			scale = 24 / frames_2[frame.median]
+			rect(187, 49, 50, 26, 2)
+			rectb(186,48,52,27,1)
+
+			for x = 0, 49 do
+				local p_x = x + 187
+				--interpolation
+				if x&1 == 1 then
+					local p_y = ((frames_2[x//2] or 0) * scale + (frames_2[x//2+1] or 0) * scale) / 2
+					if     p_y > 4 then line(p_x, 73 - p_y,p_x, 73, 5)
+					elseif p_y > 2 then line(p_x, 73 - p_y,p_x, 73, 6)
+					else line(p_x, 73 - p_y, p_x, 73, 7) end
+				else
+					local p_y = (frames_2[x//2] or 0) * scale
+
+					if x//2 == frame.median then line(p_x, 73 - p_y,p_x, 73, 11)
+					elseif p_y > 4 then line(p_x, 73 - p_y,p_x, 73, 5)
+					elseif p_y > 2 then line(p_x, 73 - p_y,p_x, 73, 6)
+					else line(p_x, 73 - p_y, p_x, 73, 7) end
+				end
+			end
+
+			local text_size = print(frame.median,240,0, 1,false,1,true)
+			local text_x = frame.median*2 + 188 - text_size / 2
+			
+			rect(text_x - 1, 75, text_size + 1, 7, 2)
+			
+			rectb(text_x - 2, 74, text_size + 3, 9, 1)
+			print(frame.median, text_x, 76, 7, false, 1 , true)
+
+			rect(186,40, 52, 9, 2)
+			rectb(186,40, 52, 9, 1)
+			print("Median",188, 42, 7)
+		end,
+
+		function() --median (detail)
+
+			rect (25,125,193,9,2)
+			rectb(25,125,193,9,1)
+
+			scale = 104 / frames_2[frame.median]
+
+			for x = 5, 25 do
+				local text_x = x * 9 - 15
+				
+				if x~=5 and x~=25 then
+					if x == frame.median then
+						line(text_x, 11, text_x, 124, 14)
+					elseif frames_2[x] > 5 then
+						line(text_x, 11, text_x, 124, 5)
+
+					end
+				end
+
+				if x == frame.median then
+					print(x, text_x- 2, 127, 7, false, 1, true)
+				else
+					print(x, text_x- 2, 127, 4, false, 1, true)
+				end
+
+				if x<25 then
+					local point_y_1 = 124 - (frames_2[x  ] or 0) * scale
+					local point_y_2 = 124 - (frames_2[x+1] or 0) * scale
+					line(text_x, point_y_1, text_x + 9, point_y_2, 11)
+				end
+			end
+
+			rectb(30, 10, 181, 116, 1)
+
+			rect (30,2,181,9,2)
+			rectb(30,2,181,9,1)
+			print("Median : "..frame.median.." ms.",32,4,7)
+		end,
+
+		function() --framerate
+			rect (177, 52, 62, 32, 2)
+			rectb(177, 52, 62, 32, 1)
+			for x = 0, 59 do
+				local i = (t%60 - 59 + x)%60
+				if frames[i] then
+					local val = min(frames[i], 29)
+
+					line(178 + x, 82 - val, 178 + x, 82, 6)
+					
+					line(178 + x, 82 - min(val,frame.median), 178 + x, 82, 7)
+				end
+			end
+
+			rect (177,44, 62, 9, 2)
+			rectb(177,44, 62, 9, 1)
+
+			print("framerate",179,46,7)
+		end
+	}
+
+	
+	if keyp(41) then plr.fps_graph =(plr.fps_graph +1)%(#fps_graph +1) end
+	if plr.fps_graph ~=0 and t>5 then
+		vbank(1)
+		fps_graph[plr.fps_graph]()
+		print([[press [\] to change]], 172, 1, 8, false, 1, true)
+	end
 	--fps (2)
 	do
-		av_frame[t%60]=fr_draw_t
+		frames[t%60] = F(fr_draw_t)
+
+		frames_2 = {}
+		for i = 0, 100 do frames_2[i] = 0 end
+
 		fr_draw_t = time() - frame_t
-		framerate = {0,math.huge,0}
-		for i=1,#av_frame do
-			framerate[1]=framerate[1]+av_frame[i]
-			if av_frame[i]<framerate[2] then framerate[2]=av_frame[i] end
-			if av_frame[i]>framerate[3] then framerate[3]=av_frame[i] end
+
+		frame.min = math.huge
+		frame.max = 0
+		frame.mean = 0
+		frame.median = 0
+
+
+		for i = 1,#frames do
+			local ms = frames[i]
+			frame.mean = frame.mean + ms
+			if ms < frame.min then frame.min = ms end
+			if ms > frame.max then frame.max = ms end
+
+			frames_2[ms] = (frames_2[ms] or 0) + 1
 		end
-		framerate[1]=framerate[1]/#av_frame
+
+		frame.mean = frame.mean / #frames
+
+		--median
+		local max_val = -1
+		for i,k in pairs(frames_2) do
+			if k > max_val then max_val, frame.median = k, i end
+		end
+
+		--std dev
+		local sum_dev = 0
+		for i = 1,#frames do
+			sum_dev = sum_dev + (frames[i] - frame.mean)^2
+		end
+
+		frame.std_dev = math.sqrt(sum_dev / #frames)
+
+		-- coef of var
+		frame.coef_var = frame.std_dev / frame.mean
 	end
 end
 
