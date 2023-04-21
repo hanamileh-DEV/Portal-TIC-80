@@ -6253,23 +6253,28 @@ function TIC()
 		pause.t=0
 	 --debug
 	 	do
+			local FPS =  {1000 / framerate[1], 1000 / (framerate[3]+framerate[2])*2}
+			local FRAME = {framerate[1], (framerate[3]+framerate[2])/2}
+
+			-- Yes, I am aware of the existence of %i, but this requires rounding the number, which will make the code more huge
 			local debug_text={
 				{
-					"FPS:  " .. F(1000 / (framerate[3]+framerate[2])*2),
-					"dt:   " .. dt*1000//1/1000
+					string.format("FPS:  %.1f",FPS[2]),
+					string.format("dt:   %.2f", dt)
 				},
 				{
-					"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5),
+					string.format("FPS:  %.1f | %.1f", FPS[2], FPS[1]),
+					string.format("Frame: %.0f|%.0f ms.",FRAME[1],FRAME[2]),
 				},
 				{
-					"FPS:  " .. F(1000 / framerate[1]).."|"..F(1000 / (framerate[3]+framerate[2])*2).." Frame:"..F(fr_draw_t).." ms.",
-					"Av: "..F(framerate[1]+0.5).."|"..F((framerate[3]+framerate[2])/2+0.5).." ms. min: "..F(framerate[2]+0.5).." ms. max: "..F(framerate[3]+0.5).." ms.",
-					"Other:"..max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0).." ms. portals:"..F(fps_.t5-fps_.t4).."|"..F(fps_.t6-fps_.t5).." ms.",
-					"Update:"..F(fps_.t7-fps_.t6).." ms. draw:"..F(fps_.t8-fps_.t7).." ms.",
+					string.format("FPS:  %.1f | %.1f Frame: %.1f ms.", FPS[2], FPS[1], fr_draw_t),
+					string.format("Av: %.0f|%.0f ms. min: %.0f ms. max: %.0f ms.", FRAME[1], FRAME[2], framerate[2], framerate[3]),
+					string.format("Other: %.0f ms. portals: %.0f|%.0f ms.",max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0), fps_.t5-fps_.t4, fps_.t6-fps_.t5),
+					string.format("Update: %.0f ms. draw: %.0f ms.", fps_.t7 - fps_.t6, fps_.t8 - fps_.t7)
 				},
 				{
-					"v: " .. #unitic.poly.v .. " f:" .. #unitic.poly.f .." sp:" .. #unitic.poly.sp.." p:" .. #unitic.p.." | objects:"..#unitic.obj,
-					"camera X:" .. F(plr.x) .. " Y:" .. F(plr.y) .. " Z:" .. F(plr.z),
+					string.format("v: %i f: %i sp: %i p: %i | obj:%i", #unitic.poly.v, #unitic.poly.f, #unitic.poly.sp, #unitic.p, #unitic.obj),
+					string.format("camera X: %.0f  Y: %.0f  Z: %.0f", plr.x, plr.y, plr.z)
 				}
 			}
 
