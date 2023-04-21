@@ -3132,13 +3132,10 @@ function compile_update()
 		b3=b1*txcos-c2*txsin
 		c3=b1*txsin+c2*txcos
 
-		c4 = c3
-		
-		if c4>-0.001 then c4=-0.001 end
 
-		z0 = unitic.fov / c4
+		z0 = unitic.fov / c3
 
-		v[ %i ] = {z0 * a3 + 120 ,z0 * b3 + 68 ,-c4,c3 > 0}
+		v[ %i ] = {z0 * a3 + 120 ,z0 * b3 + 68 ,-c3, a3, b3}
 		]] ,x*96 ,y*128 ,z*96 ,i)
 	end end end
 
@@ -3158,6 +3155,128 @@ function compile_update()
 
 	function unitic.update_compiled()
 		unitic.poly.v = compiled_update(cam,unitic,draw)
+	end
+end
+
+function ttri_clip( -- ttri with Z-clipping
+	-- 2D coordinates
+	x1, y1,
+	x2, y2,
+	x3, y3,
+	--UV coordinates
+	u1, v1,
+	u2, v2,
+	u3, v3,
+
+	bg, --bg color
+
+	face, --polygon face
+
+	-- 3D coordinates
+	x3d1, y3d1, z1,
+	x3d2, y3d2, z2,
+	x3d3, y3d3, z3,
+
+	z_coef)
+
+	if not z_coef then z_coef = 1 end
+	if face == 0 then return 0 end
+
+	local tri_face = true
+
+	local pz1, pz2, pz3 = z1>=0, z2>=0, z3>=0
+	
+	if face ~= 3 then
+		tri_face=(x2-x1)*(y3-y1)-(x3-x1)*(y2-y1)<0 == (face == 1)
+		tri_face = (tri_face ~= pz1 ~= pz2 ~= pz3)
+	end
+
+	if not tri_face or not (pz1 or pz2 or pz3) then return 0 end
+
+	if pz1 and pz2 and pz3 then
+		ttri(
+			x1, y1,
+			x2, y2,
+			x3, y3,
+
+			u1, v1,
+			u2, v2,
+			u3, v3,
+			0, bg,
+
+			z1*z_coef, z2*z_coef, z3*z_coef)
+	else
+		--it`s time for magic
+		local v ={ --3d coordinates and UV coordinates
+			{x3d1, y3d1, -z1, u1, v1},
+			{x3d2, y3d2, -z2, u2, v2},
+			{x3d3, y3d3, -z3, u3, v3},
+		}
+		--points sort (bubble sort)
+		if v[1][3] > v[2][3] then v[1],v[2] = v[2],v[1] end
+		if v[2][3] > v[3][3] then v[2],v[3] = v[3],v[2] end
+		if v[1][3] > v[2][3] then v[1],v[2] = v[2],v[1] end
+
+		if v[2][3]<0 then --If 2 of 3 points from behind
+
+			local v1,v2 = {nil,nil,-0.0001,nil,nil},{nil, nil,-0.0001,nil,nil}
+			local t
+
+			--interpolation
+			t     = v[1][3]   /   (v[3][3] - v[1][3])
+
+			v1[1] = v[1][1] - t * (v[3][1] - v[1][1])
+			v1[2] = v[1][2] - t * (v[3][2] - v[1][2])
+			v1[4] = v[1][4] - t * (v[3][4] - v[1][4])
+			v1[5] = v[1][5] - t * (v[3][5] - v[1][5])
+			
+			--more interpolation
+			t     = v[2][3]   /   (v[3][3] - v[2][3])
+
+			v2[1] = v[2][1] - t * (v[3][1] - v[2][1])
+			v2[2] = v[2][2] - t * (v[3][2] - v[2][2])
+			v2[4] = v[2][4] - t * (v[3][4] - v[2][4])
+			v2[5] = v[2][5] - t * (v[3][5] - v[2][5])
+
+			v[3] = v1
+			v[4] = v2
+
+			--3d into 2d
+			for i2 = 1,4 do
+				local z0 = unitic.fov / v[i2][3]
+				v[i2][1] = z0 * v[i2][1] + 120
+				v[i2][2] = z0 * v[i2][2] + 68
+			end
+			ttri(v[1][1],v[1][2],v[2][1],v[2][2],v[3][1],v[3][2],v[1][4],v[1][5],v[2][4],v[2][5],v[3][4],v[3][5],0,bg,-v[1][3]*z_coef,-v[2][3]*z_coef,-v[3][3]*z_coef)
+			ttri(v[2][1],v[2][2],v[3][1],v[3][2],v[4][1],v[4][2],v[2][4],v[2][5],v[3][4],v[3][5],v[4][4],v[4][5],0,bg,-v[2][3]*z_coef,-v[3][3]*z_coef,-v[4][3]*z_coef)
+		else --If 1 of 3 points from behind
+			local v1,v2 = {nil,nil,-0.0001,nil,nil},{nil,nil,-0.0001,nil,nil}
+			local t
+			
+			t     = v[1][3]   /   (v[2][3] - v[1][3])
+
+			v1[1] = v[1][1] - t * (v[2][1] - v[1][1])
+			v1[2] = v[1][2] - t * (v[2][2] - v[1][2])
+			v1[4] = v[1][4] - t * (v[2][4] - v[1][4])
+			v1[5] = v[1][5] - t * (v[2][5] - v[1][5])
+			
+			t     = v[1][3]   /   (v[3][3] - v[1][3])
+
+			v2[1] = v[1][1] - t * (v[3][1] - v[1][1])
+			v2[2] = v[1][2] - t * (v[3][2] - v[1][2])
+			v2[4] = v[1][4] - t * (v[3][4] - v[1][4])
+			v2[5] = v[1][5] - t * (v[3][5] - v[1][5])
+
+			v[2] = v1
+			v[3] = v2
+			--3d into 2d
+			for i2 = 1,3 do
+				local z0 = unitic.fov / v[i2][3]
+				v[i2][1] = z0 * v[i2][1] + 120
+				v[i2][2] = z0 * v[i2][2] + 68
+			end
+			ttri(v[1][1],v[1][2],v[2][1],v[2][2],v[3][1],v[3][2],v[1][4],v[1][5],v[2][4],v[2][5],v[3][4],v[3][5],0,bg,-v[1][3]*z_coef,-v[2][3]*z_coef,-v[3][3]*z_coef)
+		end
 	end
 end
 
@@ -3267,18 +3386,12 @@ function unitic.update(draw_portal,p_id)
 		local b3 = b1 * txcos - c2 * txsin
 		local c3 = b1 * txsin + c2 * txcos
 
-		local c4 = c3
-
-		if c4>-0.001 then c4=-0.001 end
-		local z0 = unitic.fov / c4 --this saves one division (very important optimization)
+		local z0 = unitic.fov / c3 --this saves one division (very important optimization)
 
 		local x0 = a3 * z0 + 120
 		local y0 = b3 * z0 + 68
 
-		unitic.poly.v[ind][1]=x0
-		unitic.poly.v[ind][2]=y0
-		unitic.poly.v[ind][3]=-c4
-		unitic.poly.v[ind][4]=c3>0
+		unitic.poly.v[ind] = {x0, y0, -c3, a3, b3}
 	end
 
 
@@ -3363,35 +3476,45 @@ function unitic.draw(particles)
 			x = { unitic.poly.v[poly[1]][1], unitic.poly.v[poly[2]][1], unitic.poly.v[poly[3]][1] },
 			y = { unitic.poly.v[poly[1]][2], unitic.poly.v[poly[2]][2], unitic.poly.v[poly[3]][2] }
 		}
+		
+		local p3d = {
+			x = { unitic.poly.v[poly[1]][4], unitic.poly.v[poly[2]][4], unitic.poly.v[poly[3]][4] },
+			y = { unitic.poly.v[poly[1]][5], unitic.poly.v[poly[2]][5], unitic.poly.v[poly[3]][5] }
+		}
 
-		--we discard those polygons that will not be visible
-		if poly.f~=0
-		and not (unitic.poly.v[poly[1]][4] and unitic.poly.v[poly[2]][4] and unitic.poly.v[poly[3]][4])
-		and not (p2d.x[1]<0 and p2d.x[2]<0 and p2d.x[3]<0)
-		and not (p2d.y[1]<0 and p2d.y[2]<0 and p2d.y[3]<0)
-		and not (p2d.x[1]>239 and p2d.x[2]>239 and p2d.x[3]>239)
-		and not (p2d.y[1]>135 and p2d.y[2]>135 and p2d.y[3]>135)
-		then
-
-			local tri_face
-			if  poly.f~=3 then
-				tri_face = (p2d.x[2] - p2d.x[1]) * (p2d.y[3] - p2d.y[1]) - (p2d.x[3] - p2d.x[1]) * (p2d.y[2] - p2d.y[1]) < 0
-			end
-
-			if not (tri_face and poly.f==1)
-			and not (not tri_face and poly.f==2)
-			then
+		if unitic.poly.v[poly[1]][3]>0 and unitic.poly.v[poly[2]][3]>0 and unitic.poly.v[poly[3]][3]>0 then
+			if poly.f==3 or (p2d.x[2]-p2d.x[1])*(p2d.y[3]-p2d.y[1])-(p2d.x[3]-p2d.x[1])*(p2d.y[2]-p2d.y[1])<0 == (poly.f == 2) then
 				ttri(
 					p2d.x[1], p2d.y[1],
 					p2d.x[2], p2d.y[2],
 					p2d.x[3], p2d.y[3],
 					uv.x[1], uv.y[1],
 					uv.x[2], uv.y[2],
-					uv.x[3], uv.y[3], 0, 15,
+					uv.x[3], uv.y[3],
+					0,
+					15,
 					unitic.poly.v[poly[1]][3],
 					unitic.poly.v[poly[2]][3],
-					unitic.poly.v[poly[3]][3])
+					unitic.poly.v[poly[3]][3]
+				)
 			end
+		else
+			ttri_clip(
+				p2d.x[1], p2d.y[1],
+				p2d.x[2], p2d.y[2],
+				p2d.x[3], p2d.y[3],
+				uv.x[1], uv.y[1],
+				uv.x[2], uv.y[2],
+				uv.x[3], uv.y[3],
+				
+				15,
+
+				poly.f,
+
+				p3d.x[1], p3d.y[1],unitic.poly.v[poly[1]][3],
+				p3d.x[2], p3d.y[2],unitic.poly.v[poly[2]][3],
+				p3d.x[3], p3d.y[3],unitic.poly.v[poly[3]][3]
+			)
 		end
 	end
 
@@ -4260,7 +4383,6 @@ function unitic.render() --------
 	-- calculation of the position of the portal points
 	local p3d={} -- 3d coordinates
 	local p2d={} -- 2d cooridnates
-	local tri_face={nil,nil}
 
 	for i=1,2 do
 		if draw.p[i] then
@@ -4337,18 +4459,15 @@ function unitic.render() --------
 				
 				p3d[i][i2] = {a3, b3, c3}
 
-				local c4 = c3
 				-- 3d into 2d
-				if c4>-0.001 then c4=-0.001 end
-				local z0 = unitic.fov / c4
+
+				local z0 = unitic.fov / c3
 
 				local x0 = a3 * z0 + 120
 				local y0 = b3 * z0 + 68
 
-				p2d[i][i2] = {x0, y0, -c4, c3>0}
+				p2d[i][i2] = {x0, y0, -c3, a3, b3}
 			end
-
-			tri_face[i] = (p2d[i][2][1] - p2d[i][1][1]) * (p2d[i][3][2] - p2d[i][1][2]) - (p2d[i][3][1] - p2d[i][1][1]) * (p2d[i][2][2] - p2d[i][1][2]) < 0
 		end
 	end
 	--distance calculating
@@ -4403,6 +4522,9 @@ function unitic.render() --------
 	if draw.p[1] and draw.p[2] then
 		dist2d=dist12d < dist22d
 		dist3d=dist13d < dist23d
+
+		if dist13d < 32 then dist2d = true  end
+		if dist23d < 32 then dist2d = false end
 	end
 
 	vbank(0)
@@ -4574,30 +4696,24 @@ function unitic.render() --------
 	--portal overlays
 	if draw.p[1] or draw.p[2] then
 		for i=1,2 do
-			if draw.p[i] and (tri_face[i] == (draw.p[i][5]==1)) and not (p2d[i][1][4] and p2d[i][2][4] and p2d[i][3][4] and p2d[i][4][4]) then
-				local z_coef = 0.99
-				if draw.p[i][4]==2 then
-					z_coef = 0.95
-				end
-
-				local z_coef_2 = z_coef - 0.01
+			if draw.p[i] then
 				--portal border
 				if i==1 then
-					ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],120,32,120,0,96,32,0,15,p2d[i][1][3]*z_coef,p2d[i][2][3]*z_coef,p2d[i][3][3]*z_coef)
-					ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],96 ,0 ,120,0,96,32,0,15,p2d[i][4][3]*z_coef,p2d[i][2][3]*z_coef,p2d[i][3][3]*z_coef)
+					ttri_clip(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],120,32,120,0,96,32,15, 3,  p2d[i][1][4],p2d[i][1][5],p2d[i][1][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.999)
+					ttri_clip(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],96 ,0 ,120,0,96,32,15, 3,  p2d[i][4][4],p2d[i][4][5],p2d[i][4][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.999)
 				else
-					ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,64,24,32,0,64,0,15  ,p2d[i][1][3]*z_coef,p2d[i][2][3]*z_coef,p2d[i][3][3]*z_coef)
-					ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,32,24,32,0,64,0,15  ,p2d[i][4][3]*z_coef,p2d[i][2][3]*z_coef,p2d[i][3][3]*z_coef)
+					ttri_clip(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,64,24,32,0,64,15, 3,  p2d[i][1][4],p2d[i][1][5],p2d[i][1][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.999)
+					ttri_clip(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,32,24,32,0,64,15, 3,  p2d[i][4][4],p2d[i][4][5],p2d[i][4][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.999)
 				end
 
 				--portal center
 				if (not st.r_p or dist2d ~= (i==1)) and not st.r_both then
 					if i==1 then
-						ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,232,24,200,0,232,0,15,p2d[i][1][3]*z_coef_2,p2d[i][2][3]*z_coef_2,p2d[i][3][3]*z_coef_2) --blue
-						ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,200,24,200,0,232,0,15,p2d[i][4][3]*z_coef_2,p2d[i][2][3]*z_coef_2,p2d[i][3][3]*z_coef_2)
+						ttri_clip(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,232,24,200,0,232,15, 3,  p2d[i][1][4],p2d[i][1][5],p2d[i][1][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.995)
+						ttri_clip(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,200,24,200,0,232,15, 3,  p2d[i][4][4],p2d[i][4][5],p2d[i][4][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.995)
 					else
-						ttri(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],48,232,48,200,24,232,0,15,p2d[i][1][3]*z_coef_2,p2d[i][2][3]*z_coef_2,p2d[i][3][3]*z_coef_2) --orange
-						ttri(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,200,48,200,24,232,0,15,p2d[i][4][3]*z_coef_2,p2d[i][2][3]*z_coef_2,p2d[i][3][3]*z_coef_2)
+						ttri_clip(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],48,232,48,200,24,232,15, 3,  p2d[i][1][4],p2d[i][1][5],p2d[i][1][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.995)
+						ttri_clip(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,200,48,200,24,232,15, 3,  p2d[i][4][4],p2d[i][4][5],p2d[i][4][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.995)
 					end
 				end
 
