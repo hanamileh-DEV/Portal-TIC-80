@@ -9,7 +9,7 @@ local debug = true
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
 --automatically loads the selected level (leave nil to load the default levels)
-local load_lvl = {0, 2}
+--local load_lvl = {0, 2}
 
 --[[
 license:
@@ -3096,14 +3096,15 @@ end
 	A: This is not necessary, because the other parts do not significantly affect the fps,
 		and not all of them in the compiled version will be faster.
 ]]
-function compile_update()
+function compile_code()
 	local code = {}
-
+	local objs_compiled_update = {}
 	code[1] = [[
 	function compiled_update(cam, unitic, draw)
 
 	local v = {}
 
+	local v2 = draw.world.v
 	local txsin=math.sin( cam.tx)
 	local txcos=math.cos( cam.tx)
 	local tysin=math.sin(-cam.ty)
@@ -3122,21 +3123,22 @@ function compile_update()
 
 		table.insert(draw.world.v,{x*96,y*128,z*96,false})
 		code[i+1]=string.format([[
-		a1 = %i - cam_x
-		b1 = %i - cam_y
-		c1 = %i - cam_z
+		if v2[%i][4] then
+			a1 = %i - cam_x
+			b1 = %i - cam_y
+			c1 = %i - cam_z
 
-		c2=c1*tycos-a1*tysin
+			c2=c1*tycos-a1*tysin
 
-		a3=c1*tysin+a1*tycos
-		b3=b1*txcos-c2*txsin
-		c3=b1*txsin+c2*txcos
+			a3=c1*tysin+a1*tycos
+			b3=b1*txcos-c2*txsin
+			c3=b1*txsin+c2*txcos
 
+			z0 = unitic.fov / c3
 
-		z0 = unitic.fov / c3
-
-		v[ %i ] = {z0 * a3 + 120 ,z0 * b3 + 68 ,-c3, a3, b3}
-		]] ,x*96 ,y*128 ,z*96 ,i)
+			v[ %i ] = {z0 * a3 + 120 ,z0 * b3 + 68 ,-c3, a3, b3 }
+		end
+		]] ,i ,x*96 ,y*128 ,z*96 ,i, i)
 	end end end
 
 	code[#code+1]= [[
@@ -3156,8 +3158,71 @@ function compile_update()
 	function unitic.update_compiled()
 		unitic.poly.v = compiled_update(cam,unitic,draw)
 	end
-end
 
+	--How about compiling models?
+	for obj_i = 1, #model do
+		model[obj_i].compiled = function() end
+
+		code = {}
+
+		code[1] = [[
+			function obj_compiled_update(obj_x, obj_y, obj_z, v2, cam, unitic, draw)
+		
+			local v = unitic.poly.v
+		
+			local txsin=math.sin( cam.tx)
+			local txcos=math.cos( cam.tx)
+			local tysin=math.sin(-cam.ty)
+			local tycos=math.cos(-cam.ty)
+		
+			local obj_x = obj_x - cam.x
+			local obj_y = obj_y - cam.y
+			local obj_z = obj_z - cam.z
+			
+			local a1,b1,c1,c2,a3,b3,c3,c4,z0
+
+		]]
+		
+		for i = 1, #model[obj_i].v do
+			local obj_v = model[obj_i].v[i]
+			code[i+1] = string.format([[
+
+				a1 = %f + obj_x
+				b1 = %f + obj_y
+				c1 = %f + obj_z
+	
+				c2=c1*tycos-a1*tysin
+	
+				a3=c1*tysin+a1*tycos
+				b3=b1*txcos-c2*txsin
+				c3=b1*txsin+c2*txcos
+	
+				z0 = unitic.fov / c3
+	
+				v[v2 + %i ] = {z0 * a3 + 120 ,z0 * b3 + 68 ,-c3, a3, b3 }
+
+			]], obj_v[1], obj_v[2], obj_v[3], i)
+
+		end
+		
+		code[#code + 1] = string.format("return v end", #model[obj_i].v)
+		
+		code = table.concat(code)
+
+		--load
+		local func,error_message = load(code)
+		
+		assert(func,error_message)
+
+		func()
+
+		objs_compiled_update[obj_i] = obj_compiled_update
+
+		model[obj_i].compiled = function(obj_x, obj_y, obj_z, obj_id, v2)
+			unitic.poly.v = objs_compiled_update[obj_id](obj_x, obj_y, obj_z, v2, cam, unitic, draw)
+		end
+	end
+end
 function ttri_clip( -- ttri with Z-clipping
 	-- 2D coordinates
 	x1, y1,
@@ -3300,18 +3365,18 @@ function unitic.update(draw_portal,p_id)
 		error("unknown function inputs | "..draw_portal.." "..p_id)
 	end
 
-	-- Rotate all vertices (1)
+	-- Rotate all vertices
 	unitic.update_compiled()
 
 
-	--objects (1)--
+	--objects--
 	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	
 	local f3={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{23,248},{29,247},{23,247},-1},f=1},{16,13,15,uv={{23,248},{29,247},{23,247},-1},f=1},{10,12,11,uv={{23,248},{29,248},{29,247},-1},f=1},{16,14,13,uv={{23,248},{29,248},{29,247},-1},f=1}}
 	local f4={{2 ,3 ,1 ,uv={{32,248},{31,246},{31,248},-1},f=1},{4 ,7 ,3 ,uv={{32,248},{31,246},{31,248},-1},f=1},{8 ,5 ,7 ,uv={{31,248},{32,246},{31,248},-1},f=1},{6 ,1 ,5 ,uv={{32,248},{31,246},{31,248},-1},f=1},{7 ,1 ,3 ,uv={{31,247},{16,232},{16,247},-1},f=1},{2 ,4 ,3 ,uv={{32,248},{32,246},{31,246},-1},f=1},{4 ,8 ,7 ,uv={{32,248},{32,246},{31,246},-1},f=1},{8 ,6 ,5 ,uv={{31,248},{32,246},{31,246},-1},f=1},{6 ,2 ,1 ,uv={{32,248},{32,246},{31,246},-1},f=1},{7 ,5 ,1 ,uv={{31,247},{31,232},{16,232},-1},f=1},{10,11,9 ,uv={{16,248},{22,247},{16,247},-1},f=1},{16,13,15,uv={{16,248},{22,247},{16,247},-1},f=1},{10,12,11,uv={{16,248},{22,248},{22,247},-1},f=1},{16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1}}
 
-	local f5={{2,3,1,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{4,7,3,uv={{45+16,232},{32+16,245},{45+16,245},-1},f=2},{8,5,7,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{7,1,3,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{4,6,8,uv={{45+16,246},{32+16,245},{32+16,246},-1},f=2},{2,4,3,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{4,8,7,uv={{45+16,232},{32+16,232},{32+16,245},-1},f=2},{8,6,5,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{7,5,1,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2},{4,2,6,uv={{45+16,246},{45+16,245},{32+16,245},-1},f=2}}
+	local f5={{2,3,1,uv={{61,246},{48,245},{48,246},-1},f=2},{4,7,3,uv={{61,232},{48,245},{61,245},-1},f=2},{8,5,7,uv={{61,246},{48,245},{48,246},-1},f=2},{7,1,3,uv={{61,246},{48,245},{48,246},-1},f=2},{4,6,8,uv={{61,246},{48,245},{48,246},-1},f=2},{2,4,3,uv={{61,246},{61,245},{48,245},-1},f=2},{4,8,7,uv={{61,232},{48,232},{48,245},-1},f=2},{8,6,5,uv={{61,246},{61,245},{48,245},-1},f=2},{7,5,1,uv={{61,246},{61,245},{48,245},-1},f=2},{4,2,6,uv={{61,246},{61,245},{48,245},-1},f=2}}
 	local f6={{2,3,1,uv={{45,246},{32,245},{32,246},-1},f=2},{4,7,3,uv={{45,232},{32,245},{45,245},-1},f=2},{8,5,7,uv={{45,246},{32,245},{32,246},-1},f=2},{7,1,3,uv={{45,246},{32,245},{32,246},-1},f=2},{4,6,8,uv={{45,246},{32,245},{32,246},-1},f=2},{2,4,3,uv={{45,246},{45,245},{32,245},-1},f=2},{4,8,7,uv={{45,232},{32,232},{32,245},-1},f=2},{8,6,5,uv={{45,246},{45,245},{32,245},-1},f=2},{7,5,1,uv={{45,246},{45,245},{32,245},-1},f=2},{4,2,6,uv={{45,246},{45,245},{32,245},-1},f=2}}
 	
 	local i2=0
@@ -3349,18 +3414,23 @@ function unitic.update(draw_portal,p_id)
 		if draw.objects.d[i].s then draw.objects.d[i].model.f=f5 else draw.objects.d[i].model.f=f6 end
 		i2=i2+1 unitic.obj[i2]=draw.objects.d[i]
 	end
-	--objects (2)--
+
+	local v = world_size[5] + 1
 	local i2=#unitic.poly.f
 
 	for ind1 = 1, #unitic.obj do
 		if unitic.obj[ind1].draw then
-			local vt=#unitic.poly.v
-			for ind2=1,#unitic.obj[ind1].model.v do
-				local px=unitic.obj[ind1].model.v[ind2][1]+unitic.obj[ind1].x
-				local py=unitic.obj[ind1].model.v[ind2][2]+unitic.obj[ind1].y
-				local pz=unitic.obj[ind1].model.v[ind2][3]+unitic.obj[ind1].z
-				unitic.poly.v[#unitic.poly.v+1]={px,py,pz}
-			end
+			local vt=v
+
+			unitic.obj[ind1].model.compiled(
+				unitic.obj[ind1].x,
+				unitic.obj[ind1].y,
+				unitic.obj[ind1].z,
+				unitic.obj[ind1].type,
+				v
+			)
+
+			v = v + #unitic.obj[ind1].model.v
 			for ind2=1,#unitic.obj[ind1].model.f do
 				i2=i2+1
 				unitic.poly.f[i2]={unitic.obj[ind1].model.f[ind2][1]+vt, unitic.obj[ind1].model.f[ind2][2]+vt, unitic.obj[ind1].model.f[ind2][3]+vt, f=unitic.obj[ind1].model.f[ind2].f,uv={x={unitic.obj[ind1].model.f[ind2].uv[1][1],unitic.obj[ind1].model.f[ind2].uv[2][1],unitic.obj[ind1].model.f[ind2].uv[3][1]},y={unitic.obj[ind1].model.f[ind2].uv[1][2],unitic.obj[ind1].model.f[ind2].uv[2][2],unitic.obj[ind1].model.f[ind2].uv[3][2]}}}
@@ -3368,35 +3438,12 @@ function unitic.update(draw_portal,p_id)
 		end
 	end
 
-	--rotate all vertices (2)
-
+	--particles
 	local txsin = math.sin(cam.tx)
 	local txcos = math.cos(cam.tx)
 	local tysin = math.sin(-cam.ty)
 	local tycos = math.cos(-cam.ty)
 
-	for ind = world_size[5], #unitic.poly.v do
-		local a1 = unitic.poly.v[ind][1] - cam.x
-		local b1 = unitic.poly.v[ind][2] - cam.y
-		local c1 = unitic.poly.v[ind][3] - cam.z
-
-		local c2 = c1 * tycos - a1 * tysin
-
-		local a3 = c1 * tysin + a1 * tycos
-		local b3 = b1 * txcos - c2 * txsin
-		local c3 = b1 * txsin + c2 * txcos
-
-		local z0 = unitic.fov / c3 --this saves one division (very important optimization)
-
-		local x0 = a3 * z0 + 120
-		local y0 = b3 * z0 + 68
-
-		unitic.poly.v[ind] = {x0, y0, -c3, a3, b3}
-	end
-
-
-
-	--particles
 	for ind = 1, #draw.pr do
 		local a1 = draw.pr[ind].x - cam.x
 		local b1 = draw.pr[ind].y - cam.y
@@ -3408,7 +3455,7 @@ function unitic.update(draw_portal,p_id)
 		local y0 = b1 * txcos - c2 * txsin
 		local z0 = b1 * txsin + c2 * txcos
 
-		local dist=math.sqrt(x0^2+y0^2+z0^2)
+		local dist=math.sqrt(x0 * x0 + y0 * y0 + z0 * z0)
 
 		local draw_p=false
 		if z0<0 then draw_p=true end
@@ -3434,7 +3481,7 @@ function unitic.update(draw_portal,p_id)
 		local y0 = b1 * txcos - c2 * txsin
 		local z0 = b1 * txsin + c2 * txcos
 		
-		local dist=math.sqrt(x0^2+y0^2+z0^2)
+		local dist=math.sqrt(x0 * x0 + y0 * y0 + z0 * z0)
 
 		local draw_p=false
 		if z0<0 then draw_p=true end
@@ -4691,7 +4738,7 @@ function unitic.render() --------
 	unitic.update_pr()
 	unitic.update()
 	fps_.t7=time()
-	unitic.draw(true)
+	pcall(unitic.draw,true)
 	fps_.t8=time()
 
 	--portal overlays
@@ -5032,7 +5079,7 @@ function addobj(x, y, z, type,t1) --objects
 		t1=0,
 		tick=false, --sends a signal 1 tick long while pressing the button
 		s=false, --button signal
-		draw=true,model={v=model[type].v,f=model[type].f}}
+		draw=true,model={v=model[type].v,f=model[type].f, compiled = model[type].compiled}}
 	elseif type==12 or type==13 or type==14 or type==15 then --turrets
 		draw.objects.t[#draw.objects.t+1]=
 		{type=type,
@@ -5047,7 +5094,7 @@ function addobj(x, y, z, type,t1) --objects
 		x=x,y=y,z=z,
 		tick=false,
 		s=false,
-		draw=true,model={v=model[type].v,f=model[type].f}}
+		draw=true,model={v=model[type].v,f=model[type].f, compiled = model[type].compiled}}
 	elseif type==17 or type==18 or type==19 or type==20 then --lifts
 		draw.objects.l[#draw.objects.l+1]=
 		{type=type,
@@ -5060,7 +5107,7 @@ function addobj(x, y, z, type,t1) --objects
 		id=#draw.objects.d+1,
 		x=x,y=y,z=z,
 		s=false, --signal
-		draw=true,model={v=model[type].v,f=model[type].f}}
+		draw=true,model={v=model[type].v,f=model[type].f, compiled = model[type].compiled}}
 
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
 end
@@ -5547,7 +5594,7 @@ state="logo"
 sync(25 ,1,false)
 music(0)
 
-compile_update()
+compile_code()
 function TIC()
 	if st.dt_c then
 		dt=1
@@ -6381,7 +6428,8 @@ function TIC()
 		pause.t=0
 	 --debug
 	 	do
-			local FPS =  {1000 / frame.mean, 1000 / (frame.max+frame.min)*2}
+			collectgarbage("collect")
+			local FPS =  {1000 / frame.mean, 1000 / frame.median}
 			local FRAME = {frame.mean, (frame.max+frame.min)/2}
 
 			-- Yes, I am aware of the existence of %i, but this requires rounding the number, which will make the code more huge
