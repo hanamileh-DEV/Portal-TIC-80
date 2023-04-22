@@ -9,7 +9,7 @@ local debug = true
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
 --automatically loads the selected level (leave nil to load the default levels)
---local load_lvl = {0, 2}
+local load_lvl = {0, 2}
 
 --[[
 license:
@@ -1557,7 +1557,42 @@ local draw={
 	lg={}--light bridge generators
 }
 
-local fps_={t1=0,t2=0,t3=0,t4=0,t5=0,t6=0,t7=0,t8=0,t9=0}
+-- Just a minimalistic fps counter? What about...
+
+local frames = {} -- Time for drawing the frame
+local frames_detalied = {} -- The same, but retains the time of drawing each component
+
+local frames_2 = {} -- how often does a certain frame rendering time appear ([rendering time] = multiplicity)
+
+local frames_sorted = {}
+
+local frame={-- Framerate
+	min = 0,
+	max = 0,
+	mean = 0, -- The average frame for the frame
+	median = 0, -- Median value
+	mode = 0, -- The most encountered value
+	std_dev = 0, -- Standart deviation
+	coef_var = 0, -- Coefficient of variation
+}
+
+local frame_ms = { -- the start time of the rendering of each component
+	0, -- [1] frame init
+	0, -- [2] stuff (1)
+	0, -- [3] portals
+	0, -- [4] update
+	0, -- [5] draw
+	0, -- [6] stuff (2)
+	0, -- [7] collectgarbage
+}
+
+local frames_ms = { -- The time for drawing each component
+	stuff = 0,
+	portals = 0,
+	update = 0,
+	draw = 0,
+	collectgarbage = 0,
+}
 
 local p_g={x=0,y=0,c=1,t1=0,t2=0, cd1=0, cd2=0}
 
@@ -3437,7 +3472,6 @@ function unitic.update(draw_portal,p_id)
 			end
 		end
 	end
-
 	--particles
 	local txsin = math.sin(cam.tx)
 	local txcos = math.cos(cam.tx)
@@ -4577,9 +4611,6 @@ function unitic.render() --------
 
 	vbank(0)
 	cls(1)
-	fps_.t4=time()
-	fps_.t5=fps_.t4
-	fps_.t6=fps_.t4
 
 	--rendering world behind portals
 	if st.r_p and draw.p[1] and draw.p[2] then
@@ -4640,8 +4671,6 @@ function unitic.render() --------
 		elseif XZ_rotd2 == 3 then relx2,relz2=-relz2, relx2
 		end
 
-		fps_.t4=time()
-
 		if st.h_q_p or min(dist13d,dist23d)<96 or t%2==0 then
 				if (dist2d and not st.r_both) or (dist3d and st.r_both) then
 					cam.x = 96*x2 + relx1
@@ -4649,18 +4678,15 @@ function unitic.render() --------
 					cam.z = 96*z2 + relz1
 					cam.ty = plr.ty + math.pi * XZ_rotd1 / 2
 					cam.tx = plr.tx
-					local tz = XY_rotd1
-					unitic.update(true,1,tz) unitic.draw(false) --blue portal
+					unitic.update(true,1) unitic.draw(false) --blue portal
 				else
 					cam.x = 96*x1 + relx2
 					cam.y = 128*y1 + rely2
 					cam.z = 96*z1 + relz2
 					cam.ty = plr.ty + math.pi * XZ_rotd2 / 2
 					cam.tx = plr.tx
-					local tz = XY_rotd2
-					unitic.update(true,2,tz) unitic.draw(false) --orange portal
+					unitic.update(true,2) unitic.draw(false) --orange portal
 				end
-				fps_.t5=time()
 
 				if st.r_both and draw.p[1] and draw.p[2] then
 				vbank(1) do
@@ -4717,8 +4743,6 @@ function unitic.render() --------
 				end
 			end
 			memcpy(0x8000,0x0,240*136/2)
-			fps_.t6=time()
-			
 		else
 			memcpy(0x0,0x8000,240*136/2)
 		end
@@ -4735,11 +4759,13 @@ function unitic.render() --------
 	
 	vbank(1)
 	cls(1)
+
+	frame_ms[3] = time()
+
 	unitic.update_pr()
 	unitic.update()
-	fps_.t7=time()
-	pcall(unitic.draw,true)
-	fps_.t8=time()
+	frame_ms[4]=time()
+	unitic.draw(true)
 
 	--portal overlays
 	if draw.p[1] or draw.p[2] then
@@ -4778,7 +4804,7 @@ function unitic.render() --------
 			if draw.p[2] then spr(497, 117, 65, 1) end
 		end
 	end
-	fps_.t9=time()
+	frame_ms[5]=time()
 end
 
 local turrets_params={
@@ -5425,21 +5451,6 @@ function darkpal(c)
 	end
 end
 
--- Just a minimalistic fps counter? What about...
-
-local frames = {} -- Time for drawing the frame
-local frames_2 = {}
-local frames_sorted = {}
-
-local frame={-- Framerate
-	min = 0,
-	max = 0,
-	mean = 0, -- The average frame for the frame
-	median = 0, -- Median value
-	mode = 0, -- The most encountered value
-	std_dev = 0, -- Standart deviation
-	coef_var = 0, -- Coefficient of variation
-} 
 --init
 local state
 local tm1,tm2 = 0,0
@@ -5595,6 +5606,8 @@ sync(25 ,1,false)
 music(0)
 
 compile_code()
+collectgarbage("collect")
+
 function TIC()
 	if st.dt_c then
 		dt=1
@@ -6130,7 +6143,7 @@ function TIC()
 	--------------------------
 	if state=="game" then
 		if lvl_t~=120 then lvl_t=lvl_t+1 end
-		fps_.t1=time()
+		frame_ms[1]=time()
 		plr.bf_t=max(plr.bf_t-1,0)
 		plr.hp_t_2=max(plr.hp_t_2-1,0)
 	 --palette
@@ -6189,14 +6202,12 @@ function TIC()
 		plr.ty = plr.ty%(math.pi*2)
 		plr.tx = max(min(plr.tx, pi2), -pi2)
 	 --update + collision
-		fps_.t2=time()
 		if not plr.death then unitic.player_physics() end
 		unitic.portal_collision()
 		unitic.cube_update()
 		unitic.button_update()
 		unitic.turret_update()
 		portal_gun()
-		fps_.t3=time()
     --snake
 	 	do
 			local u=true
@@ -6252,6 +6263,7 @@ function TIC()
 			end
 		end
 	 --render
+		frame_ms[2]=time()
 		unitic.render()
 		if plr.pg_lvl>0 and not plr.death then unitic.draw_portalgun() end
 	 --achievement
@@ -6428,7 +6440,10 @@ function TIC()
 		pause.t=0
 	 --debug
 	 	do
+			frame_ms[6]  = time()
 			collectgarbage("collect")
+			frame_ms[7] = time()
+
 			local FPS =  {1000 / frame.mean, 1000 / frame.median}
 			local FRAME = {frame.mean, (frame.max+frame.min)/2}
 
@@ -6445,8 +6460,9 @@ function TIC()
 				{
 					string.format("FPS:  %.1f | %.1f Frame: %.1f ms.", FPS[2], FPS[1], fr_draw_t),
 					string.format("mean: %.0f|%.0f ms. min: %.0f ms. max: %.0f ms.", FRAME[1], FRAME[2], frame.min, frame.max),
-					string.format("Other: %.0f ms. portals: %.0f|%.0f ms.",max(F((fps_.t4-fps_.t3)+(fps_.t9-fps_.t8)),0), fps_.t5-fps_.t4, fps_.t6-fps_.t5),
-					string.format("Update: %.0f ms. draw: %.0f ms.", fps_.t7 - fps_.t6, fps_.t8 - fps_.t7)
+					string.format("Stuff: %.0f ms. portals: %.0f ms.",frames_ms.stuff, frames_ms.portals),
+					string.format("Update: %.0f ms. draw: %.0f ms.", frames_ms.update, frames_ms.draw),
+					string.format("Collectgarbage: %.0f ms. | RAM: %.2f kb.",frames_ms.collectgarbage,collectgarbage("count")/1024),
 				},
 				{
 					string.format("FPS:  %.1f | %.1f Frame: %.1f ms.", FPS[2], FPS[1], fr_draw_t),
@@ -6846,10 +6862,12 @@ function TIC()
 		function() -- framerate
 			rect (177, 52, 62, 32, 2)
 			rectb(177, 52, 62, 32, 1)
+			clip(177,52,62,32)
 			for x = 0, 59 do
 				local i = x%60 + 1
 				if frames[i] then
-					local val = min(frames[i], 29)
+					local val = frames[i]
+
 					line(178 + x, 82 - val, 178 + x, 82, 5)
 					if t > 60 then
 						local val_2 = min((frames[max(i-1,1)] + frames[min(i+1,60)])/2 , 29)
@@ -6857,11 +6875,59 @@ function TIC()
 					end
 				end
 			end
-
+			clip()
 			rect (177,44, 62, 9, 2)
 			rectb(177,44, 62, 9, 1)
 
 			print("framerate",179,46,7)
+		end,
+
+		
+		function() -- framerate (layers)
+			rect (177, 52, 62, 32, 2)
+			rectb(177, 52, 62, 32, 1)
+			clip(177,52,62,32)
+			local pallete = {9, 12, 14, 10, 8}
+			local text = {"stuff","portals","update","draw","collectgarbage"}
+			for x = 0, 59 do
+				local i = x%60 + 1
+				if frames[i] then
+					local val = frames[i]
+					local val_2 = frames_detalied[i]
+
+					line(178 + x, 82 - val, 178 + x, 82, 5)
+					if state == "game" then
+						local pix_y = 82
+						for i2 = 5,1,-1 do
+							for i3 = 1,val_2[i2] do
+								if pix_y < 82 - val then break end
+
+								pix(178 + x,pix_y,pallete[i2])
+								pix_y = pix_y - 1
+							end
+						end
+					end
+				end
+			end
+			clip()
+			rect (177,44, 62, 9, 2)
+			rectb(177,44, 62, 9, 1)
+
+			print("framerate",179,46,7)
+
+			if state == "game" then
+				if key(9) then
+					rect (177,83,62,33,2)
+					rectb(177,83,62,33,1)
+					for i = 1,5 do
+						print(text[i],179,79 + i * 6, pallete[i], false,1,true)
+					end
+				else
+					rect (177,83,62,9,2)
+					rectb(177,83,62,9,1)
+					print("hold [i] for info",181,85,7,false,1,true)
+				end
+			end
 		end
 	}
 
@@ -6873,6 +6939,12 @@ function TIC()
 	end
 	--fps (2)
 	do
+		frames_ms.stuff          = (frame_ms[2] - frame_ms[1]) + (frame_ms[6] - frame_ms[5])
+		frames_ms.portals        =  frame_ms[3] - frame_ms[2]
+		frames_ms.update         =  frame_ms[4] - frame_ms[3]
+		frames_ms.draw           =  frame_ms[5] - frame_ms[4]
+		frames_ms.collectgarbage =  frame_ms[7] - frame_ms[6]
+
 		frames_2 = {}
 
 		frames_sorted = {}
@@ -6918,8 +6990,14 @@ function TIC()
 		frame.coef_var = frame.std_dev / frame.mean
 
 		-- Now complex statistical calculations are also taken into account in the frame rendering time
-		if t>60 then table.remove(frames,1) end
+		if t>60 then table.remove(frames,1) table.remove(frames_detalied,1) end
 		frames[min(t,60)] = F(fr_draw_t)
+		frames_detalied[min(t,60)] = {
+			frames_ms.stuff,
+			frames_ms.portals,
+			frames_ms.update,
+			frames_ms.draw,
+			frames_ms.collectgarbage}
 	end
 end
 
