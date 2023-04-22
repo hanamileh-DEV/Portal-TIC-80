@@ -5378,19 +5378,20 @@ function darkpal(c)
 	end
 end
 
-local frames={} -- Time for drawing the frame
-local frames_2={}
+-- Just a minimalistic fps counter? What about...
+
+local frames = {} -- Time for drawing the frame
+local frames_2 = {}
+local frames_sorted = {}
 
 local frame={-- Framerate
 	min = 0,
 	max = 0,
 	mean = 0, -- The average frame for the frame
-
 	median = 0, -- Median value
+	mode = 0, -- The most encountered value
 	std_dev = 0, -- Standart deviation
-
-	-- Coefficient of variation
-	coef_var = 0,
+	coef_var = 0, -- Coefficient of variation
 } 
 --init
 local state
@@ -6402,7 +6403,9 @@ function TIC()
 				{
 					string.format("FPS:  %.1f | %.1f Frame: %.1f ms.", FPS[2], FPS[1], fr_draw_t),
 					string.format("mean: %.0f ms. min: %.0f ms. max: %.0f ms.", FRAME[1], frame.min, frame.max),
-					string.format("median: %.0f ms. std dev: %.2f", frame.median, frame.std_dev),
+					string.format("mode: %.0f ms.", frame.mode),
+					string.format("median: %.0f ms.", frame.median),
+					string.format("std dev: %.2f",frame.std_dev),
 					string.format("coef of var: %.3f",frame.coef_var)
 				},
 
@@ -6716,8 +6719,8 @@ function TIC()
 	poke4(0x07FF6,cid)
 	--fps graph
 	local fps_graph = {
-		function() --median (briefly)
-			scale = 24 / frames_2[frame.median]
+		function() -- mode / median (briefly)
+			scale = 24 / frames_2[frame.mode]
 			rect(187, 49, 50, 26, 2)
 			rectb(186,48,52,27,1)
 
@@ -6733,37 +6736,38 @@ function TIC()
 					local p_y = (frames_2[x//2] or 0) * scale
 
 					if x//2 == frame.median then line(p_x, 73 - p_y,p_x, 73, 11)
+					elseif x//2 == frame.mode then line(p_x, 73 - p_y,p_x, 73, 13)
 					elseif p_y > 4 then line(p_x, 73 - p_y,p_x, 73, 5)
 					elseif p_y > 2 then line(p_x, 73 - p_y,p_x, 73, 6)
 					else line(p_x, 73 - p_y, p_x, 73, 7) end
 				end
 			end
 
-			local text_size = print(frame.median,240,0, 1,false,1,true)
-			local text_x = frame.median*2 + 188 - text_size / 2
+			local text_size = print(frame.mode,240,0, 1,false,1,true)
+			local text_x = frame.mode*2 + 188 - text_size / 2
 			
 			rect(text_x - 1, 75, text_size + 1, 7, 2)
 			
 			rectb(text_x - 2, 74, text_size + 3, 9, 1)
-			print(frame.median, text_x, 76, 7, false, 1 , true)
+			print(frame.mode, text_x, 76, 7, false, 1 , true)
 
 			rect(186,40, 52, 9, 2)
 			rectb(186,40, 52, 9, 1)
-			print("Median",188, 42, 7)
+			print("mode/median",188, 42, 7,false,1,true)
 		end,
 
-		function() --median (detail)
+		function() -- mode / median (detail)
 
 			rect (25,125,193,9,2)
 			rectb(25,125,193,9,1)
 
-			scale = 104 / frames_2[frame.median]
+			scale = 104 / frames_2[frame.mode]
 
 			for x = 5, 25 do
 				local text_x = x * 9 - 15
 				
 				if x~=5 and x~=25 then
-					if x == frame.median then
+					if x == frame.mode then
 						line(text_x, 11, text_x, 124, 14)
 					elseif frames_2[x] > 5 then
 						line(text_x, 11, text_x, 124, 5)
@@ -6771,7 +6775,7 @@ function TIC()
 					end
 				end
 
-				if x == frame.median then
+				if x == frame.mode then
 					print(x, text_x- 2, 127, 7, false, 1, true)
 				else
 					print(x, text_x- 2, 127, 4, false, 1, true)
@@ -6788,20 +6792,21 @@ function TIC()
 
 			rect (30,2,181,9,2)
 			rectb(30,2,181,9,1)
-			print("Median : "..frame.median.." ms.",32,4,7)
+			print("mode : "..frame.mode.." ms.",32,4,7)
 		end,
 
-		function() --framerate
+		function() -- framerate
 			rect (177, 52, 62, 32, 2)
 			rectb(177, 52, 62, 32, 1)
 			for x = 0, 59 do
-				local i = (t%60 - 59 + x)%60
+				local i = x%60 + 1
 				if frames[i] then
 					local val = min(frames[i], 29)
-
-					line(178 + x, 82 - val, 178 + x, 82, 6)
-					
-					line(178 + x, 82 - min(val,frame.median), 178 + x, 82, 7)
+					line(178 + x, 82 - val, 178 + x, 82, 5)
+					if t > 60 then
+						local val_2 = min((frames[max(i-1,1)] + frames[min(i+1,60)])/2 , 29)
+						line(178 + x, 82 - min(val,val_2), 178 + x, 82, 7)
+					end
 				end
 			end
 
@@ -6814,16 +6819,16 @@ function TIC()
 
 	
 	if keyp(41) then plr.fps_graph =(plr.fps_graph +1)%(#fps_graph +1) end
-	if plr.fps_graph ~=0 and t>5 then
+	if plr.fps_graph ~=0 and t>5 and debug then
 		vbank(1)
 		fps_graph[plr.fps_graph]()
-		print([[press [\] to change]], 172, 1, 8, false, 1, true)
 	end
 	--fps (2)
 	do
-		frames[t%60] = F(fr_draw_t)
-
 		frames_2 = {}
+
+		frames_sorted = {}
+
 		for i = 0, 100 do frames_2[i] = 0 end
 
 		fr_draw_t = time() - frame_t
@@ -6831,12 +6836,12 @@ function TIC()
 		frame.min = math.huge
 		frame.max = 0
 		frame.mean = 0
-		frame.median = 0
-
+		frame.mode = 0
 
 		for i = 1,#frames do
 			local ms = frames[i]
 			frame.mean = frame.mean + ms
+			frames_sorted[i] = ms
 			if ms < frame.min then frame.min = ms end
 			if ms > frame.max then frame.max = ms end
 
@@ -6845,13 +6850,15 @@ function TIC()
 
 		frame.mean = frame.mean / #frames
 
-		--median
+		table.sort(frames_sorted)
+		-- mode
 		local max_val = -1
 		for i,k in pairs(frames_2) do
-			if k > max_val then max_val, frame.median = k, i end
+			if k > max_val then max_val, frame.mode = k, i end
 		end
-
-		--std dev
+		-- median
+		frame.median = frames_sorted[#frames_sorted//2 + 1]
+		-- std dev
 		local sum_dev = 0
 		for i = 1,#frames do
 			sum_dev = sum_dev + (frames[i] - frame.mean)^2
@@ -6861,6 +6868,10 @@ function TIC()
 
 		-- coef of var
 		frame.coef_var = frame.std_dev / frame.mean
+
+		-- Now complex statistical calculations are also taken into account in the frame rendering time
+		if t>60 then table.remove(frames,1) end
+		frames[min(t,60)] = F(fr_draw_t)
 	end
 end
 
