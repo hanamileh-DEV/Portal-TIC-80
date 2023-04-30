@@ -34,11 +34,14 @@ def shorten_path(path, limit):
 
 # Ask user to select a map file interactively
 def select_interactive():
+    map_files = list(Path(".").glob("**/*.map"))
+    if len(map_files) == 0:
+        sys.exit("No .map files in current directory.")
+
     # Print current dir and list of files
     print(f"Current directory: {shorten_path(Path('.'), PATH_LEN)}")
     print()
     print("Available .map files:")
-    map_files = list(Path(".").glob("**/*.map"))
     for i, f in enumerate(map_files, 1):
         print(f"[{i}] {f}")
     print()
