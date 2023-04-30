@@ -8,6 +8,10 @@ local debug = true
 
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
+local load_map_from_cart = false -- Loads the desired level and automatically skips the start screen
+local map_bank_id = 1 -- Don't use 0 bank!!
+
+
 --automatically loads the selected level (leave nil to load the default levels)
 local load_lvl = {0, 2}
 
@@ -5367,19 +5371,16 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 	end end end
 
 	for i=1,3 do
-		q3={}
+		draw.map[i] = {}
 		for x=0,world_size[1]-1 do
-			q2={}
+			draw.map[i][x] = {}
 			for y=0,world_size[2]-1 do
-				q={}
+				draw.map[i][x][y] = {}
 				for z=0,world_size[3]-1 do
-					q[z]={0,0}
+					draw.map[i][x][y][z]={0,0}
 				end
-				q2[y]=q
 			end
-			q3[x]=q2
 		end
-		draw.map[i]=q3
 	end
 
 	--foolproof
@@ -5409,6 +5410,89 @@ local function load_world(set_id,world_id) --Loads the world from ROM memory (fr
 			if angle>4 or angle<0 then error() end
 			addobj(x0*96,y0*128,z0*96,angle+17)
 		end
+	end
+	----
+	update_world()
+end
+
+local function load_world_from_cart()
+	--init
+	draw.map={}
+	draw.world={v={},f={},sp={}}
+	draw.p[1]=nil
+	draw.p[2]=nil
+	draw.pr={}
+	draw.pr_g={}
+	draw.lg={}
+	draw.objects={
+		c={}, --cubes
+		cd={}, --cube dispensers
+		lb={}, --light bridges
+		b={}, --buttons
+		t={}, --turrets
+		fb={}, --floor button
+		l={}, --lifts
+		d={} --displays
+	}
+
+	for z=0,world_size[1]-1 do for y=0,world_size[2]-1 do for x=0,world_size[3]-1 do
+		table.insert(draw.world.v,{x*96,y*128,z*96,false}) --this boolead is resposible for whether the point needs to be updated or not
+	end end end
+
+	for i=1,3 do
+		draw.map[i] = {}
+		for x=0,world_size[1]-1 do
+			draw.map[i][x] = {}
+			for y=0,world_size[2]-1 do
+				draw.map[i][x][y] = {}
+				for z=0,world_size[3]-1 do
+					draw.map[i][x][y][z]={0,0}
+				end
+			end
+		end
+	end
+
+	
+	--walls
+	local adr = 0
+	while true do
+		local bytes = (peek(0x08000 + adr * 3)<<16) + (peek(0x08000 + adr * 3 + 1)<<8) + peek(0x08000 + adr * 3 + 2)
+
+		if bytes == 0 or adr>5440 then break end
+		local type  = bytes % (1<<6)   bytes = bytes >> 6
+		local face  = bytes % (1<<2)   bytes = bytes >> 2
+		local angle = bytes % (1<<2)   bytes = bytes >> 2
+		local z = bytes % (1<<4)   bytes = bytes >> 4
+		local y = bytes % (1<<2)   bytes = bytes >> 2
+		local x = bytes % (1<<4)   bytes = bytes >> 4
+
+		adr = adr + 1
+
+		addwall(x, y, z, angle, face, type)
+	end
+	
+	local walls = adr
+	--objects
+	adr = 0
+	while true do
+		local bytes = 0
+		for i = 0, 5 do
+			bytes = (bytes<<8) + peek(0x08000 + 3 + walls * 3 + adr * 6 + i)
+		end
+
+		if bytes == 0 or adr > 2968 then break end
+
+		adr = adr + 1
+
+		bytes = bytes >> 4
+		local t1   = bytes % (1<<5) bytes = bytes >> 5
+		local type = bytes % (1<<5) bytes = bytes >> 5
+		local z = bytes % (1<<12) - 1520 bytes = bytes >> 12
+		local y = bytes % (1<<10) - 116  bytes = bytes >> 10
+		local x = bytes % (1<<12) - 1520 bytes = bytes >> 12
+
+		addobj(x, y, z, type, t1)
+
 	end
 	----
 	update_world()
@@ -5601,8 +5685,16 @@ local at = { --authors text data
 	vy    =40, --Y velocity
 }
 
-state="logo"
-sync(25 ,1,false)
+if load_map_from_cart then
+	state="load from cart"
+	if map_bank_id == 0 then error("Do not use Bank 0 to import maps!") end
+	if map_bank_id<0 or map_bank_id>7 then error("Out of range") end
+
+	sync(4, map_bank_id,false)
+else
+	state="logo"
+	sync(25 ,1,false)
+end
 music(0)
 
 compile_code()
@@ -6102,6 +6194,28 @@ function TIC()
 		end
 	end
 	--------------------------
+	-- load lvl from cart ----
+	--------------------------
+	if state=="load from cart" then
+		cls(0)
+		if t>2 then
+			load_world_from_cart()
+			plr.x = (world_size[1] + 48) / 2
+			plr.y = 64
+			plr.z = (world_size[3] + 48) / 2
+			plr.noclip = true
+			mx,my = 0,0
+			poke(0x7FC3F,1,1)
+			plr.death = false
+			plr.pg_lvl = 2
+			plr.holding = false
+			achievement.t2 = 0
+			lvl_text_2.draw = false
+			state = "game"
+			lvl_t = 0
+		end
+	end
+	--------------------------
 	-- pause -----------------
 	--------------------------
 	if state=="pause" or state=="pause|settings" or state=="pause|accept" then
@@ -6298,9 +6412,9 @@ function TIC()
 		plr.l_hp = plr.hp
 		if plr.godmode then plr.hp=100 end
 	 --Level scripts
-		maps[save.lvl2][save.lvl].scripts()
+		if not load_map_from_cart then maps[save.lvl2][save.lvl].scripts() end
 	 --init lift
-		if maps[save.lvl2][save.lvl].lift[1] then
+		if not load_map_from_cart and maps[save.lvl2][save.lvl].lift[1] then
 			local x0=maps[save.lvl2][save.lvl].lift[1][1]*96
 			local y0=maps[save.lvl2][save.lvl].lift[1][2]*128
 			local z0=maps[save.lvl2][save.lvl].lift[1][3]*96
@@ -6335,7 +6449,7 @@ function TIC()
 			end
 		end
 	 --finish lift
-		if not plr.death and maps[save.lvl2][save.lvl].lift[2] then
+		if not load_map_from_cart and not plr.death and maps[save.lvl2][save.lvl].lift[2] then
 			local x0=maps[save.lvl2][save.lvl].lift[2][1]*96
 			local y0=maps[save.lvl2][save.lvl].lift[2][2]*128
 			local z0=maps[save.lvl2][save.lvl].lift[2][3]*96
@@ -6423,7 +6537,7 @@ function TIC()
 			end
 		end
 	 --
-		pmem(4,save.cur_t+(tstamp()-st_t))
+		if not load_map_from_cart then pmem(4,save.cur_t+(tstamp()-st_t)) end
 	 --pause
 		if keyp(44) and pause.t==0 then
 			vbank(1)

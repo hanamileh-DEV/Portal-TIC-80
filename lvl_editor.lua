@@ -39,7 +39,9 @@ OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
 THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
-
+trace("Current map bank: "..map_bank,3)
+trace([[To export the map, enter: export map [filename] bank=<bank id> ]],5)
+trace([[To import the map, enter: import map [filename].map bank=<bank id> ]],5)
 --- Compression routines - placed high as they may be used to compress various pieces of data in the source
 local function bitwriter()
 	return {
@@ -2570,7 +2572,6 @@ local function export()
 
 	for i = 1, #objs_bytes do
 		local bytes = objs_bytes[i]
-		trace(string.format("0x%06X",bytes),12)
 		for i2 = 5, 0,-1 do
 			poke(addr + (i-1)*6 + 5 - i2, (bytes >> (8 * i2))&0xFF)
 		end
