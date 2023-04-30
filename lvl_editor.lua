@@ -1347,6 +1347,39 @@ local draw={
 --funcions
 local addwall, addobj, respal, updpal, darkpal
 local menu
+--objects data
+local objects_data = {
+	names={
+		"cube",
+		"cube dispenser",
+		"button",
+		"floor button",
+		"turret",
+		"display",
+		"light bridge gerenator",
+		"lift"
+	},
+	types={
+		{1,2},
+		{3},
+		{8,9,10,11},
+		{16},
+		{12,13,14,15},
+		{21,22,23,24},
+		nil, --special cases
+		nil
+	},
+	m_step={ -- magnet step multiplier (the minimum lenght of 1 step)
+		{24,24 ,24},
+		{24,32 ,24},
+		{24,128,24},
+		{48,128,48},
+		{48,128,48},
+		{96,128,96},
+		{96,128,96}
+	}
+}
+
 --time
 local t1=0 --The start time of the frame drawing
 local t2=0 --The time for drawing the current frame
@@ -2447,9 +2480,14 @@ end
 --map
 local walls = {}
 local objects = {}
+local walls_bytes = {}
+local objs_bytes = {}
+for i = 1,#objects_data.names do objects[i]={} end
 
 local function import()
 	walls = {}
+	walls_bytes = {}
+	objs_bytes = {}
 
 	for i=1,3 do
 		draw.map[i]={}
@@ -2464,11 +2502,12 @@ local function import()
 		end
 	end
 
+	--walls
 	local adr = 0
 	while true do
 		local bytes = (peek(0x08000 + adr * 3)<<16) + (peek(0x08000 + adr * 3 + 1)<<8) + peek(0x08000 + adr * 3 + 2)
 
-		if bytes == 0 or adr>8160 then break end
+		if bytes == 0 or adr>5440 then break end
 		local type  = bytes % (1<<6)   bytes = bytes >> 6
 		local face  = bytes % (1<<2)   bytes = bytes >> 2
 		local angle = bytes % (1<<2)   bytes = bytes >> 2
@@ -2478,10 +2517,66 @@ local function import()
 
 		adr = adr + 1
 
-		addwall(x, y, z, angle, face, type, adr)
+		walls_bytes[#walls_bytes+1] = addwall(x, y, z, angle, face, type, adr)
 		walls[#walls+1] = {x, y, z, angle, face, type}
 	end
+	
 	menu.w.sel = #walls
+
+	--objects
+	adr = 0
+	while true do
+		local bytes = 0
+		for i = 0, 5 do
+			bytes = (bytes<<8) + peek(0x08000 + 3 + #walls * 3 + adr * 6 + i)
+		end
+
+		if bytes == 0 or adr > 2968 then break end
+
+		adr = adr + 1
+
+		bytes = bytes >> 4
+		local t1   = bytes % (1<<5) bytes = bytes >> 5
+		local type = bytes % (1<<5) bytes = bytes >> 5
+		local z = bytes % (1<<12) - 1520 bytes = bytes >> 12
+		local y = bytes % (1<<10) - 116  bytes = bytes >> 10
+		local x = bytes % (1<<12) - 1520 bytes = bytes >> 12
+
+		objs_bytes[#objs_bytes+1] = addobj(x, y, z, type, t1)
+
+		local tab = 0
+
+		for i = 1, #objects_data.types do
+			for i2 = 1,#objects_data.types[i] do
+				if type == objects_data.types[i][i2] then tab = i break end
+			end
+		end
+
+		if tab ~= 0 then
+			objects[tab][#objects[tab]+1] = {x, y, z, type, t1}
+		end
+	end
+end
+
+local function export()
+	memset(0x08000, 0, 240*136)
+	for i = 1, #walls_bytes do
+		poke(0x08000 + (i-1)*3    , walls_bytes[i]>>16)
+		poke(0x08000 + (i-1)*3 + 1, walls_bytes[i]>>8)
+		poke(0x08000 + (i-1)*3 + 2, walls_bytes[i])
+	end
+
+	local addr = 0x08000 + #walls_bytes * 3 + 3 -- 3 zero bytes mean that objects will be indicated further
+
+	for i = 1, #objs_bytes do
+		local bytes = objs_bytes[i]
+		trace(string.format("0x%06X",bytes),12)
+		for i2 = 5, 0,-1 do
+			poke(addr + (i-1)*6 + 5 - i2, (bytes >> (8 * i2))&0xFF)
+		end
+	end
+	
+	sync(4, map_bank, true)
 end
 
 function addwall(x, y, z, angle, face, type,i)
@@ -2510,26 +2605,26 @@ function upd_walls()
 			end
 		end
 	end
-	--export (1)
-	for i = 0, 240*136-1 do
-		poke(0x08000 + i, 0)
-	end
+
+	walls_bytes = {}
 
 	for i=1,#walls do
-		bytes = addwall(walls[i][1],walls[i][2],walls[i][3],walls[i][4],walls[i][5],walls[i][6],i)
-		poke(0x08000 + (i-1)*3    , bytes>>16)
-		poke(0x08000 + (i-1)*3 + 1, bytes>>8)
-		poke(0x08000 + (i-1)*3 + 2, bytes)
+		walls_bytes[i] = addwall(walls[i][1],walls[i][2],walls[i][3],walls[i][4],walls[i][5],walls[i][6],i)
 	end
 	update_world()
 
-	--export (2)
-	sync(4, map_bank, true)
+	export()
 end
 
 function addobj(x, y, z, type,t1) --objects
-	local bytes = 0 --converting a object to bytes
+	local bytes = 0 --converting a object to bytes (6 bytes per objects)
 
+	bytes = (bytes<<12) + x + 1520 -- 12 bites
+	bytes = (bytes<<10) + y + 116  -- 10 bites
+	bytes = (bytes<<12) + z + 1520 -- 12 bites
+	bytes = (bytes<<5 ) + type --5 bites
+	bytes = (bytes<<5 ) + (t1 or 0) --5 bites
+	bytes = (bytes<<4 ) + 15 --4 bits are not used
 	if type==1 or type==2 then --cubes
 		draw.objects.c[#draw.objects.c+1]=
 		{type=type, --type
@@ -2594,16 +2689,23 @@ function addobj(x, y, z, type,t1) --objects
 		draw=true,model={v=model[type].v,f=model[type].f}}
 
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
+
+
+	return bytes
 end
 
 function upd_objs()
 	draw.objects = {c={},cd={},lb={},b={},t={},fb={},l={},d={}}
 
+	objs_bytes = {}
+
 	for i=1,#objects do
 		for i2=1,#objects[i] do
-			bytes = addobj(objects[i][i2][1],objects[i][i2][2],objects[i][i2][3],objects[i][i2][4])
+			objs_bytes[#objs_bytes+1] = addobj(objects[i][i2][1],objects[i][i2][2],objects[i][i2][3],objects[i][i2][4])
 		end
 	end
+
+	export()
 end
 
 function update_world()
@@ -2944,39 +3046,7 @@ menu = {
 	}
 }
 
-local objects_data = {
-	names={
-		"cube",
-		"cube dispenser",
-		"button",
-		"floor button",
-		"turret",
-		"display",
-		"light bridge gerenator",
-		"lift"
-	},
-	types={
-		{1,2},
-		{3},
-		{8,9,10,11},
-		{16},
-		{12,13,14,15},
-		{21,22,23,24},
-		nil, --special cases
-		nil
-	},
-	m_step={ -- magnet step multiplier (the minimum lenght of 1 step)
-		{24,24 ,24},
-		{24,32 ,24},
-		{24,128,24},
-		{48,128,48},
-		{48,128,48},
-		{96,128,96},
-		{96,128,96}
-	}
-}
-
-for i = 1,#objects_data.names do menu.o.sel[i] = 0 objects[i]={} end
+for i = 1,#objects_data.names do menu.o.sel[i] = 0 end
 
 state="map_bank_check"
 
@@ -3365,6 +3435,8 @@ function TIC()
 
 				if menu.o.tab<7 then
 					menu.o.sel[tab] = min(menu.o.sel[tab], #objects[tab])
+					if #objects[tab] > 0 then menu.o.sel[tab] = max(menu.o.sel[tab],1) end
+
 					print("Objects: "..menu.o.sel[tab].."/"..#objects[tab],164,18,7,false,1,true)
 
 					print("Add",220,18,4)
@@ -3372,7 +3444,7 @@ function TIC()
 						print("Add",220,18,7)
 						top_text = "Add a new "..objects_data.names[tab]
 						if clp1 then
-							objs[#objs+1] = {48,64,48,objects_data.types[tab][1]} --X Y Z type t1
+							objs[#objs+1] = {48,64,48,objects_data.types[tab][1], nil}
 							menu.o.sel[tab] = #objs
 							upd_objs()
 						end
@@ -3418,7 +3490,7 @@ function TIC()
 							end
 						end
 						--rotate buttons
-						if tab>1 and tab~=4 then
+						if tab>2 and tab~=4 then
 							for vb = 0,1 do
 								vbank(vb)
 								spr(436,231,25,15)
@@ -3472,6 +3544,10 @@ function TIC()
 								sl.n = false
 							end
 						end
+						--Coordinates limit
+						obj[1] = clip_val(obj[1], -1520, 2575)
+						obj[2] = clip_val(obj[2], -116 , 907 )
+						obj[3] = clip_val(obj[3], -1520, 2575)
 						--delete button
 						print("Delete",203,67,13)
 						if button(203,67,35,5) then
@@ -4143,10 +4219,6 @@ end
 -- 254:fffffffcfffffffcfffffffcfffffffc22222222333333323333333222222222
 -- 255:0000000010101010000000001010101000000000101010100000000010101010
 -- </SPRITES>
-
--- <MAP>
--- 000:00502800902800d028001128005128000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
--- </MAP>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
