@@ -5564,7 +5564,7 @@ local function load_world_from_cart()
 		local face  = bytes % (1<<2)   bytes = bytes >> 2
 		local angle = bytes % (1<<2)   bytes = bytes >> 2
 		local z = bytes % (1<<4)   bytes = bytes >> 4
-		local y = bytes % (1<<2)   bytes = bytes >> 2
+		local y = bytes % (1<<4)   bytes = bytes >> 4
 		local x = bytes % (1<<4)   bytes = bytes >> 4
 
 		adr = adr + 1
