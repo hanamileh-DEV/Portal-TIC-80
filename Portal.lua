@@ -197,7 +197,7 @@ local F, R, min, max, abs = math.floor, math.random, math.min, math.max, math.ab
 local pi2 = math.pi / 2
 
 local dt = 1 --delta time
-
+local col_gar = false --collectgarbage
 local st={ --settings
 m_s   =60, --mouse sensitivity
 r_p   =true, --rendering portals
@@ -393,7 +393,7 @@ local function load_replay()
 		keyp = rpl_keyp
 	end
 end
-load_replay()
+--load_replay()
 
 --camera
 local cam = { x = 0, y = 0, z = 0, tx = 0, ty = 0}
@@ -4455,7 +4455,8 @@ function unitic.render() --------
 		end
 	end
 	-- portal stuff --
-
+	col_gar = false
+	if st.h_q_p then col_gar = true end
 	--local distance of portal (on 2d screen)
 	local dist12d, dist22d, dist2d = math.huge, math.huge, false
 	--global distance of portals (according to 3d coordinates)
@@ -4612,6 +4613,9 @@ function unitic.render() --------
 		if dist13d < 32 then dist2d = true  end
 		if dist23d < 32 then dist2d = false end
 	end
+
+	if min(dist13d,dist23d)<96 then col_gar = true end
+	if t&1 == 1 then col_gar = true end
 
 	vbank(0)
 	cls(1)
@@ -6555,7 +6559,15 @@ function TIC()
 	 --debug
 	 	do
 			frame_ms[6]  = time()
-			collectgarbage("collect")
+			if draw.p[1] and draw.p[2] and st.r_p then
+				if col_gar then
+					collectgarbage("collect")
+				else
+					collectgarbage("stop")
+				end
+			else
+				collectgarbage("collect")
+			end
 			frame_ms[7] = time()
 
 			local FPS =  {1000 / frame.mean, 1000 / frame.median}
