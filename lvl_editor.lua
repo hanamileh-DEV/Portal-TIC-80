@@ -2610,7 +2610,19 @@ function upd_walls()
 	walls_bytes = {}
 
 	for i=1,#walls do
-		walls_bytes[i] = addwall(walls[i][1],walls[i][2],walls[i][3],walls[i][4],walls[i][5],walls[i][6],i)
+		local wall = walls[i]
+
+		if wall[7] then
+			for x = min(wall[1],wall[8]), max(wall[1],wall[8]) do
+				for y = min(wall[2],wall[9]), max(wall[2],wall[9]) do
+					for z = min(wall[3],wall[10]), max(wall[3],wall[10]) do
+						walls_bytes[#walls_bytes+1] = addwall(x,y,z,wall[4],wall[5],wall[6],i)
+					end
+				end
+			end
+		else
+			walls_bytes[#walls_bytes+1] = addwall(wall[1],wall[2],wall[3],wall[4],wall[5],wall[6],i)
+		end
 	end
 	update_world()
 
@@ -3276,7 +3288,7 @@ function TIC()
 					print("Add",220,9,7)
 					top_text = "Add a new wall"
 					if clp1 then
-						walls[#walls+1] = {0,0,0,1,3,1}
+						walls[#walls+1] = {0,0,0,1,3,1,false,nil,nil,nil}
 						menu.w.sel = #walls
 						upd_walls()
 					end
@@ -3296,25 +3308,70 @@ function TIC()
 					print("Angle:" ,164,59,7)
 					--
 					local sl = menu.w.sl
-					--
-					local ind = {1,2,3,6}
-					local min_max={{0,10},{0,5},{0,10},{1,17}}
-					min_max[wall[4]][2] = min_max[wall[4]][2]+1
-					
-					for i = 1,4 do
-						-- rect(204,10+i*8,15,7,15)
-						rectb(203,9+i*8,17,9,15)
-						print_mid(wall[ind[i]],212,11+i*8,7)
-						if button(204,10+i*8,15,7) then
+					-- X Y Z
+					local ind = {1,2,3,6,8,9,10}
+					local min_max={{0,10},{0,5},{0,10},{1,17},{0,10},{0,5},{0,10}}
+					min_max[wall[4]  ][2] = min_max[wall[4]  ][2]+1
+					min_max[wall[4]+4][2] = min_max[wall[4]+4][2]+1
+					if not wall[7] then
+						for i = 1,3 do
+							rectb(203,9+i*8,17,9,15)
+							print_mid(wall[ind[i]],212,11+i*8,7)
+							if button(204,10+i*8,15,7) then
+								if clp1 then
+									sl.n = true
+									sl.id = i
+									sl.val = wall[ind[i]]
+									sl.val_2 = 0
+									sl.t = 0
+									mx = 0
+									poke(0x7FC3F,1,1)
+								end
+							end
+						end
+					else
+						for i = 1,3 do
+							rectb(195,9+i*8,17,9,15)
+							rectb(211,9+i*8,17,9,15)
+							print_mid(wall[ind[i]],204,11+i*8,7)
+							print_mid(wall[ind[i]+7],220,11+i*8,7)
+							if button(196,10+i*8,15,7) then
+								if clp1 then
+									sl.n = true
+									sl.id = i
+									sl.val = wall[ind[i]]
+									sl.val_2 = 0
+									sl.t = 0
+									mx = 0
+									poke(0x7FC3F,1,1)
+								end
+							elseif button(212,10+i*8,15,7) then
 							if clp1 then
 								sl.n = true
-								sl.id = i
-								sl.val = wall[ind[i]]
+								sl.id = i+4
+								sl.val = wall[ind[i]+7]
 								sl.val_2 = 0
 								sl.t = 0
 								mx = 0
 								poke(0x7FC3F,1,1)
 							end
+
+							end
+						end
+					end
+					
+					--wall type
+					rectb(203,41,17,9,15)
+					print_mid(wall[ind[4]],212,43,7)
+					if button(204,42,15,7) then
+						if clp1 then
+							sl.n = true
+							sl.id = 4
+							sl.val = wall[ind[4]]
+							sl.val_2 = 0
+							sl.t = 0
+							mx = 0
+							poke(0x7FC3F,1,1)
 						end
 					end
 					--
@@ -3383,7 +3440,38 @@ function TIC()
 							upd_walls()
 						end
 					end
+					--stack wall button
+					if f_m then
+						if wall[7] then
+							spr(437,210,7,15)
+						else
+							spr(453,210,7,15)
+						end
+					else
+						for vb = 0,1 do
+							vbank(vb)
+							if wall[7] then
+								spr(437,210,7,15)
+							else
+								spr(453,210,7,15)
+							end
+						end
+					end
 
+					if button(210,7,7,7) then
+						top_text = "Allows you to add or edit multiple walls"
+						if clp1 then
+							wall[7] = not wall[7]
+
+							if not wall[8] then
+								wall[8 ] = wall[1]
+								wall[9 ] = wall[2]
+								wall[10] = wall[3]
+							end
+						end
+
+						upd_walls()
+					end
 					--delete button
 					print("Delete",203,67,13)
 					if button(203,67,35,5) then
@@ -3402,7 +3490,7 @@ function TIC()
 						print("Clone",164,67,7)
 						top_text = "Clone the current wall"
 						if clp1 then
-							walls[#walls+1] = {wall[1],wall[2],wall[3],wall[4],wall[5],wall[6]}
+							walls[#walls+1] = {wall[1],wall[2],wall[3],wall[4],wall[5],wall[6],wall[7],wall[8],wall[9],wall[10]}
 							menu.w.sel = #walls
 							upd_walls()
 						end
@@ -3598,23 +3686,18 @@ function TIC()
 				y2 = b3
 				z2 = c3
 			  
-				--debug
-
-			  --only for walls, ignore objects
-			  --local x3,y3,z3,angle = raycast_legacy(x1,y1,z1,x2,y2,z2,rc1,rc2,false)
-
-			  local ray_params = {
-				portals = false,
-				walls = {true,true,true,true,true,true,true,true,true,true,true,true},
-				floors = {true,true,true,true,true,true,true,true,true,true},
-				objs = {}
-			  }
-			  local hit = raycast(x1,y1,z1,x2,y2,z2,1/0,ray_params)
-			  if hit then
-				  menu.w.m_sel = hit.tile[3]
-				  cid = 1
-				  if sc1 then menu.w.sel = menu.w.m_sel end
-			  end
+				local ray_params = {
+					portals = false,
+					walls = {true,true,true,true,true,true,true,true,true,true,true,true},
+					floors = {true,true,true,true,true,true,true,true,true,true},
+					objs = {}
+				}
+				local hit = raycast(x1,y1,z1,x2,y2,z2,1/0,ray_params)
+				if hit then
+					menu.w.m_sel = hit.tile[3]
+					cid = 1
+					if sc1 then menu.w.sel = menu.w.m_sel end
+				end
 		  end
 		--top debug panel (2)
 		print(top_text,1,1,7)
@@ -4144,7 +4227,7 @@ end
 -- 178:7ddddfffa000dfffafffdfffafffdfffaaaa7fff00000fffffffffffffffffff
 -- 179:22ff22ff00ff00ff22ff22ff22ff22ff222222ff022220fff0000fffffffffff
 -- 180:ff777ffff70007ff70f7f7f77ff077707fff070f07fff0fff0777fffff000fff
--- 181:0000000010101010000000001010101000000000101010100000000010101010
+-- 181:7777ffff7007ffff7ff7ffff7777777f7007007f7ff7ff7f7777777f0000000f
 -- 182:0000000010101010000000001010101000000000101010100000000010101010
 -- 183:0000000010101010000000001010101000000000101010100000000010101010
 -- 184:0000000010101010000000001010101000000000101010100000000010101010
@@ -4160,7 +4243,7 @@ end
 -- 194:f7777fff70777fff77077fff77707fff77770fff0000ffffffffffffffffffff
 -- 195:77ff77ff00ff00ff77ff77ff77ff77ff777777ff077770fff0000fffffffffff
 -- 196:0000000010101010000000001010101000000000101010100000000010101010
--- 197:0000000010101010000000001010101000000000101010100000000010101010
+-- 197:2222ffff2002ffff2ff2ffff7777222f7007002f7ff7ff2f7777222f0000000f
 -- 198:0000000010101010000000001010101000000000101010100000000010101010
 -- 199:0000000010101010000000001010101000000000101010100000000010101010
 -- 200:0000000010101010000000001010101000000000101010100000000010101010
@@ -4220,6 +4303,11 @@ end
 -- 254:fffffffcfffffffcfffffffcfffffffc22222222333333323333333222222222
 -- 255:0000000010101010000000001010101000000000101010100000000010101010
 -- </SPRITES>
+
+-- <MAP>
+-- 000:00101c00501c00901c00d01c00111c00511c00911c00d11c00121c00521c00921c00141c00541c00941c00d41c00151c00551c00951c00d51c00161c00561c00961c00181c00581c00981c00d81c00191c00591c00991c00d91c001a1c005a1c009a1c001c1c005c1c009c1c00dc1c001d1c005d1c009d1c00dd1c001e1c005e1c009e1c10101c10501c10901c10d01c10111c10511c10911c10d11c10121c10521c10921c10141c10541c10941c10d41c10151c10551c10951c10d51c10161c10561c10961c50101c50501c50901c50d01c50111c50511c50911c50d11c50121c50521c50921c50141c50541c50941c
+-- 001:50d41c50151c50551c50951c50d51c50161c50561c50961c50181c50581c50981c50d81c50191c50591c50991c50d91c501a1c505a1c509a1c501c1c505c1c509c1c50dc1c501d1c505d1c509d1c50dd1c501e1c505e1c509e1c60101c60501c60901c60d01c60111c60511c60911c60d11c60121c60521c60921c60141c60541c60941c60d41c60151c60551c60951c60d51c60161c60561c60961c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- </MAP>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
