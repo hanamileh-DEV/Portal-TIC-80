@@ -3406,8 +3406,112 @@ function unitic.update(draw_portal,p_id)
 
 	-- Rotate all vertices
 	unitic.update_compiled()
+	-- draw portals overlays
+	local txsin = math.sin( cam.tx)
+	local txcos = math.cos( cam.tx)
+	local tysin = math.sin(-cam.ty)
+	local tycos = math.cos(-cam.ty)
+
+	if draw_portal then
+		local p3d={} -- 3d coordinates
+		local p2d={} -- 2d cooridnates
+		local i = p_id
+		if draw.p[i] then
+
+			-- X Y Z
+			if draw.p[i][4]==1 then
+				p3d = {
+					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96},
+					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96},
+					
+					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96 + 96},
+					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96 + 96},
+				}
+			elseif draw.p[i][4]==2 then
+
+				if draw.p[i][6]==1 then
+					p3d = {
+						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
+						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
+						
+						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
+						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
+					}
+				elseif draw.p[i][6]==2 then
+					p3d = {
+						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96},
+						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96},
+						
+						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
+						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
+					}
+				elseif draw.p[i][6]==3 then
+					p3d = {
+						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
+						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
+						
+						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
+						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
+					}
+				else
+					p3d = {
+						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
+						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
+						
+						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96},
+						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96},
+					}
+				end
+
+			elseif draw.p[i][4]==3 then
+				p3d = {
+					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96},
+					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96},
+					
+					{draw.p[i][1]*96 + 96, draw.p[i][2] * 128      , draw.p[i][3]*96},
+					{draw.p[i][1]*96 + 96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96},
+				}
+			end
 
 
+			for i2 = 1, 4 do
+				-- rotating
+				local a1 = p3d[i2][1] - cam.x
+				local b1 = p3d[i2][2] - cam.y
+				local c1 = p3d[i2][3] - cam.z
+		
+				local c2 = c1 * tycos - a1 * tysin
+		
+				local a3 = c1 * tysin + a1 * tycos
+				local b3 = b1 * txcos - c2 * txsin
+				local c3 = b1 * txsin + c2 * txcos
+				
+				p3d[i2] = {a3, b3, c3}
+
+				-- 3d into 2d
+
+				local z0 = unitic.fov / c3
+
+				local x0 = a3 * z0 + 120
+				local y0 = b3 * z0 + 68
+
+				p2d[i2] = {x0, y0, -c3, a3, b3}
+			end
+
+			if i==1 then
+				ttri_clip(p2d[1][1],p2d[1][2],p2d[2][1],p2d[2][2],p2d[3][1],p2d[3][2],120,32,120,0,96,32,15, 3,  p2d[1][4],p2d[1][5],p2d[1][3] ,p2d[2][4],p2d[2][5],p2d[2][3] ,p2d[3][4],p2d[3][5],p2d[3][3], 0.999)
+				ttri_clip(p2d[4][1],p2d[4][2],p2d[2][1],p2d[2][2],p2d[3][1],p2d[3][2],96 ,0 ,120,0,96,32,15, 3,  p2d[4][4],p2d[4][5],p2d[4][3] ,p2d[2][4],p2d[2][5],p2d[2][3] ,p2d[3][4],p2d[3][5],p2d[3][3], 0.999)
+				ttri_clip(p2d[1][1],p2d[1][2],p2d[2][1],p2d[2][2],p2d[3][1],p2d[3][2],24,232,24,200,0,232,15, 3, p2d[1][4],p2d[1][5],p2d[1][3] ,p2d[2][4],p2d[2][5],p2d[2][3] ,p2d[3][4],p2d[3][5],p2d[3][3], 0.995)
+				ttri_clip(p2d[4][1],p2d[4][2],p2d[2][1],p2d[2][2],p2d[3][1],p2d[3][2],0 ,200,24,200,0,232,15, 3, p2d[4][4],p2d[4][5],p2d[4][3] ,p2d[2][4],p2d[2][5],p2d[2][3] ,p2d[3][4],p2d[3][5],p2d[3][3], 0.995)
+			else
+				ttri_clip(p2d[1][1],p2d[1][2],p2d[2][1],p2d[2][2],p2d[3][1],p2d[3][2],24,64,24,32,0,64,15, 3,    p2d[1][4],p2d[1][5],p2d[1][3] ,p2d[2][4],p2d[2][5],p2d[2][3] ,p2d[3][4],p2d[3][5],p2d[3][3], 0.999)
+				ttri_clip(p2d[4][1],p2d[4][2],p2d[2][1],p2d[2][2],p2d[3][1],p2d[3][2],0 ,32,24,32,0,64,15, 3,    p2d[4][4],p2d[4][5],p2d[4][3] ,p2d[2][4],p2d[2][5],p2d[2][3] ,p2d[3][4],p2d[3][5],p2d[3][3], 0.999)
+				ttri_clip(p2d[1][1],p2d[1][2],p2d[2][1],p2d[2][2],p2d[3][1],p2d[3][2],48,232,48,200,24,232,15, 3,p2d[1][4],p2d[1][5],p2d[1][3] ,p2d[2][4],p2d[2][5],p2d[2][3] ,p2d[3][4],p2d[3][5],p2d[3][3], 0.995)
+				ttri_clip(p2d[4][1],p2d[4][2],p2d[2][1],p2d[2][2],p2d[3][1],p2d[3][2],24,200,48,200,24,232,15, 3,p2d[4][4],p2d[4][5],p2d[4][3] ,p2d[2][4],p2d[2][5],p2d[2][3] ,p2d[3][4],p2d[3][5],p2d[3][3], 0.995)
+			end
+
+		end
+	end
 	--objects--
 	local f1={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,128},{125,132},{128,132},-1},f=2},{7 ,6 ,8 ,uv={{128,128},{125,132},{128,132},-1},f=2},{1 ,4 ,2 ,uv={{125,132},{128,128},{125,128},-1},f=2},{6 ,1 ,2 ,uv={{128,132},{125,128},{125,132},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,128},{125,128},{125,132},-1},f=2},{7 ,5 ,6 ,uv={{128,128},{125,128},{125,132},-1},f=2},{1 ,3 ,4 ,uv={{125,132},{128,132},{128,128},-1},f=2},{6 ,5 ,1 ,uv={{128,132},{128,128},{125,128},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
 	local f2={{5 ,3 ,1 ,uv={{125,136},{120,133},{120,136},-1},f=2},{3 ,8 ,4 ,uv={{128,132},{125,136},{128,136},-1},f=2},{7 ,6 ,8 ,uv={{128,132},{125,136},{128,136},-1},f=2},{1 ,4 ,2 ,uv={{125,136},{128,132},{125,132},-1},f=2},{6 ,1 ,2 ,uv={{128,136},{125,132},{125,136},-1},f=2},{10,11,12,uv={{125,133},{120,128},{120,133},-1},f=3},{5 ,7 ,3 ,uv={{125,136},{125,133},{120,133},-1},f=2},{3 ,7 ,8 ,uv={{128,132},{125,132},{125,136},-1},f=2},{7 ,5 ,6 ,uv={{128,132},{125,132},{125,136},-1},f=2},{1 ,3 ,4 ,uv={{125,136},{128,136},{128,132},-1},f=2},{6 ,5 ,1 ,uv={{128,136},{128,132},{125,132},-1},f=2},{10,9 ,11,uv={{125,133},{125,128},{120,128},-1},f=3},}
@@ -3477,10 +3581,6 @@ function unitic.update(draw_portal,p_id)
 		end
 	end
 	--particles
-	local txsin = math.sin(cam.tx)
-	local txcos = math.cos(cam.tx)
-	local tysin = math.sin(-cam.ty)
-	local tycos = math.cos(-cam.ty)
 
 	for ind = 1, #draw.pr do
 		local a1 = draw.pr[ind].x - cam.x
@@ -3497,8 +3597,6 @@ function unitic.update(draw_portal,p_id)
 
 		local draw_p=false
 		if z0<0 then draw_p=true end
-
-		if z0>-0.001 then z0=-0.001 end
 
 		local z1 = unitic.fov / z0 --this saves one division (very important optimization)
 
@@ -4798,7 +4896,6 @@ function unitic.render() --------
 						ttri_clip(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,200,48,200,24,232,15, 3,  p2d[i][4][4],p2d[i][4][5],p2d[i][4][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.995)
 					end
 				end
-
 			end
 		end
 	end
@@ -7264,9 +7361,9 @@ end
 -- 057:5fffffff5fffffff5fffffff5fffffff5fffffff5fffffff5555555554444444
 -- 058:fffffffcffffffffffffffffffffffffffffffffffffffff5554444444444444
 -- 059:fffffff4fffffff4fffffff4fffffff4fffffff4fffffff44444444444444444
--- 060:ffaa0000ffaa0000fffaa000ffffaa00fffffaa0ffffffaafffffffaaaaaafff
+-- 060:ffaa0000ffaa0000fffaa000ffffaa00fffffaa0ffffffaafffffffaffffffff
 -- 061:0000000000000000000000000000000000000000a000000aaaaaaaaafaaaaaaf
--- 062:0000aaff0000aaff000aafff00aaffff0aafffffaaffffffaffffffffffaaaaa
+-- 062:0000aaff0000aaff000aafff00aaffff0aafffffaaffffffafffffffffffffff
 -- 063:0000000010101010000000001010101000000000101010100000000010101010
 -- 064:fffffffffffffffdffffffddfffffdd0ffffdd00fffdd000ffdd0000ffdd0000
 -- 065:fddddddfddddddddd000000d0000000000000000000000000000000000000000
@@ -7314,9 +7411,9 @@ end
 -- 109:7777777717177777171777777777777711733711117337117777777733733733
 -- 110:7777765477777654777776547777765473377654733776547777765471177654
 -- 111:0000000010101010000000001010101000000000101010100000000010101010
--- 112:ffdd0000ffdd0000fffdd000ffffdd00fffffdd0ffffffddfffffffddddddfff
+-- 112:ffdd0000ffdd0000fffdd000ffffdd00fffffdd0ffffffddfffffffdffffffff
 -- 113:0000000000000000000000000000000000000000d000000dddddddddfddddddf
--- 114:0000ddff0000ddff000ddfff00ddffff0ddfffffddffffffdffffffffffddddd
+-- 114:0000ddff0000ddff000ddfff00ddffff0ddfffffddffffffdfffffffffffffff
 -- 115:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 -- 116:ffffffffffffffffffffffaafffffffffbbbffffffffffffffffffffffffffff
 -- 117:ffffffffffffffffaffffffffffffffffffffffffbbbffffffffffffffffffff
