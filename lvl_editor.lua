@@ -2959,6 +2959,7 @@ menu_options = {
 	p = { --pause
 		{draw = true, y = 65, t=1, text = "Resume"       , func = function() state="edit" sfx_(17) poke(0x7FC3F,1,1) end},
 		{draw = true, y = 85, t=1, text = "select a map bank", func = function() ms.b = menu_options.mb sfx_(16)end},
+		{draw = true, y = 95, t=1, text = "Clear the map", func = function() state = "clear confirm" ms.b = menu_options.cc sfx_(16) end}
 	},
 	mb = { --map bank select
 		{draw = true, y =  45, t=1, text = "Map bank 0", func = function()load_map_bank(0)end},
@@ -2970,6 +2971,17 @@ menu_options = {
 		{draw = true, y = 105, t=1, text = "Map bank 6", func = function()load_map_bank(6)end},
 		{draw = true, y = 115, t=1, text = "Map bank 7", func = function()load_map_bank(7)end},
 		{draw = true, y = 125, t=1, text = "Back", func = function() ms.b = menu_options.p sfx_(17)end},
+	},
+	cc = {	--clear confirm
+	{draw = true, y = 105, t=1, text = "Accept", func = function()
+		state="edit" sfx_(17) poke(0x7FC3F,1,1)
+		for i = 1,#objects_data.names do menu.o.sel[i] = 0 objects[i]={} end
+		menu.w.sel = 0
+		walls={}
+		upd_walls()
+		upd_objs()
+	end},
+	{draw = true, y = 115, t=1, text = "Cancel", func = function() state="pause" ms.b = menu_options.p sfx_(17) end},
 	}
 }
 
@@ -3115,7 +3127,7 @@ function TIC()
 	--------------------------
 	-- pause -----------------
 	--------------------------
-	if state=="pause" then
+	if state=="pause" or state=="clear confirm" then
 		p.t=p.t+1
 		--GUI
 		vbank(0)
@@ -3125,11 +3137,13 @@ function TIC()
 		--logo
 		spr(256,min(-104+p.t*6,8),4,0,1,0,0,13,3)
 
-		if state=="pause" then
-			print("Pause",min(p.t*2,37),35,7)
-			upd_buttons()
-		end
+		print("Pause",min(p.t*2,37),35,7)
+		upd_buttons()
 
+		if state=="clear confirm" then
+			print("Clear the map? This",4,65,8)
+			print("Cannot be undone!",4,75,8)
+		end
 		--Resume
 		if (keyp(44) and p.t>1) or (my>52 and my<63 and clp1 and state=="pause") then
 			state="edit"
@@ -3729,7 +3743,7 @@ end
 
 function BDR(scn_y) scn_y=scn_y-4
 	vbank(0)
-	if state=="pause" then
+	if state=="pause" or state=="clear confirm" then
 		vbank(1)poke(0x03FF9,0)respal()vbank(0)poke(0x03FF9,0)
 		upd_buttons_bdr(scn_y, function()respal()darkpal(max(1-p.t/30,0.4)) end)
 	end
