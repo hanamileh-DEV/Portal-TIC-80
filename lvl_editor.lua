@@ -1917,12 +1917,18 @@ function unitic.draw()
 				if menu.type==1 and poly.w then
 					if poly.w[6] == menu.w.m_sel then
 						line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],13)
-						line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],13)
-						line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],13)
+						if i&1 == 0 then
+							line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],13)
+						else
+							line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],13)
+						end
 					elseif poly.w[6] == menu.w.sel then
 						line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],7)
-						line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],7)
-						line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],7)
+						if i&1 == 0 then
+							line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],7)
+						else
+							line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],7)
+						end
 					end
 				elseif menu.type==2 then
 					if poly.hl then
