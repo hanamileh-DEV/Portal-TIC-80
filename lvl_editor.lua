@@ -855,7 +855,7 @@ local model={
 			 {10,12,11,uv={{16,248},{22,248},{22,247},-1},f=1},
 			 {16,14,13,uv={{16,248},{22,248},{22,247},-1},f=1},
 		},
-		coll={}
+		coll={{-36,0,-36,36,5,36}}
 	},
 	{ --lift -X (17)
 	v={
@@ -1382,6 +1382,15 @@ local objects_data = {
 	}
 }
 
+for i = 1, 6 do
+	for i2 = 1, #objects_data.types[i] do
+		local type = objects_data.types[i][i2]
+		for i3 = 1, #model[type].f do
+			model[type].f[i3].o = {type = type, tab = i}
+		end
+	end
+end
+
 --time
 local t1=0 --The start time of the frame drawing
 local t2=0 --The time for drawing the current frame
@@ -1781,6 +1790,7 @@ function unitic.update()
 					unitic.obj[ind1].model.f[ind2][2]+vt,
 					unitic.obj[ind1].model.f[ind2][3]+vt,
 					f=unitic.obj[ind1].model.f[ind2].f,
+					o=unitic.obj[ind1].model.f[ind2].o,
 					uv={
 						x={unitic.obj[ind1].model.f[ind2].uv[1][1],unitic.obj[ind1].model.f[ind2].uv[2][1],unitic.obj[ind1].model.f[ind2].uv[3][1]},
 						y={unitic.obj[ind1].model.f[ind2].uv[1][2],unitic.obj[ind1].model.f[ind2].uv[2][2],unitic.obj[ind1].model.f[ind2].uv[3][2]}
@@ -1930,11 +1940,20 @@ function unitic.draw()
 							line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],7)
 						end
 					end
-				elseif menu.type==2 then
+				elseif menu.type==2 and poly.o then
 					if poly.hl then
-						line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],12)
-						line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],12)
-						line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],12)
+						line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],7)
+						line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],7)
+						line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],7)
+
+					-- I have no idea what I'm doing
+					-- I'm just got tired
+
+					-- elseif poly.o.tab == menu.o.m_tab and poly.o.type == menu.o.m_sel then
+					-- 	line(p2d.x[1],p2d.y[1],p2d.x[2],p2d.y[2],13)
+					-- 	line(p2d.x[2],p2d.y[2],p2d.x[3],p2d.y[3],13)
+					-- 	line(p2d.x[3],p2d.y[3],p2d.x[1],p2d.y[1],13)
+
 					end
 				end
 			end
@@ -2644,6 +2663,7 @@ function addobj(x, y, z, type,t1) --objects
 	bytes = (bytes<<5 ) + type --5 bites
 	bytes = (bytes<<5 ) + (t1 or 0) --5 bites
 	bytes = (bytes<<4 ) + 15 --4 bits are not used
+
 	if type==1 or type==2 then --cubes
 		draw.objects.c[#draw.objects.c+1]=
 		{type=type, --type
@@ -2708,7 +2728,6 @@ function addobj(x, y, z, type,t1) --objects
 		draw=true,model={v=model[type].v,f=model[type].f}}
 
 	elseif type<=#model and type>0 then error("unknown object | "..type) else error("unknown type | "..type) end
-
 
 	return bytes
 end
@@ -3073,7 +3092,9 @@ menu = {
 		tab = 1,
 		sel = {}, --unique for each tab
 		sl = {id=0, val=0, val_2=0 , t=0, n= false}, --slider
-		magnet = false
+		magnet = false,
+		m_sel = 0, --select obj id
+		m_tab = 0, --select obj tab
 	}
 }
 
@@ -3679,6 +3700,7 @@ function TIC()
 		end
 		--mouse selection
 			menu.w.m_sel = -1
+			menu.o.m_sel = -1
 			if (ins or cl2) then
 			  local x1 = plr.x
 			  local y1 = plr.y
@@ -3705,18 +3727,46 @@ function TIC()
 				x2 = a3
 				y2 = b3
 				z2 = c3
-			  
-				local ray_params = {
-					portals = false,
-					walls = {true,true,true,true,true,true,true,true,true,true,true,true},
-					floors = {true,true,true,true,true,true,true,true,true,true},
-					objs = {}
-				}
-				local hit = raycast(x1,y1,z1,x2,y2,z2,1/0,ray_params)
-				if hit then
-					menu.w.m_sel = hit.tile[3]
-					cid = 1
-					if sc1 then menu.w.sel = menu.w.m_sel end
+				if menu.type == 1 then
+					local ray_params = {
+						portals = false,
+						walls = {true,true,true,true,true,true,true,true,true,true,true,true},
+						floors = {true,true,true,true,true,true,true,true,true,true},
+						objs = {}
+					}
+					local hit = raycast(x1,y1,z1,x2,y2,z2,1/0,ray_params)
+					if hit then
+						menu.w.m_sel = hit.tile[3]
+						cid = 1
+						if sc1 then menu.w.sel = menu.w.m_sel end
+					end
+				else
+					local ray_params = {
+						portals = false,
+						walls = {},
+						floors = {},
+						objs = {"c","cd","b","t","fb","d"}
+					}
+					local hit = raycast(x1,y1,z1,x2,y2,z2,1/0,ray_params)
+					if hit then
+						cid = 1
+						local obj_type = hit.obj.type
+						local obj_id   = hit.obj.id
+
+						local obj_tab = nil
+						for i = 1, 6 do
+							for i2 = 1, #objects_data.types[i] do
+								if obj_type == objects_data.types[i][i2] then obj_tab = i break end
+							end
+						end
+
+						menu.o.m_sel = obj_id
+						menu.o.m_tab = obj_tab
+						if sc1 then
+							menu.o.tab = obj_tab
+							menu.o.sel[obj_tab] = obj_id
+						end
+					end
 				end
 		  end
 		--top debug panel (2)
@@ -4323,6 +4373,10 @@ end
 -- 254:fffffffcfffffffcfffffffcfffffffc22222222333333323333333222222222
 -- 255:0000000010101010000000001010101000000000101010100000000010101010
 -- </SPRITES>
+
+-- <MAP>
+-- 000:0000002620130a20f02620138820f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- </MAP>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
