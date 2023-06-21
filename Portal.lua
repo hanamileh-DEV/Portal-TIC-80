@@ -3600,8 +3600,8 @@ function unitic.update(draw_portal,p_id)
 
 		local z1 = unitic.fov / z0 --this saves one division (very important optimization)
 
-		local x1 = x0 * z1 + 120
-		local y1 = y0 * z1 + 68
+		local x1 = F(x0 * z1 + 120)
+		local y1 = F(y0 * z1 + 68)
 
 		unitic.p[ind]={x1, y1, -z0, draw_p, draw.pr[ind].c, dist}
 	end
@@ -3707,29 +3707,29 @@ function unitic.draw(particles)
 			if unitic.p[i][4] then
 				local p2d = {x=unitic.p[i][1],y=unitic.p[i][2]}
 
-				local color = unitic.p[i][5]
+				if p2d.x>0 and p2d.y>0 and p2d.x<240 and p2d.y<136 then
+
+				local pix_color = peek4(p2d.x + p2d.y * 240)
+				local color = pix_color%16 + 1 --unitic.p[i][5]
 				local color1= color % 4
 				local color2= color //4
-				local size = 1/unitic.p[i][6]*2.4*unitic.fov
 
 				local z0 = unitic.p[i][3]
+				-- Draw a pixel using ttri to see if the particle is close enough
+				ttri(
+					p2d.x  ,p2d.y  ,
+					p2d.x  ,p2d.y+1,
+					p2d.x+1,p2d.y+1,
+					24 + color1*2,248 + color2*2,
+					24 + color1*2,249 + color2*2,
+					25 + color1*2,248 + color2*2,
+					0,-1,z0,z0,z0)
 
-				ttri(
-					p2d.x-size,p2d.y-size,
-					p2d.x-size,p2d.y+size,
-					p2d.x+size,p2d.y+size,
-					24 + color1*2,248 + color2*2,
-					24 + color1*2,249 + color2*2,
-					25 + color1*2,248 + color2*2,
-					0,-1,z0,z0,z0)
-				ttri(
-					p2d.x+size,p2d.y-size,
-					p2d.x-size,p2d.y-size,
-					p2d.x+size,p2d.y+size,
-					24 + color1*2,248 + color2*2,
-					24 + color1*2,249 + color2*2,
-					25 + color1*2,248 + color2*2,
-					0,-1,z0,z0,z0)
+				if peek4(p2d.x + p2d.y * 240) ~= pix_color then
+					local size = 1/unitic.p[i][6]*4*unitic.fov
+					circ(p2d.x,p2d.y,size,unitic.p[i][5])
+				end
+				end
 			end
 		end
 	end
