@@ -4583,42 +4583,6 @@ function unitic.render() --------
 					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96 + 96},
 					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96 + 96},
 				}
-			elseif draw.p[i][4]==2 then
-
-				if draw.p[i][6]==1 then
-					p3d[i] = {
-						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
-						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
-						
-						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
-						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
-					}
-				elseif draw.p[i][6]==2 then
-					p3d[i] = {
-						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96},
-						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96},
-						
-						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
-						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
-					}
-				elseif draw.p[i][6]==3 then
-					p3d[i] = {
-						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
-						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
-						
-						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
-						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
-					}
-				else
-					p3d[i] = {
-						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
-						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
-						
-						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96},
-						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96},
-					}
-				end
-
 			elseif draw.p[i][4]==3 then
 				p3d[i] = {
 					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96},
@@ -5069,7 +5033,6 @@ local function portal_gun()
 	p_g.cd1=max(p_g.cd1-1,0)
 	p_g.cd2=max(p_g.cd2-1,0)
 
-	local draw_particles = x and (clp1 or clp2)
 	--portal gun (portals)
 	if x and f~=2 and draw.map[f][x][y][z][2]==2 then
 		if clp1 and plr.pg_lvl>0 and not (draw.p[2] and draw.p[2][1]==x and draw.p[2][2]==y and draw.p[2][3]==z and draw.p[2][4]==f) then
@@ -5084,61 +5047,19 @@ local function portal_gun()
 			update_world()
 		end
 		draw_particles = false
-	elseif x and f==2 then
-		if clp1 or clp2 then
-			local plr_rotate = (plr.ty + pi2/2) % (math.pi*2)
-			local face = 1
-			local portal_id = 1
-			if plr.tx>0 then face = 2 end
-			if clp2 then portal_id = 2 end
-
-			if     plr_rotate < pi2     then portal_rotate = 1 if z3 % 96 < 48 then z = z - 1 end
-			elseif plr_rotate < math.pi then portal_rotate = 2 if x3 % 96 < 48 then x = x - 1 end
-			elseif plr_rotate < pi2 * 3 then portal_rotate = 3 if z3 % 96 < 48 then z = z - 1 end
-			else                             portal_rotate = 4 if x3 % 96 < 48 then x = x - 1 end end
-
-			if portal_rotate==2 or portal_rotate==4 then
-				x = min(max(0,x),9)
-				if draw.map[f][x][y][z][2]==2 and draw.map[f][x+1][y][z][2]==2 and draw.map[1][x+1][y][z][2]==0 then
-					draw.p[portal_id]={x, y, z, 2, face ,portal_rotate}
-					p_g.cd1=10
-					update_world()
-					draw_particles = false
-				end
-			else
-				z = min(max(0,z),9)
-				if draw.map[f][x][y][z][2]==2 and draw.map[f][x][y][z+1][2]==2 and draw.map[3][x][y][z+1][2]==0 then
-					draw.p[portal_id]={x, y, z, 2, face ,portal_rotate}
-					p_g.cd2=10
-					update_world()
-					draw_particles = false
-				end
-			end
-		end
-	end
-
-	--particles
-	if draw_particles then
-		if clp1 and plr.pg_lvl>0 then
+	elseif x then
+		if (clp1 and plr.pg_lvl>0) or (clp2 and plr.pg_lvl>1) then
 			for i=0,50 do
 				addp(x3,y3,z3,
 				(R()-0.5)*5,
 				(R()-0.5)*5,
 				(R()-0.5)*5,
 				R(5,25),
-				R(10,11))
-			end
-		elseif clp2 and plr.pg_lvl>1 then
-			for i=0,50 do
-				addp(x3,y3,z3,
-				(R()-0.5)*5,
-				(R()-0.5)*5,
-				(R()-0.5)*5,
-				R(5,25),
-				R(13,14))
+				clp1 and R(10,11) or R(13,14))
 			end
 		end
 	end
+
 
 	--portal reset
 	if debug and (keyp(6) or (plr.bf_t>1 and save.lvl~=3 and save.lvl2~=1)) then
