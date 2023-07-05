@@ -3033,7 +3033,7 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 			local rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
 			local rotd1 = (2 + rot2 - rot1) % 4
 			local rotd2 = (2 + rot1 - rot2) % 4
-			if tile[2] == 5 then
+			if tx==draw.p[1][1] and ty==draw.p[1][2] and tz==draw.p[1][3] and axis == draw.p[1][4] then
 				newx, newy, newz = teleport(1, cx, cy, cz)
 				if     rotd1 == 0 then newrx,newrz=rx,rz
 				elseif rotd1 == 1 then newrx,newrz=rz,-rx
@@ -3042,7 +3042,7 @@ local function raycast(x, y, z, rx, ry, rz, len, params)
 				end
 				break
 			end
-			if tile[2] == 6 then
+			if tx==draw.p[2][1] and ty==draw.p[2][2] and tz==draw.p[2][3] and axis == draw.p[2][4] then
 				newx, newy, newz = teleport(2, cx, cy, cz)
 				if     rotd2 == 0 then newrx,newrz=rx,rz
 				elseif rotd2 == 1 then newrx,newrz=rz,-rx
