@@ -4075,9 +4075,8 @@ function unitic.cube_update() --all physics related to cubes
 					{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true,[10]=true,[13]=true,[14]=true,[15]=true,[16]=true,[17]=true,[18]=true,[19]=true},
 					{[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true,[7]=true,[8]=true,[9]=true})
 					if not x then break end
-					local wt=draw.map[f][x][y][z][2] --Type of wall
-					if wt==5 and f~=2 then inbp=true end
-					if wt==6 and f~=2 then inop=true end
+					if x==draw.p[1][1] and y==draw.p[1][2] and z==draw.p[1][3] and f==draw.p[1][4] then inbp=true end
+					if x==draw.p[2][1] and y==draw.p[2][2] and z==draw.p[2][3] and f==draw.p[2][4] then inop=true end
 
 					if not (inbp or inop) then
 						p[#p+1]={x=pf.x,y=pf.y,z=pf.z}
