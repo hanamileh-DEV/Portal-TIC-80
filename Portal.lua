@@ -198,7 +198,6 @@ local pi2 = math.pi / 2
 
 -- type "cake" for snake
 
-local dt = 1 --delta time
 local col_gar = false --collectgarbage
 local st={ --settings
 m_s   =60, --mouse sensitivity
@@ -210,7 +209,6 @@ d_t   =true, --dynamic textures
 music =true,
 sfx   =true,
 pcm   =true,
-dt_c  =false, --time delta constant
 scroll=30,
 vy    =40, --Y velocity
 }
@@ -238,7 +236,6 @@ if save.st&2^31~=0 then
 	st.p     =save.st&2^5 ~=0
 	st.d_t   =save.st&2^6 ~=0
 	st.pcm   =save.st&2^7 ~=0
-	st.dt_c  =save.st&2^8 ~=0
 end
 
 local function save_settings()
@@ -251,7 +248,6 @@ local function save_settings()
 	if st.p      then save.st=save.st+2^5 end
 	if st.d_t    then save.st=save.st+2^6 end
 	if st.pcm    then save.st=save.st+2^7 end
-	if st.dt_c   then save.st=save.st+2^8 end
 	save.st=save.st+2^31
 	pmem(1,save.st)
 end
@@ -4753,9 +4749,9 @@ function unitic.player_physics()
 
 	local vec_len = math.sqrt(vec.x^2 + vec.y^2 + vec.z^2)
 	if vec_len~=0 then --normalization
-		vec.x = vec.x / vec_len * plr.speed * dt
-		vec.y = vec.y / vec_len * plr.speed * dt
-		vec.z = vec.z / vec_len * plr.speed * dt
+		vec.x = vec.x / vec_len * plr.speed
+		vec.y = vec.y / vec_len * plr.speed
+		vec.z = vec.z / vec_len * plr.speed
 	end
 	--rotation
 	
@@ -4770,7 +4766,7 @@ function unitic.player_physics()
 		if keyp(48) then plr.vy = 8 end
 	end
 
-	plr.vy = max(plr.vy - 0.5 * dt, -20) --gravity
+	plr.vy = max(plr.vy - 0.5, -20) --gravity
 
 	--horizontal velociy
 	if plr.on_ground then
@@ -4811,9 +4807,9 @@ function unitic.player_physics()
 
 	--zoom
 	if key(65) then
-		unitic.fov=min(unitic.fov*1.2*dt,800)
+		unitic.fov=min(unitic.fov*1.2,800)
 	else
-		unitic.fov=max(unitic.fov/1.2/dt,80)
+		unitic.fov=max(unitic.fov/1.2,80)
 	end
 	
 	--collision
@@ -6544,7 +6540,7 @@ menu_options = {
 		{draw = true, y = 75 , t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
 		{draw = true, y = 85 , t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
 		{draw = true, y = 95 , t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
-		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) st.dt_c  =not st.dt_c   end},
+		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) end},
 
 		{draw = true, y = 115, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 125, t=1, text="", func = function() sfx_(18) end},
@@ -6672,11 +6668,6 @@ compile_code()
 collectgarbage("collect")
 
 function TIC()
-	if st.dt_c then
-		dt=1
-	else
-		dt = min(max((frame.mean)/ 33.333, 1), 2.5)
-	end
 
 	if keyp(38) and replay.mode == "rec" then -- "="
 		save_replay()
@@ -7374,7 +7365,7 @@ function TIC()
 		end
 	 --sounds
 		s.t1=max(s.t1-1,0)
-		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1*dt  if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
+		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1  if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
 		if plr.bf_t==8 then sfx_(3,"B-4",-1,1) end
 	 --hp
 		if plr.l_hp == plr.hp then plr.hp_t=plr.hp_t+1 else plr.hp_t=0 end
@@ -7544,7 +7535,6 @@ function TIC()
 			local debug_text={
 				{
 					string.format("FPS:  %.1f",FPS[2]),
-					string.format("dt:   %.2f", dt)
 				},
 				{
 					string.format("FPS:  %.1f | %.1f", FPS[2], FPS[1]),
@@ -7636,7 +7626,7 @@ function TIC()
 			{"p"     , "Particles:"           , {"enables particle visibility",""}},
 			{"d_t"   , "Dynamic textures:"    , {"allows some textures to change in real time","(for example, the texture of a light bridge)"}},
 			
-			{"dt_c","Time delta constant:",{"When turned off, the player moves at","the same speed regardless of the fps"}},
+			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
