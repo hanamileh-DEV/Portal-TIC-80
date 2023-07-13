@@ -200,17 +200,16 @@ local pi2 = math.pi / 2
 
 local col_gar = false --collectgarbage
 local st={ --settings
-m_s   =60, --mouse sensitivity
-r_p   =true, --rendering portals
-r_both=true, -- render both portals
-h_q_p =false, --high quality portals
-p     =true, --particles
-d_t   =true, --dynamic textures
-music =true,
-sfx   =true,
-pcm   =true,
-scroll=30,
-vy    =40, --Y velocity
+	m_s   =60, --mouse sensitivity
+	r_p   =true, --rendering portals
+	r_both=true, -- render both portals
+	h_q_p =false, --high quality portals
+	p     =true, --particles
+	d_t   =true, --dynamic textures
+	music =true,
+	sfx   =true,
+	scroll=30,
+	vy    =40, --Y velocity
 }
 
 local save
@@ -235,7 +234,6 @@ if save.st&2^31~=0 then
 	st.r_both=save.st&2^4 ~=0
 	st.p     =save.st&2^5 ~=0
 	st.d_t   =save.st&2^6 ~=0
-	st.pcm   =save.st&2^7 ~=0
 end
 
 local function save_settings()
@@ -247,7 +245,6 @@ local function save_settings()
 	if st.r_both then save.st=save.st+2^4 end
 	if st.p      then save.st=save.st+2^5 end
 	if st.d_t    then save.st=save.st+2^6 end
-	if st.pcm    then save.st=save.st+2^7 end
 	save.st=save.st+2^31
 	pmem(1,save.st)
 end
@@ -414,7 +411,7 @@ local plr = {
 	tx = 0, --vertical
 	ty = 0, --horizontal
 	--cheats
-	godmode = true,
+	godmode = false,
 	noclip =  false,
 	--hp
 	hp = 100 ,
@@ -425,7 +422,7 @@ local plr = {
 	bf_t = 0, --blue field
 	--stuff
 	debug_text = 0,
-	fps_graph = 1,
+	fps_graph = 0,
 	holding = false,
 	on_ground=true,
 	death = false, --is the player dead
@@ -6534,14 +6531,14 @@ menu_options = {
 	s = { --settings
 		{draw = true, y = 25 , t=1, text="", func = function() sfx_(18) if state=="main|settings" then music(2)else music(3,7,0,true,true,160)end st.music=not st.music end},
 		{draw = true, y = 35 , t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
-		{draw = true, y = 45 , t=1, text="", func = function() sfx_(18) st.pcm   =not st.pcm    end},
-		{draw = true, y = 55 , t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
-		{draw = true, y = 65 , t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
-		{draw = true, y = 75 , t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
-		{draw = true, y = 85 , t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
-		{draw = true, y = 95 , t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+		{draw = true, y = 45 , t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
+		{draw = true, y = 55 , t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
+		{draw = true, y = 65 , t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
+		{draw = true, y = 75 , t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
+		{draw = true, y = 85 , t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+		
+		{draw = true, y = 95 , t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) end},
-
 		{draw = true, y = 115, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 125, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 135, t=1, text="", func = function() sfx_(18) end},
@@ -7618,7 +7615,6 @@ function TIC()
 		local texts = {
 			{"music" , "Music:"               , {"Background music is always good", "but not everyone likes it"}},
 			{"sfx"   , "Sfx:"                 , {"Sounds of walking, pressing buttons,","shooting turrets, etc."}},
-			{"pcm"   , "PCM sample playback:" , {"Uses PCM technology to play some","melodies, sometimes sounds better"}},
 
 			{"r_p"   , "Rendering portals: "  , {"Allows the world to be drawn through portals",""}},
 			{"h_q_p" , "High quality portals:", {"using a different method of drawing portals,","which works faster but reduces their quality"}},
@@ -7626,6 +7622,7 @@ function TIC()
 			{"p"     , "Particles:"           , {"enables particle visibility",""}},
 			{"d_t"   , "Dynamic textures:"    , {"allows some textures to change in real time","(for example, the texture of a light bridge)"}},
 			
+			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
