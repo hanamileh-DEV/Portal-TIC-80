@@ -222,7 +222,7 @@ function load_save()
 		lvl=pmem(0),
 		lvl_pack=0, --ID set of levels
 		st=pmem(1), --settings (All settings except the sensitivity of the mouse in binary form)
-		--pmem(2) not used
+		--
 		deaths=pmem(3), --the number of player deaths (in the main game)
 		cur_t=pmem(4), --current time passing the main game
 	}
@@ -239,6 +239,8 @@ if save.st&(1<<31)~=0 then
 	st.d_t   =save.st&(1<<6) ~=0
 
 	st.dif   =(save.st>>7 & 3) -- 2 bites
+
+	st.m_s = pmem(2)
 end
 
 local function save_settings()
@@ -255,6 +257,7 @@ local function save_settings()
 
 	save.st = save.st+(1<<31)
 	pmem(1,save.st)
+	pmem(2,st.m_s)
 end
 
 -- Replay support
