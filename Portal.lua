@@ -13,7 +13,7 @@ local map_bank_id = 1 -- Don't use 0 bank!!
 
 
 --automatically loads the selected level (leave nil to load the default levels)
---local load_lvl = {1, 7}
+--local load_lvl = {1, 8}
 
 --[[
 license:
@@ -199,6 +199,7 @@ local pi2 = math.pi / 2
 -- type "cake" for snake
 
 local col_gar = false --collectgarbage
+
 local st={ --settings
 	m_s   =60, --mouse sensitivity
 	r_p   =true, --rendering portals
@@ -208,6 +209,8 @@ local st={ --settings
 	d_t   =true, --dynamic textures
 	music =true,
 	sfx   =true,
+	dif   = 1, -- Difficulty
+
 	scroll=30,
 	vy    =40, --Y velocity
 }
@@ -226,26 +229,31 @@ function load_save()
 end
 load_save()
 
-if save.st&2^31~=0 then
-	st.r_p   =save.st&2^0 ~=0
-	st.h_q_p =save.st&2^1 ~=0
-	st.music =save.st&2^2 ~=0
-	st.sfx   =save.st&2^3 ~=0
-	st.r_both=save.st&2^4 ~=0
-	st.p     =save.st&2^5 ~=0
-	st.d_t   =save.st&2^6 ~=0
+if save.st&(1<<31)~=0 then
+	st.r_p   =save.st&(1<<0) ~=0
+	st.h_q_p =save.st&(1<<1) ~=0
+	st.music =save.st&(1<<2) ~=0
+	st.sfx   =save.st&(1<<3) ~=0
+	st.r_both=save.st&(1<<4) ~=0
+	st.p     =save.st&(1<<5) ~=0
+	st.d_t   =save.st&(1<<6) ~=0
+
+	st.dif   =(save.st>>7 & 3) -- 2 bites
 end
 
 local function save_settings()
 	save.st=0
-	if st.r_p    then save.st=save.st+2^0 end
-	if st.h_q_p  then save.st=save.st+2^1 end
-	if st.music  then save.st=save.st+2^2 end
-	if st.sfx    then save.st=save.st+2^3 end
-	if st.r_both then save.st=save.st+2^4 end
-	if st.p      then save.st=save.st+2^5 end
-	if st.d_t    then save.st=save.st+2^6 end
-	save.st=save.st+2^31
+	if st.r_p    then save.st=save.st+(1<<0) end
+	if st.h_q_p  then save.st=save.st+(1<<1) end
+	if st.music  then save.st=save.st+(1<<2) end
+	if st.sfx    then save.st=save.st+(1<<3) end
+	if st.r_both then save.st=save.st+(1<<4) end
+	if st.p      then save.st=save.st+(1<<5) end
+	if st.d_t    then save.st=save.st+(1<<6) end
+
+	save.st = save.st + (st.dif << 7)
+
+	save.st = save.st+(1<<31)
 	pmem(1,save.st)
 end
 
@@ -5859,7 +5867,15 @@ function unitic.turret_update()
 
 		if hits then draw.objects.t[i].cd=min(draw.objects.t[i].cd+1,41)
 			if draw.objects.t[i].cd>40 then
-				plr.hp=plr.hp-R(1,2)
+				if st.dif == 0 then
+					plr.hp=plr.hp-R(1,2)/5
+				elseif st.dif == 1 then
+					plr.hp=plr.hp-R(1,2)
+				else
+					plr.hp=plr.hp-R(1,2)*1.5
+				end
+
+
 				if plr.hp_t_2<2 then plr.hp_t_2=5 sfx_(4,"C-3",-1,1) end
 				if draw.objects.t[i].type==14 or draw.objects.t[i].type==15 then
 					for _=1,2 do
@@ -6529,15 +6545,15 @@ menu_options = {
 		{draw = true, y=125, t=1, text = "Back", func = function() sfx_(17) state="main" main_screen.b = menu_options.ms end}
 	},
 	s = { --settings
-		{draw = true, y = 25 , t=1, text="", func = function() sfx_(18) if state=="main|settings" then music(2)else music(3,7,0,true,true,160)end st.music=not st.music end},
-		{draw = true, y = 35 , t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
-		{draw = true, y = 45 , t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
-		{draw = true, y = 55 , t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
-		{draw = true, y = 65 , t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
-		{draw = true, y = 75 , t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
-		{draw = true, y = 85 , t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+		{draw = true, y = 25, t=1, text="", func = function() sfx_(18) st.dif = (st.dif + 1)%3 end},
+		{draw = true, y = 35 , t=1, text="", func = function() sfx_(18) if state=="main|settings" then music(2)else music(3,7,0,true,true,160)end st.music=not st.music end},
+		{draw = true, y = 45 , t=1, text="", func = function() sfx_(18) st.sfx   =not st.sfx    end},
+		{draw = true, y = 55 , t=1, text="", func = function() sfx_(18) st.r_p   =not st.r_p    end},
+		{draw = true, y = 65 , t=1, text="", func = function() sfx_(18) st.h_q_p =not st.h_q_p  end},
+		{draw = true, y = 75 , t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
+		{draw = true, y = 85 , t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
+		{draw = true, y = 95 , t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
 		
-		{draw = true, y = 95 , t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 115, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 125, t=1, text="", func = function() sfx_(18) end},
@@ -7572,7 +7588,7 @@ function TIC()
 				end
 			end
 
-			if plr.godmode then print("Godmode" ,1,130,7) else print("HP: "..max(plr.hp ,0),1,130,7) end
+			if plr.godmode then print("Godmode" ,1,130,7) else print("HP: "..F(max(plr.hp ,0)+0.5),1,130,7) end
 			if plr.noclip then print("Noclip", 104, 85, 7) end
 		end
 		vbank(0)
@@ -7613,20 +7629,26 @@ function TIC()
 		clip(0,20, 240, 90)
 
 		local texts = {
-			{"music" , "Music:"               , {"Background music is always good", "but not everyone likes it"}},
-			{"sfx"   , "Sfx:"                 , {"Sounds of walking, pressing buttons,","shooting turrets, etc."}},
+			{"dif","Difficulty:",{"Affects the damage receied from turrets.","We recommend playing on medium difficulty."}},
+			{"music" , "Music:" ,{"Background music is always good", "but not everyone likes it"}},
+			{"sfx"   , "Sfx:"   ,{"Sounds of walking, pressing buttons,","shooting turrets, etc."}},
 
-			{"r_p"   , "Rendering portals: "  , {"Allows the world to be drawn through portals",""}},
-			{"h_q_p" , "High quality portals:", {"using a different method of drawing portals,","which works faster but reduces their quality"}},
-			{"r_both", "Render both poratls: ", {"allows you to see through both","portals at the same time"}},
-			{"p"     , "Particles:"           , {"enables particle visibility",""}},
-			{"d_t"   , "Dynamic textures:"    , {"allows some textures to change in real time","(for example, the texture of a light bridge)"}},
+			{"r_p"   , "Rendering portals: "  ,{"Allows the world to be drawn through portals","(Significantly affects perfomance)"}},
+			{"h_q_p" , "High quality portals:",{"using a different method of drawing portals,","which works faster but reduces their quality"}},
+			{"r_both", "Render both poratls: ",{"allows you to see through both","portals at the same time"}},
+			{"p"     , "Particles:"           ,{"enables particle visibility",""}},
+			{"d_t"   , "Dynamic textures:"    ,{"allows some textures to change in real time","(for example, the texture of a light bridge)"}},
 			
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
-			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
+		}
+
+		local dif = {
+			"Easy",
+			"Medium",
+			"Hard"
 		}
 
 		for i = 1, #texts do
@@ -7643,6 +7665,8 @@ function TIC()
 					print("On",140,12+i*10 - F(st.scroll),13)
 				elseif st[texts[i][1]]==false then
 					print("Off",140,12+i*10 - F(st.scroll),11)
+				elseif texts[i][1] == "dif" then
+					print(dif[st[texts[i][1]]+1],140,12+i*10 - F(st.scroll),7)
 				else
 					print(st[texts[i][1]],140,12+i*10 - F(st.scroll),4)
 				end
