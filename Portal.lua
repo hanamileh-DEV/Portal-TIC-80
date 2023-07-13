@@ -210,6 +210,7 @@ local st={ --settings
 	music =true,
 	sfx   =true,
 	dif   = 1, -- Difficulty
+	cheats = false,
 
 	scroll=30,
 	vy    =40, --Y velocity
@@ -237,8 +238,8 @@ if save.st&(1<<31)~=0 then
 	st.r_both=save.st&(1<<4) ~=0
 	st.p     =save.st&(1<<5) ~=0
 	st.d_t   =save.st&(1<<6) ~=0
-
 	st.dif   =(save.st>>7 & 3) -- 2 bites
+	st.cheats =save.st&(1<<10) ~=0
 
 	st.m_s = pmem(2)
 end
@@ -252,6 +253,7 @@ local function save_settings()
 	if st.r_both then save.st=save.st+(1<<4) end
 	if st.p      then save.st=save.st+(1<<5) end
 	if st.d_t    then save.st=save.st+(1<<6) end
+	if st.cheats then save.st=save.st+(1<<10)end
 
 	save.st = save.st + (st.dif << 7)
 
@@ -4810,8 +4812,10 @@ function unitic.player_physics()
 	plr.z = plr.z + plr.vz
 	
 	--cheats
-	if keyp(57) or keyp(22) then plr.y = plr.y + 2 plr.noclip = not plr.noclip end
-	if keyp(2) then plr.godmode = not plr.godmode end
+	if st.cheats then
+		if keyp(57) or keyp(22) then plr.y = plr.y + 2 plr.noclip = not plr.noclip end
+		if keyp(2) then plr.godmode = not plr.godmode end
+	end
 
 	--zoom
 	if key(65) then
@@ -6556,8 +6560,8 @@ menu_options = {
 		{draw = true, y = 75 , t=1, text="", func = function() sfx_(18) st.r_both=not st.r_both end},
 		{draw = true, y = 85 , t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
 		{draw = true, y = 95 , t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
+		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) st.cheats=not st.cheats end},
 		
-		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 115, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 125, t=1, text="", func = function() sfx_(18) end},
 		{draw = true, y = 135, t=1, text="", func = function() sfx_(18) end},
@@ -7642,7 +7646,7 @@ function TIC()
 			{"p"     , "Particles:"           ,{"enables particle visibility",""}},
 			{"d_t"   , "Dynamic textures:"    ,{"allows some textures to change in real time","(for example, the texture of a light bridge)"}},
 			
-			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
+			{"cheats","Cheats:",{"Allows you to enale cheats using the V B keys","(may reduce interest in pasasing the game)"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
