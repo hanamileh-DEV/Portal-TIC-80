@@ -3730,7 +3730,7 @@ function TIC()
 				if menu.type == 1 then
 					local ray_params = {
 						portals = false,
-						walls = {true,true,true,true,true,true,true,true,true,true,true,true},
+						walls = {true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true},
 						floors = {true,true,true,true,true,true,true,true,true,true},
 						objs = {}
 					}
