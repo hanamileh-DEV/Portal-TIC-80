@@ -5327,13 +5327,17 @@ function unitic.cube_update() --all physics related to cubes
 		if bf or draw.objects.c[i].y<-200 then
 			sfx_(2)
 			--particles
-			for i2=1,80 do
-				addp(cx-24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-				addp(cx+24       ,cy+R(-24,24),cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-				addp(cx+R(-24,24),cy-24       ,cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-				addp(cx+R(-24,24),cy+24       ,cz+R(-24,24),R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-				addp(cx+R(-24,24),cy+R(-24,24),cz-24       ,R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
-				addp(cx+R(-24,24),cy+R(-24,24),cz+24       ,R()*2-1,R()*2-1,R()*2-1,R(30,60),1)
+			for i2=1,150 do
+				addp(
+					cx+R(-24,24),
+					cy+R(-24,24),
+					cz+R(-24,24),
+					
+					R()*2-1 + draw.objects.c[i].vx*0.3,
+					R()*2-1 + draw.objects.c[i].vy*0.3,
+					R()*2-1 + draw.objects.c[i].vz*0.3,
+					
+					R(30,90),1)
 			end
 			--
 			if draw.objects.c[i].held then plr.holding=false end
