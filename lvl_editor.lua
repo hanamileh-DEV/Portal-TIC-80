@@ -2905,8 +2905,9 @@ end
 
 local x_p={x=0, y=7, mx=0, my=0, type=2, drag = false} --xyz pointer
 
-local function xyz_pointer(p_x,p_y, type)
+local function xyz_pointer(p_x,p_y, type, len)
 	if type == 0 then return end
+	len = len or 12
    local xyz2={{0,0,-1,1},{0,0,-1,2},{0,0,-1,3}} --2d coordinates, depth, color
    local xyz3={{1,0,0,1},{0,1,0,2},{0,0,1,3}} --3d coordinates, color
    --magic
@@ -2928,15 +2929,14 @@ local function xyz_pointer(p_x,p_y, type)
       xyz3[u][2]=b3
       xyz3[u][3]=min(c3,-1)
 
-      xyz2[u][1]=12*xyz3[u][1]/xyz3[u][3]+15+p_x
-      xyz2[u][2]=12*xyz3[u][2]/xyz3[u][3]+15+p_y
+      xyz2[u][1]=len*xyz3[u][1]/xyz3[u][3]+15+p_x
+      xyz2[u][2]=len*xyz3[u][2]/xyz3[u][3]+15+p_y
       xyz2[u][3]=c3
    end --the end of the magic
 	--sort
-	local function sort_p(a,b)
-		return a[3]<b[3]
-	end
-	table.sort(xyz2,sort_p)
+	local xyz2_2 = {xyz2[1], xyz2[2], xyz2[3]}
+
+	table.sort(xyz2,function(a,b)return a[3]<b[3]end)
 	--render
 	local colors = {10,13,8}
 	for i = 1,3 do
@@ -2944,6 +2944,8 @@ local function xyz_pointer(p_x,p_y, type)
 		pix(15+p_x, 15+p_y,7)
 		if type==2 then spr(399+xyz2[i][4], xyz2[i][1]-2, xyz2[i][2]-3, 15) end
 	end
+
+	return xyz2_2
 end
 
 local fix_mouse = false
@@ -3534,6 +3536,71 @@ function TIC()
 							walls[#walls+1] = {wall[1],wall[2],wall[3],wall[4],wall[5],wall[6],wall[7],wall[8],wall[9],wall[10]}
 							menu.w.sel = #walls
 							upd_walls()
+						end
+					end
+
+					--X Y Z drager
+					if false then -- it will be completed in the future
+						vbank(1)
+						local v_id = wall[1]+ wall[2]*world_size[3]+ wall[3]*world_size[4]+1
+
+						local xp, yp = unitic.poly.v[v_id][1],unitic.poly.v[v_id][2]
+
+						local distance = math.sqrt((wall[1]*96 - cam.x)^2 + (wall[2]*128 - cam.y)^2 + (wall[3]*96 - cam.z)^2)
+
+						local xyz = xyz_pointer(xp-15,yp-15,1,unitic.fov*85/distance)
+
+						--find nearest ray
+						local function distance_to_ray(vx, vy, x, y)
+							--normalization
+							local vec_len = math.sqrt(vx * vx + vy * vy)
+							vx = vx / vec_len
+							vy = vy / vec_len
+
+
+							--finding the projection of the point
+							local dot_product = x * vx + y * vy
+
+							local proj_x = dot_product * vx
+							local proj_y = dot_product * vy
+
+							if (vx>0 and proj_x<0) or (vx<0 and proj_x>0) then proj_x = 0 end
+							if (vy>0 and proj_y<0) or (vy<0 and proj_y>0) then proj_y = 0 end
+
+
+							--ray length
+							local len = math.sqrt(proj_x * proj_x + proj_y * proj_y)
+
+							-- distance from point to projection
+							local dist = math.sqrt((proj_x - x)^2 + (proj_y - y)^2)
+
+							return len, dist, proj_x, proj_y
+						end
+
+						local nearest = {
+							i = -1,
+							len = math.huge,
+							dist = math.huge,
+							proj_x = nil,
+							proj_y = nil,
+						}
+
+
+						for i = 1, 3 do
+							local len,dist, proj_x, proj_y = distance_to_ray(xyz[i][1]-xp,xyz[i][2]-yp,mx-xp, my-yp)
+
+							if dist < nearest.dist then
+								nearest.len = len
+								nearest.dist = dist
+								nearest.proj_x = proj_x
+								nearest.proj_y = proj_y
+								nearest.i = i
+							end
+						end
+
+						if nearest.dist < 3 and nearest.len < unitic.fov*85/distance then
+							line(xp,yp, xyz[nearest.i][1], xyz[nearest.i][2],12)
+							cid = 1
 						end
 					end
 				else
@@ -4392,6 +4459,10 @@ end
 -- 005:90e124c01824c05824c09824c01c24c05c24c09c24c0d824c01924c05924c09924c0d924c0dc24c01d24c05d24c09d24c0dd24403d4c803d4c50e02410202410602410a02450202450602450a02490202490602490a02490e02440e81800281800681800a81840281840681840a81880281880681880a81880e81800182800582800982800d828001c28005c28009c2800dc280039fc4039fc8039fc003824003c244038cc403c248038bc803c2400e81810e024003d4c81b11801b11841b118813114413114013114011118015118c15114c1111411241411641411a41451241451641451a41491241491641491a414
 -- 006:d12414d16414d1a43cc11524c15524c11924c15924c11d14c15d14d11114d15114011d18015d1811111811511801bd1811b11841bd1851b11881bd1891b118021c24025c24029c2412102412502412902401353c01393c013d3c11313c41353c41393c413d3c51313c81353c81393c813d3c91313cd1e418d1251812e41812251852e41852251812a41852a418d1a814d1e814d1291412a81412e81412291452a81452e814522914d1b41412b42452b414d1751812751852751892941492d414921514d19418d1d418d1151800000069c8152e40f008b0154f60f0a7301d6d61f0e6502dc002f0f5501dcda2f0000000
 -- </MAP1>
+
+-- <MAP2>
+-- 000:00101c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- </MAP2>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
