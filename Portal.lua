@@ -1,4 +1,4 @@
--- title:  Portal 3D
+ -- title:  Portal 3D
 -- author: HanamileH, soxfox42
 -- desc:   version 1.0 (powered by UniTIC v 1.3)
 -- script: lua
@@ -4365,7 +4365,7 @@ function unitic.update(draw_portal,p_id)
 	local tysin = math.sin(-cam.ty)
 	local tycos = math.cos(-cam.ty)
 
-	if draw_portal then
+	if draw_portal and not (draw.p[1][4] == draw.p[2][4] and draw.p[1][5] == draw.p[2][5]) then
 		local p3d={} -- 3d coordinates
 		local p2d={} -- 2d cooridnates
 		local i = p_id
