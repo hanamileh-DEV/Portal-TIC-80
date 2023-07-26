@@ -3,8 +3,9 @@
 -- desc:   version 1.0 (powered by UniTIC v 1.3)
 -- script: lua
 -- saveid: portal3d_unitic
+-- Github link: https://github.com/hanamileh-DEV/Portal-TIC-80
 
-local debug = true
+local debug = false
 
 local css_content_path = "C:/Program files/Portal_tic80/cake/bin/css/content.lua"
 
@@ -13,7 +14,7 @@ local map_bank_id = 1 -- Don't use 0 bank!!
 
 
 --automatically loads the selected level (leave nil to load the default levels)
-local load_lvl = {0, 2}
+--local load_lvl = {0, 2}
 
 --[[
 license:
@@ -3622,32 +3623,66 @@ do --a little guide about the terrible code
 	maps[0][2].w[#maps[0][2].w+1]={3 ,2,3 ,2,3,2}
 end
 --song text
+
 local song_text={
-	"This is one of the",
-	"few games that took",
-	"us weeks of hard",
-	"work to develop.",
-	"    ",
-	"Yes, we are not the",
-	"first to make portal",
-	"3D in TIC-80",
-	"(although in fact we",
-	"were the first to do",
-	"it) but we are the",
-	"first to turn it into",
-	"a full-fledged game",
-	"with a bunch of",
-	"interesting mechanics,",
-	"putting our soul into",
-	"the development of",
-	"this game.",
-	"    ",
-	"We hope you enjoyed",
-	"this game and it",
-	"deserves a like,",
-	"we really tried",
-	"very hard.",
-	"    ",
+	"A few words from the developer",
+	"(HanamileH) of this project:",
+	"This project started in the",
+	"summer of 2022. At first, I",
+	"thought it would be just a",
+	"small experiment that I would",
+	"do alone in a couple of weeks",
+	"to showcase the capabilities",
+	"of my 3D engine. But soon, it",
+	"became clear that it was a",
+	"real challenge that I couldn't",
+	"handle alone. I had never",
+	"worked on collaborative",
+	"projects before, never used",
+	"ChatGPT, and didn't know how",
+	"to use GitHub (so you won't",
+	"find the very first versions",
+	"of our project there).",
+	" ",
+	"I must emphasize that thanks",
+	"to soxfox42's help, this",
+	"project gained new life. He",
+	"often assisted me with various",
+	"questions, explained the best",
+	"approaches, and put his heart",
+	"and soul into our work (for",
+	"which I am immensely grateful).",
+	"Together, we managed to",
+	"implement many things that",
+	"seemed impossible in TIC-80",
+	"(though, unfortunately, we had",
+	"to sacrifice some performance).",
+	" ",
+	"We are not the first to create",
+	"a 3D game, and not the first",
+	"to implement Portal in this",
+	"console. However, we take pride",
+	"in being the first to turn it",
+	"into a full-fledged game, not",
+	"just a demo or WIP project. We",
+	"almost pushed the limits of",
+	"TIC-80, showing all the",
+	"possibilities achievable with",
+	"perseverance and hard work.",
+	" ",
+	"I'm proud of how our project",
+	"looks now because it has not",
+	"only taken time and effort but",
+	"also our hearts and souls. I",
+	"hope you enjoyed this game and",
+	"will appreciate it for what it",
+	"is. If you're interested in the",
+	"development details, you can",
+	"always check out our GitHub,",
+	"where the entire project history",
+	"is available, including ideas",
+	"that didn't make it into the",
+	"final version of the game.",
 }
 
 local song_text_2={1,1} --some data to display the text above
@@ -6505,10 +6540,6 @@ menu_options = {
 		{draw = true, y = 85 , t=1, text="", func = function() sfx_(18) st.p     =not st.p      end},
 		{draw = true, y = 95 , t=1, text="", func = function() sfx_(18) st.d_t   =not st.d_t    end},
 		{draw = true, y = 105, t=1, text="", func = function() sfx_(18) st.cheats=not st.cheats end},
-		
-		{draw = true, y = 115, t=1, text="", func = function() sfx_(18) end},
-		{draw = true, y = 125, t=1, text="", func = function() sfx_(18) end},
-		{draw = true, y = 135, t=1, text="", func = function() sfx_(18) end},
 
 		{draw = true, y = 115, t=1, text="", func = function() sfx_(16) music(3,7,0,true,true,160)state="calibration" end},
 		{draw = true, y = 125, t=1, text="", func = function() sfx_(17) if state=="main|settings" then state="main" main_screen.b = menu_options.ms else state="pause" main_screen.b = menu_options.p end end},
@@ -6533,7 +6564,7 @@ local function upd_buttons()
 			print(b.text, min(min(main_screen.t*2-20,4)+(1-b.t)*20), b.y, 7)
 
 			if my > b.y - 3 and my < b.y + 8 then
-				if not (state=="main|settings" or state=="pause|settings") or (i<13 and my<110 and my>19) or i>=13 then
+				if not (state=="main|settings" or state=="pause|settings") or (i<10 and my<110 and my>19) or i>=10 then
 					if (state=="main|settings" or state=="pause|settings") then setting_hint_i = i end
 					b.t = max(b.t-0.05,0.5)
 					cid = 1
@@ -6594,13 +6625,15 @@ for i in ipairs(surv_t) do
 end
 
 local authors_text = {
+	"Portal TIC-80 v 1.0",
+	"Github: https://github.com/hanamileh-DEV/Portal-TIC-80",
 	"3D engine: Unitic v 1.3 (MIT license)",
 	"",
 	"Coders:",
 	"HanamileH, soxfox42",
 	"",
 	"Level designers:",
-	"HamamileH, BuoYancy_dabl",
+	"HamamileH",
 	"",
 	"Beta testers:",
 	"BuoYancy_dabl, tan4iq",
@@ -6608,8 +6641,8 @@ local authors_text = {
 	"Music composers:",
 	"HanamileH",
 	"",
-	"Lorem ipsum",
-	"Dolor sit amet"
+	"Special thanks:",
+	"L4z41, kyuchumimo, scratch3644583"
 }
 local at = { --authors text data
 	scroll=30,
@@ -6890,7 +6923,7 @@ function TIC()
 			--text
 			clip(0,4,240,116)
 			for i = 1, #authors_text do
-				print(authors_text[i],4, -5 + i * 10 - F(at.scroll),7)
+				print(authors_text[i],4, -5 + i * 10 - F(at.scroll),7,false,1,i==2)
 			end
 			clip()
 			--slider
@@ -7556,13 +7589,13 @@ function TIC()
 
 		st.scroll = st.scroll - min(max(st.vy, -3),3)
 
-		local max_y = 12 * 10 - 90 --constant
+		local max_y = 9 * 10 - 90 --constant
 
 		if st.scroll<0 then st.scroll = max(min(st.scroll+1.1 ,0),-10) end
 		
 		if st.scroll> max_y then st.scroll = min(max(st.scroll-1.1 ,max_y),max_y+10) end
 
-		for i = 1, 12 do
+		for i = 1, 9 do
 			menu_options.s[i].y = 12 + i * 10 - F(st.scroll)
 		end
 		
@@ -7591,9 +7624,6 @@ function TIC()
 			{"d_t"   , "Dynamic textures:"    ,{"allows some textures to change in real time","(for example, the texture of a light bridge)"}},
 			
 			{"cheats","Cheats:",{"Allows you to enale cheats using the V B keys","(may reduce interest in pasasing the game)"}},
-			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
-			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
-			{"","Test:",{"Lorem ipsum","dolor sit amet"}},
 		}
 
 		local dif = {
@@ -7629,16 +7659,16 @@ function TIC()
 		rect(4,45-30,100,2,3)
 		rect(4+st.m_s-20,43-30,2,6,6)
 
-		if my>10 and my<24 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
+		if my>10 and my<20 then cid=1 if cl1 then st.m_s=max(min(mx+20-4,120),20) end end
 
 		--settings hints
-		if setting_hint_i ~= -1 and setting_hint_i<13 then
+		if setting_hint_i ~= -1 and setting_hint_i<10 then
 			print(texts[setting_hint_i][3][1],70,115,7,false,1,true)
 			print(texts[setting_hint_i][3][2],70,125,7,false,1,true)
 		end
 
 
-		menu_options.s[13].draw = state=="main|settings" --calibration button
+		menu_options.s[10].draw = state=="main|settings" --calibration button
 		--saving the settings
 		save_settings()
 		upd_buttons()
@@ -7679,6 +7709,7 @@ function TIC()
 		print("& soxfox42",124,24,13)
 		print("I hope you",124,38,13)
 		print("liked the game",124,45,13)
+		print(string.format("You spent in the game:  %02i:%02i",pmem(4)//60,pmem(4)%60),124,56,13,false,1,true)
 
 		circ(195,101,33,13)
 		circ(195,101,20,0)
@@ -7692,7 +7723,7 @@ function TIC()
 		line(163,91 ,193,81 ,0)
 		line(182,70 ,203,84 ,0)
 		--text
-		if t%3==0 then
+		if t%3==0 or key(26) then
 			song_text_2[1]=song_text_2[1]+1
 			if song_text_2[1]>#song_text[song_text_2[2]] then song_text_2[2]=song_text_2[2]+1 song_text_2[1]=0 end
 			if song_text_2[2]>#song_text then song_text_2[2]=#song_text song_text_2[1]=#song_text[#song_text] end
@@ -7700,12 +7731,12 @@ function TIC()
 
 		for i=max(song_text_2[2]-17,1),song_text_2[2] do
 			if i~=song_text_2[2] then
-				print(song_text[i],3,(i-max(song_text_2[2]-15,1))*7+3,13)
+				print(song_text[i],3,(i-max(song_text_2[2]-16,1))*7+3,13,false,1,true)
 			else
 				if t%20<10 then
-					print(song_text[i]:sub(1,song_text_2[1]).."_",3,(i-max(song_text_2[2]-17,1))*7+3,13)
+					print(song_text[i]:sub(1,song_text_2[1]).."_",3,(i-max(song_text_2[2]-16,1))*7+3,13,false,1,true)
 				else
-					print(song_text[i]:sub(1,song_text_2[1]),3,(i-max(song_text_2[2]-17,1))*7+3,13)
+					print(song_text[i]:sub(1,song_text_2[1]),3,(i-max(song_text_2[2]-16,1))*7+3,13,false,1,true)
 				end
 			end
 		end
@@ -8096,12 +8127,12 @@ function BDR(scn_y) scn_y=scn_y-4
 		if scn_y==0 or scn_y==20 or scn_y==111 or scn_y==123 or scn_y==133 then reset_pal()end
 		if scn_y==19 or scn_y==110 then reset_pal() darkpal(0.7)end
 
-		for i = 1, 13 do
-			if scn_y==max(F(10 + i*10 - st.scroll), 20) and scn_y<110 then reset_pal() if i<13 then darkpal(main_screen.b[i].t) end end
+		for i = 1, 10 do
+			if scn_y==max(F(10 + i*10 - st.scroll), 20) and scn_y<110 then reset_pal() if i<10 then darkpal(main_screen.b[i].t) end end
 		end
 
-		if scn_y==113 then darkpal(main_screen.b[13].t) end
-		if scn_y==123 then darkpal(main_screen.b[14].t) end
+		if scn_y==113 then darkpal(main_screen.b[10].t) end
+		if scn_y==123 then darkpal(main_screen.b[11].t) end
 	end
 	
 
