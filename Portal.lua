@@ -4380,42 +4380,6 @@ function unitic.update(draw_portal,p_id)
 					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96 + 96},
 					{draw.p[i][1]*96, draw.p[i][2] * 128 + 128, draw.p[i][3]*96 + 96},
 				}
-			elseif draw.p[i][4]==2 then
-
-				if draw.p[i][6]==1 then
-					p3d = {
-						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
-						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
-						
-						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
-						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
-					}
-				elseif draw.p[i][6]==2 then
-					p3d = {
-						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96},
-						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96},
-						
-						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
-						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
-					}
-				elseif draw.p[i][6]==3 then
-					p3d = {
-						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
-						{draw.p[i][1]*96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
-						
-						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 32 },
-						{draw.p[i][1]*96 + 96, draw.p[i][2] * 128, draw.p[i][3]*96 + 160},
-					}
-				else
-					p3d = {
-						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
-						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96 + 96},
-						
-						{draw.p[i][1]*96 + 32 , draw.p[i][2] * 128, draw.p[i][3]*96},
-						{draw.p[i][1]*96 + 160, draw.p[i][2] * 128, draw.p[i][3]*96},
-					}
-				end
-
 			elseif draw.p[i][4]==3 then
 				p3d = {
 					{draw.p[i][1]*96, draw.p[i][2] * 128      , draw.p[i][3]*96},
@@ -4934,7 +4898,7 @@ function unitic.player_physics()
 		local y0=draw.objects.c[i].y
 		local z0=draw.objects.c[i].z
 		obj_collide(1, x0, y0, z0)
-		if draw.objects.c[i].held and coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 - 24, y0 + 24, z0 - 24, x0 + 24, y0 + 24.1, z0 + 24) then draw.objects.c[i].held=false plr.holding=false end
+		if draw.objects.c[i].held and coll(plr.lx - 16, plr.ly - 64, plr.lz - 16, plr.lx + 16, plr.ly + 16, plr.lz + 16, x0 - 26, y0 + 24, z0 - 26, x0 + 26, y0 + 26, z0 + 26) then draw.objects.c[i].held=false plr.holding=false end
 		if draw.objects.c[i].inp then
 			local x0=draw.objects.c[i].x1
 			local y0=draw.objects.c[i].y1
@@ -5175,10 +5139,11 @@ function unitic.cube_update() --all physics related to cubes
 			end
 
 			-- floors --
-			if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 and draw.map[2][x0][y0][z0][2]~=8 and draw.map[2][x0][y0][z0][2]~=9 then
+			if draw.map[2][x0][y0][z0][2] > 0 and draw.map[2][x0][y0][z0][2]~=5 then
 				collide(x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94)
-			elseif draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
-				if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx_(0,"C-6",-1,1) end
+			end
+			if draw.map[2][x0][y0][z0][2]==8 or draw.map[2][x0][y0][z0][2]==9 then
+				if coll(clx - 24, cly - 24, clz - 24, clx + 24, cly + 24, clz + 24, x0 * 96 + 2, y0 * 128, z0 * 96 + 2, x0 * 96 + 94, y0 * 128 + 1, z0 * 96 + 94) then draw.objects.c[i].vy=12 sfx_(0,"C-6",-1,1) end
 			end
 
 			-- walls (2) --
@@ -5631,7 +5596,7 @@ function unitic.render() --------
 
 	if draw.p[1] and draw.p[2] then
 		dist2d=dist12d < dist22d
-		dist3d=dist13d < dist23d
+		dist3d=dist13d > dist23d -- Don't ask why, it just work and don't you dare touch it!
 
 		if dist13d < 32 then dist2d = true  end
 		if dist23d < 32 then dist2d = false end
@@ -5658,36 +5623,10 @@ function unitic.render() --------
 
 		-- calculate portal rotation
 		local XZ_rot1 = draw.p[1][4] // 2 + (draw.p[1][5] - 1) * 2
-		local XY_rot1 = 2
 		local XZ_rot2 = draw.p[2][4] // 2 + (draw.p[2][5] - 1) * 2
-		local XY_rot2 = 2
-		if draw.p[1][4]==2 then
-			XZ_rot1 = draw.p[1][6] + (draw.p[1][5] - 1) * 2
-			XY_rot1 = 1 + (draw.p[1][5] - 1) * 2
-		end
-		if draw.p[2][4]==2 then
-			XZ_rot2 = draw.p[2][6] + (draw.p[2][5] - 1) * 2
-			XY_rot2 = 1 + (draw.p[2][5] - 1) * 2
-		end
 
 		local XZ_rotd1 = (2 + XZ_rot2 - XZ_rot1) % 4
 		local XZ_rotd2 = (2 + XZ_rot1 - XZ_rot2) % 4
-
-		local XY_rotd1 = (XY_rot2 + XY_rot1) % 4
-		local XY_rotd2 = (XY_rot1 + XY_rot2) % 4
-
-		if     XY_rotd1 == 0 then
-		elseif XY_rotd1 == 1 then relx1,rely1= rely1,-relx1
-		elseif XY_rotd1 == 2 then relx1,rely1=-relx1,-rely1
-		elseif XY_rotd1 == 3 then relx1,rely1=-rely1, relx1
-		end
-
-		if     XY_rotd2 == 0 then
-		elseif XY_rotd2 == 1 then relx2,rely2= rely2,-relx2
-		elseif XY_rotd2 == 2 then relx2,rely2=-relx2,-rely2
-		elseif XY_rotd2 == 3 then relx2,rely2=-rely2, relx2
-		end
-		------
 
 		if     XZ_rotd1 == 0 then
 		elseif XZ_rotd1 == 1 then relx1,relz1= relz1,-relx1
@@ -5811,7 +5750,7 @@ function unitic.render() --------
 				end
 
 				--portal center
-				if (not st.r_p or dist2d ~= (i==1)) and not st.r_both then
+				if (not st.r_p or dist2d ~= (i==1)) and (not st.r_both or not draw.p[1] or not draw.p[2]) then
 					if i==1 then
 						ttri_clip(p2d[i][1][1],p2d[i][1][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],24,232,24,200,0,232,15, 3,  p2d[i][1][4],p2d[i][1][5],p2d[i][1][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.995)
 						ttri_clip(p2d[i][4][1],p2d[i][4][2],p2d[i][2][1],p2d[i][2][2],p2d[i][3][1],p2d[i][3][2],0 ,200,24,200,0,232,15, 3,  p2d[i][4][4],p2d[i][4][5],p2d[i][4][3] ,p2d[i][2][4],p2d[i][2][5],p2d[i][2][3] ,p2d[i][3][4],p2d[i][3][5],p2d[i][3][3], 0.995)
@@ -6033,13 +5972,13 @@ local function portal_gun()
 
 	--portal reset
 	if debug and (keyp(6) or (plr.bf_t>1 and save.lvl~=3 and save.lvl2~=1)) then
-		if draw.p[1] then
+		if draw.p[1] and plr.pg_lvl>0 then
 			portal_check(1)
 			draw.p[1]=nil
 			update_world()
 		end
 		-----------------
-		if draw.p[2] then
+		if draw.p[2] and plr.pg_lvl>1 then
 			portal_check(2)
 			draw.p[2]=nil
 			update_world()
