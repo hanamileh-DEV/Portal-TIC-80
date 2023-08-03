@@ -7362,7 +7362,7 @@ function TIC()
 		end
 	 --sounds
 		s.t1=max(s.t1-1,0)
-		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1  if s.t1==0 then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
+		if (key(23) or key(19) or key(1) or key(4)) then p_g.t1=p_g.t1+1  if s.t1==0 and plr.on_ground then sfx_(1) if key(64) then s.t1=15 else s.t1=20 end end end
 		if plr.bf_t==8 then sfx_(3,"B-4",-1,1) end
 	 --hp
 		if plr.l_hp == plr.hp then plr.hp_t=plr.hp_t+1 else plr.hp_t=0 end
